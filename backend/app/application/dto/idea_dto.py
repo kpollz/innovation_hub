@@ -1,0 +1,59 @@
+"""Idea DTOs for crossing layer boundaries."""
+from datetime import datetime
+from typing import List, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.domain.value_objects.status import IdeaStatus
+
+
+# Input DTOs
+class CreateIdeaDTO(BaseModel):
+    """Input for creating an idea."""
+    room_id: UUID
+    title: str = Field(..., min_length=3, max_length=255)
+    description: str = Field(..., min_length=10)
+    outcome: Optional[str] = None
+
+
+class UpdateIdeaDTO(BaseModel):
+    """Input for updating an idea."""
+    title: Optional[str] = Field(None, min_length=3, max_length=255)
+    description: Optional[str] = Field(None, min_length=10)
+    outcome: Optional[str] = None
+    status: Optional[IdeaStatus] = None
+    is_pinned: Optional[bool] = None
+
+
+class IdeaListFiltersDTO(BaseModel):
+    """Filters for listing ideas."""
+    room_id: Optional[UUID] = None
+    author_id: Optional[UUID] = None
+    status: Optional[IdeaStatus] = None
+    search: Optional[str] = None
+
+
+# Output DTOs
+class IdeaResponseDTO(BaseModel):
+    """Output for idea data."""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: UUID
+    room_id: UUID
+    title: str
+    description: str
+    outcome: Optional[str] = None
+    status: IdeaStatus
+    author_id: UUID
+    is_pinned: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class IdeaListResponseDTO(BaseModel):
+    """Output for paginated idea list."""
+    items: List[IdeaResponseDTO]
+    total: int
+    page: int
+    limit: int

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: innovation_hub_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-innovation_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-innovation_pass}
+      POSTGRES_DB: ${DB_NAME:-innovation_hub}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-innovation_user} -d ${DB_NAME:-innovation_hub}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: innovation_hub_api
+    working_dir: /app
+    env_file:
+      - .env
+    # environment:
+    #   # Override .env để dùng tên service thay vì localhost
+    #   - DATABASE_URL=postgresql+asyncpg://innovation_user:innovation_pass@db:5432/innovation_hub
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./alembic.ini:/app/alembic.ini:ro
+      - ./app:/app/app:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+# volumes:
+#   postgres_data:
