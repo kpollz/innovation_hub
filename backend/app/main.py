@@ -19,6 +19,10 @@ async def lifespan(app: FastAPI):
     db_config = DatabaseConfig(settings)
     app.state.db_config = db_config
     
+    # Setup JWT service for authentication
+    from app.application.services.jwt_service import JWTService
+    app.state.jwt_service = JWTService()
+    
     # Create tables (for development - use Alembic in production)
     if settings.env == "development":
         async with db_config.engine.begin() as conn:

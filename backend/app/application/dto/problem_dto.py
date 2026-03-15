@@ -13,6 +13,7 @@ from app.domain.value_objects.status import ProblemStatus
 class CreateProblemDTO(BaseModel):
     """Input for creating a problem."""
     title: str = Field(..., min_length=5, max_length=255)
+    summary: Optional[str] = Field(None, max_length=500)
     content: str = Field(..., min_length=10)
     category: ProblemCategory
 
@@ -20,6 +21,7 @@ class CreateProblemDTO(BaseModel):
 class UpdateProblemDTO(BaseModel):
     """Input for updating a problem."""
     title: Optional[str] = Field(None, min_length=5, max_length=255)
+    summary: Optional[str] = Field(None, max_length=500)
     content: Optional[str] = Field(None, min_length=10)
     category: Optional[ProblemCategory] = None
     status: Optional[ProblemStatus] = None
@@ -40,6 +42,7 @@ class ProblemResponseDTO(BaseModel):
     
     id: UUID
     title: str
+    summary: Optional[str] = None
     content: str
     category: ProblemCategory
     status: ProblemStatus

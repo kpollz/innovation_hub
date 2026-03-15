@@ -20,11 +20,8 @@ class SQLProblemRepository(ProblemRepository):
     
     def _to_entity(self, model: ProblemModel) -> Problem:
         """Map ORM model to domain entity."""
-        # Get room_id from the room relationship if it exists
-        room_id = None
-        if model.room:
-            room_id = UUID(model.room.id)
-        
+        # room_id is accessed via relationship (Room has problem_id, not Problem has room_id)
+        # Set to None here - can be loaded separately if needed
         return Problem(
             id=UUID(model.id),
             title=model.title,
@@ -34,7 +31,7 @@ class SQLProblemRepository(ProblemRepository):
             status=ProblemStatus(model.status),
             created_at=model.created_at,
             updated_at=model.updated_at,
-            room_id=room_id
+            room_id=None  # Problem doesn't have room_id column; Room has problem_id
         )
     
     def _to_model(self, entity: Problem) -> ProblemModel:

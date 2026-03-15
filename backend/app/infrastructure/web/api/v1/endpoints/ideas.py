@@ -1,7 +1,7 @@
 """Idea endpoints."""
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 
 from app.application.dto.idea_dto import (
     CreateIdeaDTO,
@@ -87,11 +87,12 @@ async def update_idea(
 @router.post("/{idea_id}/votes", response_model=VoteResponseDTO, status_code=status.HTTP_201_CREATED)
 async def vote_idea(
     idea_id: UUID,
-    data: CreateVoteDTO,
+    stars: int = Body(..., embed=True, ge=1, le=5),
     current_user: UserResponseDTO = Depends(get_current_active_user),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo)
 ):
     """Vote on an idea."""
+    data = CreateVoteDTO(idea_id=idea_id, stars=stars)
     use_case = VoteIdeaUseCase(vote_repo, idea_repo)
     return await use_case.execute(data, current_user.id)

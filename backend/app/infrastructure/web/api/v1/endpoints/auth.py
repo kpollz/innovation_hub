@@ -75,10 +75,22 @@ async def login(
             user=user
         )
     except Exception as e:
+        # Log the actual error for debugging
+        import traceback
+        print(f"❌ Login error: {e}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail=f"Invalid credentials: {str(e)}"
         )
+
+
+@router.get("/me", response_model=UserResponseDTO)
+async def get_current_user_info(
+    current_user = Depends(deps.get_current_user)
+):
+    """Get current authenticated user."""
+    return UserResponseDTO.model_validate(current_user)
 
 
 @router.post("/refresh", response_model=TokenResponse)

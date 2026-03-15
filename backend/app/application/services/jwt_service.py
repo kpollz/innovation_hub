@@ -79,3 +79,7 @@ class JWTService:
         if not user_id:
             raise UnauthorizedException("Token missing user ID")
         return UUID(user_id)
+    
+    def verify_token(self, token: str) -> dict:
+        """Verify and decode an access token."""
+        return self.decode_token(token, token_type="access")

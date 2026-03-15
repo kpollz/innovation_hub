@@ -62,3 +62,48 @@ def get_password_hasher() -> PasswordHasher:
 
 def get_jwt_service() -> JWTService:
     return JWTService()
+
+
+async def get_current_user(
+    request: Request,
+    user_repo: SQLUserRepository = Depends(get_user_repo),
+    jwt_service: JWTService = Depends(get_jwt_service)
+):
+    """Get current user from JWT token in Authorization header."""
+    from fastapi import HTTPException, status
+    
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    
+    token = auth_header.replace("Bearer ", "")
+    try:
+        payload = jwt_service.verify_token(token)
+        if payload.get("type") != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type"
+            )
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
+        )
+    
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+    
+    return user

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16-alpine
@@ -26,19 +24,20 @@ services:
     working_dir: /app
     env_file:
       - .env
-    # environment:
-    #   # Override .env để dùng tên service thay vì localhost
-    #   - DATABASE_URL=postgresql+asyncpg://innovation_user:innovation_pass@db:5432/innovation_hub
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./alembic.ini:/app/alembic.ini:ro
       - ./app:/app/app:ro
+      - ./scripts:/app/scripts:ro
     depends_on:
       db:
         condition: service_healthy
     command: >
       sh -c "poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      - innovation_hub_network
 
-# volumes:
-#   postgres_data:
+networks:
+  innovation_hub_network:
+    driver: bridge

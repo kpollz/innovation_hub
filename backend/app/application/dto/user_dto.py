@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.domain.value_objects.role import UserRole
 
@@ -51,6 +51,26 @@ class UserResponseDTO(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    
+    @field_validator('email', mode='before')
+    @classmethod
+    def convert_email_to_str(cls, v):
+        """Convert Email value object to string."""
+        if v is None:
+            return None
+        if hasattr(v, 'value'):
+            return v.value
+        return str(v)
+    
+    @field_validator('role', mode='before')
+    @classmethod
+    def convert_role_to_enum(cls, v):
+        """Convert role to UserRole enum."""
+        if isinstance(v, UserRole):
+            return v
+        if isinstance(v, str):
+            return UserRole(v)
+        return UserRole(str(v))
 
 
 class UserListResponseDTO(BaseModel):

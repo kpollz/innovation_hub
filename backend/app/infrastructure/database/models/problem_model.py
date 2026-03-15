@@ -19,6 +19,7 @@ class ProblemModel(BaseModel):
     __tablename__ = "problems"
     
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    summary: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="open")
