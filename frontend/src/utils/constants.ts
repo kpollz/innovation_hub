@@ -3,11 +3,11 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/api/v1' : 'http://localhost:8000/api/v1');
 
 export const PROBLEM_CATEGORIES = [
-  { value: 'Process', label: 'Process', color: 'bg-blue-100 text-blue-800' },
-  { value: 'Tech', label: 'Technology', color: 'bg-purple-100 text-purple-800' },
-  { value: 'Service', label: 'Service', color: 'bg-green-100 text-green-800' },
-  { value: 'Product', label: 'Product', color: 'bg-orange-100 text-orange-800' },
-  { value: 'Other', label: 'Other', color: 'bg-gray-100 text-gray-800' },
+  { value: 'process', label: 'Process', color: 'bg-blue-100 text-blue-800' },
+  { value: 'technical', label: 'Technical', color: 'bg-purple-100 text-purple-800' },
+  { value: 'people', label: 'People', color: 'bg-green-100 text-green-800' },
+  { value: 'tools', label: 'Tools', color: 'bg-orange-100 text-orange-800' },
+  { value: 'patent', label: 'Patent', color: 'bg-gray-100 text-gray-800' },
 ] as const;
 
 export const PROBLEM_STATUSES = [

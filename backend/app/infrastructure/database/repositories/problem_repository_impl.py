@@ -25,6 +25,7 @@ class SQLProblemRepository(ProblemRepository):
         return Problem(
             id=UUID(model.id),
             title=model.title,
+            summary=model.summary,
             content=model.content,
             category=ProblemCategory(model.category),
             author_id=UUID(model.author_id),
@@ -39,6 +40,7 @@ class SQLProblemRepository(ProblemRepository):
         return ProblemModel(
             id=str(entity.id),
             title=entity.title,
+            summary=entity.summary,
             content=entity.content,
             category=entity.category.value,
             status=entity.status.value,
@@ -113,6 +115,7 @@ class SQLProblemRepository(ProblemRepository):
             raise ValueError(f"Problem {problem.id} not found")
         
         model.title = problem.title
+        model.summary = problem.summary
         model.content = problem.content
         model.category = problem.category.value
         model.status = problem.status.value

@@ -40,7 +40,7 @@ export interface PaginatedResponse<T> {
 
 // Problem Types
 export type ProblemStatus = 'open' | 'brainstorming' | 'solved' | 'closed';
-export type ProblemCategory = 'Process' | 'Tech' | 'Service' | 'Product' | 'Other';
+export type ProblemCategory = 'process' | 'technical' | 'people' | 'tools' | 'patent';
 
 export interface Problem {
   id: string;

@@ -45,7 +45,7 @@ export const ProblemDetailPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
-  const [editCategory, setEditCategory] = useState<ProblemCategory>('Process');
+  const [editCategory, setEditCategory] = useState<ProblemCategory>('process');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {

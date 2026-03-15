@@ -19,18 +19,7 @@ class UpdateProblemUseCase:
         current_user_id: UUID,
         is_admin: bool = False
     ) -> ProblemResponseDTO:
-        """
-        Execute the use case.
-        
-        Args:
-            problem_id: ID of problem to update
-            dto: Update data
-            current_user_id: ID of user making the request
-            is_admin: Whether the user is an admin
-            
-        Returns:
-            Updated problem as DTO
-        """
+        """Execute the use case."""
         # Get existing problem
         problem = await self.problem_repo.get_by_id(problem_id)
         if not problem:
@@ -41,14 +30,16 @@ class UpdateProblemUseCase:
             raise ForbiddenException("You can only update your own problems")
         
         # Update fields
-        if dto.title:
+        if dto.title is not None:
             problem.title = dto.title
-        if dto.content:
+        if dto.summary is not None:
+            problem.summary = dto.summary
+        if dto.content is not None:
             problem.content = dto.content
-        if dto.category:
+        if dto.category is not None:
             problem.category = dto.category
-        if dto.status:
-            problem.transition_to(dto.status)  # Business rule enforced here
+        if dto.status is not None:
+            problem.transition_to(dto.status)
         
         # Persist
         updated = await self.problem_repo.update(problem)

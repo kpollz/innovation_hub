@@ -30,6 +30,7 @@ class CreateProblemUseCase:
         # Create domain entity
         problem = Problem(
             title=dto.title,
+            summary=dto.summary,
             content=dto.content,
             category=dto.category,
             author_id=author_id

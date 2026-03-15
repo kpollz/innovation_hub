@@ -16,6 +16,7 @@ class Problem:
     category: ProblemCategory
     author_id: UUID
     id: UUID = field(default_factory=uuid4)
+    summary: Optional[str] = None
     status: ProblemStatus = field(default=ProblemStatus.OPEN)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
@@ -45,12 +46,15 @@ class Problem:
     def update_content(
         self,
         title: Optional[str] = None,
+        summary: Optional[str] = None,
         content: Optional[str] = None,
         category: Optional[ProblemCategory] = None
     ) -> None:
         """Update problem content."""
         if title is not None:
             self.title = title
+        if summary is not None:
+            self.summary = summary
         if content is not None:
             self.content = content
         if category is not None:
