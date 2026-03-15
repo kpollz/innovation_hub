@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   ThumbsUp, 
   ThumbsDown, 
   Lightbulb, 
   MessageCircle,
-  BrainCircuit
+  BrainCircuit,
+  Edit,
+  Trash2,
+  MoreVertical,
+  CheckCircle,
+  Circle
 } from 'lucide-react';
+import { useAuthStore } from '@/stores/authStore';
 import { useProblemStore } from '@/stores/problemStore';
 import { useUIStore } from '@/stores/uiStore';
 import { problemsApi } from '@/api/problems';
@@ -16,17 +22,31 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
+import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
-import type { Comment, ReactionType } from '@/types';
+import type { Comment, ReactionType, ProblemStatus, ProblemCategory } from '@/types';
 
 export const ProblemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { selectedProblem, fetchProblem, isLoading } = useProblemStore();
   const { showToast } = useUIStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
+  
+  // Edit/Delete states
+  const [showActions, setShowActions] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState<ProblemCategory>('Process');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -34,6 +54,11 @@ export const ProblemDetailPage: React.FC = () => {
       fetchComments();
     }
   }, [id, fetchProblem]);
+
+  // Check if user can modify (owner or admin)
+  const canModify = user && selectedProblem && (
+    user.id === selectedProblem.author_id || user.role === 'admin'
+  );
 
   const fetchComments = async () => {
     if (!id) return;
@@ -55,6 +80,7 @@ export const ProblemDetailPage: React.FC = () => {
         await problemsApi.addReaction(id, type);
         setUserReaction(type);
       }
+      fetchProblem(id);
     } catch (error) {
       showToast({ type: 'error', message: 'Failed to add reaction' });
     }
@@ -71,6 +97,65 @@ export const ProblemDetailPage: React.FC = () => {
       fetchComments();
     } catch (error) {
       showToast({ type: 'error', message: 'Failed to add comment' });
+    }
+  };
+
+  const handleStatusChange = async (newStatus: ProblemStatus) => {
+    if (!id || !canModify) return;
+    try {
+      await problemsApi.update(id, { status: newStatus });
+      showToast({ type: 'success', message: `Status changed to ${newStatus}` });
+      fetchProblem(id);
+    } catch (error) {
+      showToast({ type: 'error', message: 'Failed to update status' });
+    }
+    setShowActions(false);
+  };
+
+  const openEditModal = () => {
+    if (selectedProblem) {
+      setEditTitle(selectedProblem.title);
+      setEditContent(selectedProblem.content);
+      setEditCategory(selectedProblem.category);
+      setIsEditModalOpen(true);
+      setShowActions(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !editTitle.trim() || !editContent.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await problemsApi.update(id, {
+        title: editTitle,
+        content: editContent,
+        category: editCategory,
+      });
+      showToast({ type: 'success', message: 'Problem updated!' });
+      setIsEditModalOpen(false);
+      fetchProblem(id);
+    } catch (error) {
+      showToast({ type: 'error', message: 'Failed to update problem' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+
+    setIsSubmitting(true);
+    try {
+      await problemsApi.delete(id);
+      showToast({ type: 'success', message: 'Problem deleted!' });
+      setIsDeleteModalOpen(false);
+      navigate('/problems');
+    } catch (error) {
+      showToast({ type: 'error', message: 'Failed to delete problem' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,9 +197,80 @@ export const ProblemDetailPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className="text-sm text-gray-500">
-              Posted {timeAgo(selectedProblem.created_at)}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">
+                Posted {timeAgo(selectedProblem.created_at)}
+              </span>
+              
+              {/* Actions Dropdown for Owner/Admin */}
+              {canModify && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowActions(!showActions)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MoreVertical className="h-5 w-5 text-gray-500" />
+                  </button>
+                  
+                  {showActions && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowActions(false)}
+                      />
+                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                        <button
+                          onClick={openEditModal}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit Problem
+                        </button>
+                        
+                        <div className="border-t border-gray-200 my-1" />
+                        
+                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
+                        <button
+                          onClick={() => handleStatusChange('open')}
+                          className={classNames(
+                            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
+                            selectedProblem.status === 'open' ? 'text-primary-600' : 'text-gray-700'
+                          )}
+                        >
+                          <Circle className="h-4 w-4" />
+                          Open
+                          {selectedProblem.status === 'open' && <CheckCircle className="h-4 w-4 ml-auto" />}
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange('closed')}
+                          className={classNames(
+                            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
+                            selectedProblem.status === 'closed' ? 'text-green-600' : 'text-gray-700'
+                          )}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Closed
+                          {selectedProblem.status === 'closed' && <CheckCircle className="h-4 w-4 ml-auto text-green-600" />}
+                        </button>
+                        
+                        <div className="border-t border-gray-200 my-1" />
+                        
+                        <button
+                          onClick={() => {
+                            setShowActions(false);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete Problem
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -261,6 +417,64 @@ export const ProblemDetailPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Problem"
+      >
+        <form onSubmit={handleEdit} className="space-y-4">
+          <Input
+            label="Title"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            required
+          />
+          <Textarea
+            label="Content"
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={5}
+            required
+          />
+          <Select
+            label="Category"
+            value={editCategory}
+            onChange={(e) => setEditCategory(e.target.value as ProblemCategory)}
+            options={PROBLEM_CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
+          />
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Problem"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete this problem? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
+              {isSubmitting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
