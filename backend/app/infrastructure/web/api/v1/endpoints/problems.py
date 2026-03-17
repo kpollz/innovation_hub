@@ -1,62 +1,112 @@
 """Problem endpoints."""
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, Field
 
 from app.application.dto.problem_dto import (
     CreateProblemDTO,
     UpdateProblemDTO,
     ProblemListFiltersDTO,
     ProblemResponseDTO,
-    ProblemListResponseDTO
+    ProblemListResponseDTO,
 )
+from app.application.dto.room_dto import RoomResponseDTO
+from app.application.services.response_enrichment import enrich_problem, enrich_problems, enrich_room
 from app.application.use_cases.problem.create_problem import CreateProblemUseCase
 from app.application.use_cases.problem.update_problem import UpdateProblemUseCase
-from app.application.use_cases.problem.list_problems import ListProblemsUseCase
 from app.application.use_cases.problem.delete_problem import DeleteProblemUseCase
+from app.application.use_cases.room.create_room import CreateRoomUseCase
 from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
+from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
+from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
+from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
+from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
+from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
 router = APIRouter()
 
 
+async def _get_optional_user_id(request: Request) -> Optional[UUID]:
+    """Extract user ID from token if present, without raising on missing auth."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.replace("Bearer ", "")
+    try:
+        from app.application.services.jwt_service import JWTService
+        jwt_service = JWTService()
+        payload = jwt_service.verify_token(token)
+        if payload.get("type") != "access":
+            return None
+        user_id = payload.get("sub")
+        return UUID(user_id) if user_id else None
+    except Exception:
+        return None
+
+
 @router.get("", response_model=ProblemListResponseDTO)
 async def list_problems(
+    request: Request,
     filters: ProblemListFiltersDTO = Depends(),
     page: int = 1,
     limit: int = 20,
-    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo)
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
 ):
-    """List problems with pagination and filters."""
-    use_case = ListProblemsUseCase(problem_repo)
-    return await use_case.execute(filters, page, limit)
+    """List problems with pagination, filters, and enriched data."""
+    current_user_id = await _get_optional_user_id(request)
+    problems, total = await problem_repo.list(
+        filters.model_dump(exclude_none=True), page, limit
+    )
+    items = await enrich_problems(
+        problems, user_repo, reaction_repo, comment_repo, current_user_id
+    )
+    return ProblemListResponseDTO(items=items, total=total, page=page, limit=limit)
 
 
 @router.post("", response_model=ProblemResponseDTO, status_code=status.HTTP_201_CREATED)
 async def create_problem(
     data: CreateProblemDTO,
     current_user: UserResponseDTO = Depends(get_current_active_user),
-    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo)
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
 ):
     """Create a new problem."""
     use_case = CreateProblemUseCase(problem_repo)
-    return await use_case.execute(data, current_user.id)
+    problem = await use_case.execute(data, current_user.id)
+    return await enrich_problem(
+        problem, user_repo, reaction_repo, comment_repo, current_user.id
+    )
 
 
 @router.get("/{problem_id}", response_model=ProblemResponseDTO)
 async def get_problem(
     problem_id: UUID,
-    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo)
+    request: Request,
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
 ):
-    """Get a problem by ID."""
+    """Get a problem by ID with enriched data."""
+    current_user_id = await _get_optional_user_id(request)
     problem = await problem_repo.get_by_id(problem_id)
     if not problem:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Problem not found"
+            detail="Problem not found",
         )
-    return ProblemResponseDTO.model_validate(problem)
+    return await enrich_problem(
+        problem, user_repo, reaction_repo, comment_repo, current_user_id
+    )
 
 
 @router.patch("/{problem_id}", response_model=ProblemResponseDTO)
@@ -64,15 +114,18 @@ async def update_problem(
     problem_id: UUID,
     data: UpdateProblemDTO,
     current_user: UserResponseDTO = Depends(get_current_active_user),
-    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo)
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
 ):
     """Update a problem."""
     use_case = UpdateProblemUseCase(problem_repo)
-    return await use_case.execute(
-        problem_id,
-        data,
-        current_user.id,
-        current_user.role == "admin"
+    problem = await use_case.execute(
+        problem_id, data, current_user.id, current_user.role == "admin"
+    )
+    return await enrich_problem(
+        problem, user_repo, reaction_repo, comment_repo, current_user.id
     )
 
 
@@ -80,18 +133,75 @@ async def update_problem(
 async def delete_problem(
     problem_id: UUID,
     current_user: UserResponseDTO = Depends(get_current_active_user),
-    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo)
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
 ):
     """Delete a problem."""
     use_case = DeleteProblemUseCase(problem_repo)
     success = await use_case.execute(
-        problem_id,
-        current_user.id,
-        current_user.role == "admin"
+        problem_id, current_user.id, current_user.role == "admin"
     )
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Problem not found"
+            detail="Problem not found",
         )
     return None
+
+
+# --- Sub-resource: create room from problem (1-click brainstorm) ---
+
+class CreateRoomFromProblemRequest(BaseModel):
+    name: str = Field(..., min_length=3, max_length=255)
+    description: Optional[str] = None
+
+
+@router.post(
+    "/{problem_id}/rooms",
+    response_model=RoomResponseDTO,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_room_from_problem(
+    problem_id: UUID,
+    data: CreateRoomFromProblemRequest,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+):
+    """Create a brainstorm room linked to a problem (1-click flow).
+
+    Automatically transitions the problem status to 'brainstorming'.
+    """
+    problem = await problem_repo.get_by_id(problem_id)
+    if not problem:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found"
+        )
+
+    # Check if room already exists for this problem
+    existing_room = await room_repo.get_by_problem_id(problem_id)
+    if existing_room:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A room already exists for this problem",
+        )
+
+    # Transition problem status to brainstorming
+    from app.domain.value_objects.status import ProblemStatus
+    try:
+        problem.transition_to(ProblemStatus.BRAINSTORMING)
+        await problem_repo.update(problem)
+    except ValueError:
+        pass  # Allow room creation even if status transition fails
+
+    # Create the room
+    from app.application.dto.room_dto import CreateRoomDTO
+    room_dto = CreateRoomDTO(
+        name=data.name,
+        description=data.description,
+        problem_id=problem_id,
+    )
+    use_case = CreateRoomUseCase(room_repo)
+    room = await use_case.execute(room_dto, current_user.id)
+    return await enrich_room(room, user_repo, idea_repo)

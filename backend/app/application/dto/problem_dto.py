@@ -35,11 +35,22 @@ class ProblemListFiltersDTO(BaseModel):
     search: Optional[str] = None
 
 
+# Avoid circular import - use forward ref for author
+class ProblemAuthorDTO(BaseModel):
+    """Lightweight user info embedded in problem response."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
 # Output DTOs
 class ProblemResponseDTO(BaseModel):
     """Output for problem data."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     title: str
     summary: Optional[str] = None
@@ -47,9 +58,15 @@ class ProblemResponseDTO(BaseModel):
     category: ProblemCategory
     status: ProblemStatus
     author_id: UUID
+    author: Optional[ProblemAuthorDTO] = None
     room_id: Optional[UUID] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    likes_count: int = 0
+    dislikes_count: int = 0
+    insights_count: int = 0
+    comments_count: int = 0
+    user_reaction: Optional[str] = None
 
 
 class ProblemListResponseDTO(BaseModel):

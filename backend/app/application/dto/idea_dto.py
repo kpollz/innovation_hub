@@ -34,11 +34,26 @@ class IdeaListFiltersDTO(BaseModel):
     search: Optional[str] = None
 
 
+class IdeaAuthorDTO(BaseModel):
+    """Lightweight user info embedded in idea response."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class UserVoteDTO(BaseModel):
+    """Current user's vote on an idea."""
+    stars: int
+
+
 # Output DTOs
 class IdeaResponseDTO(BaseModel):
     """Output for idea data."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     room_id: UUID
     title: str
@@ -46,9 +61,15 @@ class IdeaResponseDTO(BaseModel):
     outcome: Optional[str] = None
     status: IdeaStatus
     author_id: UUID
+    author: Optional[IdeaAuthorDTO] = None
     is_pinned: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    vote_avg: float = 0.0
+    vote_count: int = 0
+    comments_count: int = 0
+    user_reaction: Optional[str] = None
+    user_vote: Optional[UserVoteDTO] = None
 
 
 class IdeaListResponseDTO(BaseModel):

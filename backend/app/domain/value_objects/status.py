@@ -17,7 +17,7 @@ class ProblemStatus(str, Enum):
     def valid_transitions(cls) -> Dict["ProblemStatus", List["ProblemStatus"]]:
         """Define valid status transitions."""
         return {
-            cls.OPEN: [cls.DISCUSSING, cls.CLOSED],
+            cls.OPEN: [cls.DISCUSSING, cls.BRAINSTORMING, cls.CLOSED],
             cls.DISCUSSING: [cls.BRAINSTORMING, cls.SOLVED, cls.CLOSED],
             cls.BRAINSTORMING: [cls.SOLVED, cls.CLOSED],
             cls.SOLVED: [cls.CLOSED],
