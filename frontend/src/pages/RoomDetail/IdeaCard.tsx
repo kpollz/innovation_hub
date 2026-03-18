@@ -3,9 +3,10 @@ import {
   Star,
   MessageCircle,
   MoreVertical,
-  Pin
+  Pin,
+  Trash2
 } from 'lucide-react';
-import { roomsApi } from '@/api/rooms';
+import { ideasApi } from '@/api/ideas';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -18,29 +19,30 @@ import { timeAgo, truncateText, classNames } from '@/utils/helpers';
 
 interface IdeaCardProps {
   idea: Idea;
-  roomId: string;
   onUpdate: () => void;
   detailed?: boolean;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ 
-  idea, 
-  roomId, 
-  onUpdate, 
-  detailed = false 
+export const IdeaCard: React.FC<IdeaCardProps> = ({
+  idea,
+  onUpdate,
+  detailed = false
 }) => {
   const { user } = useAuthStore();
   const { showToast } = useUIStore();
   const [showVoteModal, setShowVoteModal] = useState(false);
-  const [voteScore, setVoteScore] = useState(5);
+  const [voteStars, setVoteStars] = useState(idea.user_vote?.stars || 3);
   const [showActions, setShowActions] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const isAuthor = user?.id === idea.author_id;
+  const isAdmin = user?.role === 'admin';
+  const canModify = isAuthor || isAdmin;
   const statusConfig = IDEA_STATUSES.find((s) => s.value === idea.status);
 
   const handleVote = async () => {
     try {
-      await roomsApi.voteIdea(roomId, idea.id, { score: voteScore });
+      await ideasApi.vote(idea.id, { stars: voteStars });
       showToast({ type: 'success', message: 'Vote recorded!' });
       setShowVoteModal(false);
       onUpdate();
@@ -51,7 +53,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      await roomsApi.updateIdea(roomId, idea.id, { status: newStatus as IdeaStatus });
+      await ideasApi.update(idea.id, { status: newStatus as IdeaStatus });
       showToast({ type: 'success', message: 'Status updated!' });
       onUpdate();
     } catch {
@@ -61,16 +63,29 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
   const handlePinToggle = async () => {
     try {
-      await roomsApi.updateIdea(roomId, idea.id, { is_pinned: !idea.is_pinned });
-      showToast({ 
-        type: 'success', 
-        message: idea.is_pinned ? 'Idea unpinned' : 'Idea pinned!' 
+      await ideasApi.update(idea.id, { is_pinned: !idea.is_pinned });
+      showToast({
+        type: 'success',
+        message: idea.is_pinned ? 'Idea unpinned' : 'Idea pinned!'
       });
       onUpdate();
     } catch {
       showToast({ type: 'error', message: 'Failed to toggle pin' });
     }
   };
+
+  const handleDelete = async () => {
+    try {
+      await ideasApi.delete(idea.id);
+      showToast({ type: 'success', message: 'Idea deleted!' });
+      setIsDeleteModalOpen(false);
+      onUpdate();
+    } catch {
+      showToast({ type: 'error', message: 'Failed to delete idea' });
+    }
+  };
+
+  const authorName = idea.author?.full_name || idea.author?.username || 'Unknown';
 
   return (
     <>
@@ -86,8 +101,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 {statusConfig?.label}
               </span>
             </div>
-            
-            {isAuthor && (
+
+            {canModify && (
               <div className="relative">
                 <button
                   onClick={() => setShowActions(!showActions)}
@@ -95,19 +110,37 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 >
                   <MoreVertical className="h-4 w-4 text-gray-500" />
                 </button>
-                
+
                 {showActions && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                    <button
-                      onClick={() => {
-                        handlePinToggle();
-                        setShowActions(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                    >
-                      {idea.is_pinned ? 'Unpin' : 'Pin'} Idea
-                    </button>
-                  </div>
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowActions(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            handlePinToggle();
+                            setShowActions(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                        >
+                          {idea.is_pinned ? 'Unpin' : 'Pin'} Idea
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setShowActions(false);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Idea
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -120,7 +153,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}>
             {idea.title}
           </h3>
-          
+
           <p className={classNames(
             'text-gray-600 mb-3',
             detailed ? 'text-base' : 'text-xs line-clamp-3'
@@ -129,7 +162,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           </p>
 
           {/* Outcome */}
-          {detailed && (
+          {detailed && idea.outcome && (
             <div className="bg-success-50 rounded-lg p-3 mb-4">
               <p className="text-xs text-success-700 font-medium mb-1">Expected Outcome</p>
               <p className="text-sm text-success-800">{idea.outcome}</p>
@@ -141,30 +174,33 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <div className="flex items-center gap-3 text-sm text-gray-500">
               <button
                 onClick={() => setShowVoteModal(true)}
-                className="flex items-center gap-1 hover:text-primary-600"
+                className={classNames(
+                  'flex items-center gap-1 hover:text-primary-600',
+                  idea.user_vote ? 'text-primary-600' : ''
+                )}
               >
-                <Star className="h-4 w-4" />
-                <span>{idea.vote_avg.toFixed(1)}</span>
-                <span className="text-xs">({idea.vote_count})</span>
+                <Star className={classNames('h-4 w-4', idea.user_vote ? 'fill-primary-600' : '')} />
+                <span>{idea.vote_avg?.toFixed(1) || '0.0'}</span>
+                <span className="text-xs">({idea.vote_count || 0})</span>
               </button>
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-4 w-4" />
-                {idea.comment_count}
+                {idea.comments_count || 0}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
                 <span className="text-xs font-medium text-primary-700">
-                  {idea.author.full_name.charAt(0).toUpperCase()}
+                  {authorName.charAt(0).toUpperCase()}
                 </span>
               </div>
               <span className="text-xs text-gray-500">{timeAgo(idea.created_at)}</span>
             </div>
           </div>
 
-          {/* Status Change (for author) */}
-          {isAuthor && detailed && (
+          {/* Status Change (for author or admin) */}
+          {canModify && detailed && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <Select
                 label="Change Status"
@@ -194,26 +230,55 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         }
       >
         <div className="space-y-4">
-          <p className="text-gray-600">Rate this idea from 1-10:</p>
-          <div className="flex items-center justify-center gap-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+          <p className="text-gray-600">Rate this idea from 1-5 stars:</p>
+          <div className="flex items-center justify-center gap-3">
+            {[1, 2, 3, 4, 5].map((stars) => (
               <button
-                key={score}
-                onClick={() => setVoteScore(score)}
+                key={stars}
+                onClick={() => setVoteStars(stars)}
                 className={classNames(
-                  'w-10 h-10 rounded-lg font-semibold transition-colors',
-                  voteScore === score
+                  'w-12 h-12 rounded-lg font-semibold transition-colors flex items-center justify-center',
+                  voteStars >= stars
                     ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 )}
               >
-                {score}
+                <Star className={classNames(
+                  'h-6 w-6',
+                  voteStars >= stars ? 'fill-white' : ''
+                )} />
               </button>
             ))}
           </div>
           <div className="flex justify-between text-sm text-gray-500">
             <span>Poor</span>
             <span>Excellent</span>
+          </div>
+          {idea.user_vote && (
+            <p className="text-center text-sm text-primary-600">
+              You previously voted: {idea.user_vote.stars} star{idea.user_vote.stars !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Idea"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete this idea? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
           </div>
         </div>
       </Modal>

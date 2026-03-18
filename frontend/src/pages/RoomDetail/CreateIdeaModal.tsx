@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { roomsApi } from '@/api/rooms';
+import { ideasApi } from '@/api/ideas';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 const createIdeaSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  outcome: z.string().min(5, 'Expected outcome must be at least 5 characters'),
+  outcome: z.string().optional(),
 });
 
 type CreateIdeaForm = z.infer<typeof createIdeaSchema>;
@@ -38,7 +38,12 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
 
   const onSubmit = async (data: CreateIdeaForm) => {
     try {
-      await roomsApi.createIdea(roomId, data);
+      await ideasApi.create({
+        room_id: roomId,
+        title: data.title,
+        description: data.description,
+        outcome: data.outcome || undefined,
+      });
       showToast({ type: 'success', message: 'Idea created successfully!' });
       reset();
       closeModal();
@@ -90,7 +95,7 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
         />
 
         <Textarea
-          label="Expected Outcome"
+          label="Expected Outcome (optional)"
           placeholder="What benefits will this idea bring?"
           rows={3}
           {...register('outcome')}

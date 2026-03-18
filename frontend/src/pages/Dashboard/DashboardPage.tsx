@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Lightbulb, 
-  MessageCircle, 
-  Rocket, 
+import {
+  Lightbulb,
+  MessageCircle,
   AlertCircle,
   TrendingUp,
-  Users
+  Users,
+  Rocket,
+  Activity
 } from 'lucide-react';
 import { dashboardApi } from '@/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import type { DashboardStats } from '@/types';
+import type { DashboardStats, TopContributor } from '@/types';
 
 const StatCard: React.FC<{
   title: string;
@@ -42,21 +43,26 @@ const StatCard: React.FC<{
 
 export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [contributors, setContributors] = useState<TopContributor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await dashboardApi.getStats();
-        setStats(data);
+        const [statsData, contributorsData] = await Promise.all([
+          dashboardApi.getStats(),
+          dashboardApi.getTopContributors(5),
+        ]);
+        setStats(statsData);
+        setContributors(contributorsData);
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error('Failed to fetch dashboard data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   if (isLoading) {
@@ -81,10 +87,10 @@ export const DashboardPage: React.FC = () => {
           value={stats?.total_ideas || 0}
           icon={Lightbulb}
           color="bg-primary-600"
-          trend="+12% this month"
+          trend={stats?.new_this_week ? `+${stats.new_this_week} this week` : undefined}
         />
         <StatCard
-          title="Problems Open"
+          title="Total Problems"
           value={stats?.total_problems || 0}
           icon={AlertCircle}
           color="bg-warning-500"
@@ -102,6 +108,47 @@ export const DashboardPage: React.FC = () => {
           color="bg-purple-500"
         />
       </div>
+
+      {/* Interaction Rate */}
+      {stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Card>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <Activity className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Interaction Rate</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {stats.interaction_rate?.toFixed(1) || 0}%
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <Rocket className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Resolved Problems</p>
+                <p className="text-xl font-bold text-gray-900">{stats.resolved_problems || 0}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="p-3 bg-yellow-100 rounded-xl">
+                <TrendingUp className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">New This Week</p>
+                <p className="text-xl font-bold text-gray-900">{stats.new_this_week || 0}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -123,14 +170,17 @@ export const DashboardPage: React.FC = () => {
                       <div
                         className="h-full bg-primary-600 rounded-full"
                         style={{
-                          width: `${stats.total_problems > 0 ? (count / stats.total_problems) * 100 : 0}%`,
+                          width: `${stats.total_problems > 0 ? ((count as number) / stats.total_problems) * 100 : 0}%`,
                         }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-900 w-8">{count}</span>
+                    <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
                   </div>
                 </div>
               ))}
+              {!stats?.problems_by_status && (
+                <p className="text-gray-500 text-sm text-center py-4">No data</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -145,8 +195,8 @@ export const DashboardPage: React.FC = () => {
                 <div key={status} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Badge variant={
-                      status === 'selected' ? 'success' : 
-                      status === 'ready' ? 'warning' : 
+                      status === 'selected' ? 'success' :
+                      status === 'ready' ? 'warning' :
                       status === 'rejected' ? 'danger' : 'default'
                     }>
                       {status}
@@ -157,61 +207,68 @@ export const DashboardPage: React.FC = () => {
                       <div
                         className="h-full bg-success-500 rounded-full"
                         style={{
-                          width: `${stats.total_ideas > 0 ? (count / stats.total_ideas) * 100 : 0}%`,
+                          width: `${stats.total_ideas > 0 ? ((count as number) / stats.total_ideas) * 100 : 0}%`,
                         }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-900 w-8">{count}</span>
+                    <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
                   </div>
                 </div>
               ))}
+              {!stats?.ideas_by_status && (
+                <p className="text-gray-500 text-sm text-center py-4">No data</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Top Contributors */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Contributors</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="divide-y divide-gray-200">
-            {stats?.top_contributors?.map((contributor, index) => (
-              <div key={contributor.user.id} className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
-                    {index + 1}
+      {contributors.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Contributors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y divide-gray-200">
+              {contributors.map((contributor, index) => (
+                <div key={contributor.user.id} className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
+                      {index + 1}
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {(contributor.user.full_name || contributor.user.username).charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {contributor.user.full_name || contributor.user.username}
+                      </p>
+                      <p className="text-xs text-gray-500">{contributor.user.team || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      {contributor.user.full_name.charAt(0).toUpperCase()}
+                  <div className="flex items-center gap-6 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <Lightbulb className="h-4 w-4" />
+                      {contributor.ideas_count} ideas
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      {contributor.problems_count} problems
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Rocket className="h-4 w-4" />
+                      {contributor.votes_received} votes
                     </span>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{contributor.user.full_name}</p>
-                    <p className="text-xs text-gray-500">{contributor.user.team}</p>
-                  </div>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Lightbulb className="h-4 w-4" />
-                    {contributor.ideas_count} ideas
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {contributor.problems_count} problems
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Rocket className="h-4 w-4" />
-                    {contributor.votes_received} votes
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

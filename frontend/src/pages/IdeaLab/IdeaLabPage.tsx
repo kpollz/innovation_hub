@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, LayoutGrid, List, Users, Lightbulb } from 'lucide-react';
+import { Plus, LayoutGrid, List, Lightbulb } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -12,54 +12,54 @@ import { timeAgo } from '@/utils/helpers';
 
 type ViewMode = 'list' | 'board';
 
-const RoomCard: React.FC<{ room: Room }> = ({ room }) => (
-  <Link to={`/rooms/${room.id}`}>
-    <Card hoverable className="h-full">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <Badge variant={room.status === 'active' ? 'success' : 'default'}>
-            {room.status}
-          </Badge>
-          {room.linked_problem && (
-            <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
-              Linked
-            </span>
-          )}
-        </div>
-        
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
-          {room.name}
-        </h3>
-        <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-          {room.description}
-        </p>
+const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
+  const creatorName = room.creator?.full_name || room.creator?.username || 'Unknown';
 
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <span className="flex items-center gap-1">
-            <Lightbulb className="h-4 w-4" />
-            {room.idea_count} ideas
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            {room.participant_count}
-          </span>
-        </div>
+  return (
+    <Link to={`/rooms/${room.id}`}>
+      <Card hoverable className="h-full">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between mb-3">
+            <Badge variant={room.status === 'active' ? 'success' : 'default'}>
+              {room.status}
+            </Badge>
+            {room.problem_id && (
+              <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                Linked
+              </span>
+            )}
+          </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
-            <span className="text-xs font-medium text-primary-700">
-              {room.facilitator.full_name.charAt(0).toUpperCase()}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+            {room.name}
+          </h3>
+          <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            {room.description}
+          </p>
+
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <Lightbulb className="h-4 w-4" />
+              {room.idea_count} ideas
             </span>
           </div>
-          <span className="text-xs text-gray-600">{room.facilitator.full_name}</span>
-          <span className="text-xs text-gray-400 ml-auto">
-            {timeAgo(room.created_at)}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-);
+
+          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
+              <span className="text-xs font-medium text-primary-700">
+                {creatorName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <span className="text-xs text-gray-600">{creatorName}</span>
+            <span className="text-xs text-gray-400 ml-auto">
+              {timeAgo(room.created_at)}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
 
 export const IdeaLabPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -87,7 +87,7 @@ export const IdeaLabPage: React.FC = () => {
   };
 
   const activeRooms = rooms.filter((r) => r.status === 'active');
-  const closedRooms = rooms.filter((r) => r.status === 'closed');
+  const archivedRooms = rooms.filter((r) => r.status === 'archived');
 
   return (
     <div className="space-y-6">
@@ -153,14 +153,14 @@ export const IdeaLabPage: React.FC = () => {
         )}
       </div>
 
-      {/* Closed Rooms */}
-      {closedRooms.length > 0 && (
+      {/* Archived Rooms */}
+      {archivedRooms.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Closed Rooms ({closedRooms.length})
+            Archived Rooms ({archivedRooms.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
-            {closedRooms.map((room) => (
+            {archivedRooms.map((room) => (
               <RoomCard key={room.id} room={room} />
             ))}
           </div>

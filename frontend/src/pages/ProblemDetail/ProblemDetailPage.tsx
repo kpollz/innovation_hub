@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  ThumbsUp, 
-  ThumbsDown, 
-  Lightbulb, 
+import {
+  ArrowLeft,
+  ThumbsUp,
+  ThumbsDown,
+  Lightbulb,
   MessageCircle,
   BrainCircuit,
   Edit,
@@ -37,16 +37,18 @@ export const ProblemDetailPage: React.FC = () => {
   const { showToast } = useUIStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
-  
+
   // Edit/Delete states
   const [showActions, setShowActions] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBrainstormModalOpen, setIsBrainstormModalOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<ProblemCategory>('process');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [brainstormName, setBrainstormName] = useState('');
+  const [brainstormDesc, setBrainstormDesc] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -73,15 +75,13 @@ export const ProblemDetailPage: React.FC = () => {
   const handleReaction = async (type: ReactionType) => {
     if (!id) return;
     try {
-      if (userReaction === type) {
+      if (selectedProblem?.user_reaction === type) {
         await problemsApi.removeReaction(id);
-        setUserReaction(null);
       } else {
         await problemsApi.addReaction(id, type);
-        setUserReaction(type);
       }
       fetchProblem(id);
-    } catch (error) {
+    } catch {
       showToast({ type: 'error', message: 'Failed to add reaction' });
     }
   };
@@ -95,7 +95,8 @@ export const ProblemDetailPage: React.FC = () => {
       showToast({ type: 'success', message: 'Comment added!' });
       setNewComment('');
       fetchComments();
-    } catch (error) {
+      fetchProblem(id);
+    } catch {
       showToast({ type: 'error', message: 'Failed to add comment' });
     }
   };
@@ -106,7 +107,7 @@ export const ProblemDetailPage: React.FC = () => {
       await problemsApi.update(id, { status: newStatus });
       showToast({ type: 'success', message: `Status changed to ${newStatus}` });
       fetchProblem(id);
-    } catch (error) {
+    } catch {
       showToast({ type: 'error', message: 'Failed to update status' });
     }
     setShowActions(false);
@@ -136,7 +137,7 @@ export const ProblemDetailPage: React.FC = () => {
       showToast({ type: 'success', message: 'Problem updated!' });
       setIsEditModalOpen(false);
       fetchProblem(id);
-    } catch (error) {
+    } catch {
       showToast({ type: 'error', message: 'Failed to update problem' });
     } finally {
       setIsSubmitting(false);
@@ -152,8 +153,30 @@ export const ProblemDetailPage: React.FC = () => {
       showToast({ type: 'success', message: 'Problem deleted!' });
       setIsDeleteModalOpen(false);
       navigate('/problems');
-    } catch (error) {
+    } catch {
       showToast({ type: 'error', message: 'Failed to delete problem' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateBrainstormRoom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !brainstormName.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await problemsApi.createRoom(id, {
+        name: brainstormName,
+        description: brainstormDesc || undefined,
+      });
+      showToast({ type: 'success', message: 'Brainstorming room created!' });
+      setIsBrainstormModalOpen(false);
+      setBrainstormName('');
+      setBrainstormDesc('');
+      fetchProblem(id);
+    } catch {
+      showToast({ type: 'error', message: 'Failed to create brainstorming room' });
     } finally {
       setIsSubmitting(false);
     }
@@ -201,7 +224,7 @@ export const ProblemDetailPage: React.FC = () => {
               <span className="text-sm text-gray-500">
                 Posted {timeAgo(selectedProblem.created_at)}
               </span>
-              
+
               {/* Actions Dropdown for Owner/Admin */}
               {canModify && (
                 <div className="relative">
@@ -211,10 +234,10 @@ export const ProblemDetailPage: React.FC = () => {
                   >
                     <MoreVertical className="h-5 w-5 text-gray-500" />
                   </button>
-                  
+
                   {showActions && (
                     <>
-                      <div 
+                      <div
                         className="fixed inset-0 z-10"
                         onClick={() => setShowActions(false)}
                       />
@@ -226,35 +249,30 @@ export const ProblemDetailPage: React.FC = () => {
                           <Edit className="h-4 w-4" />
                           Edit Problem
                         </button>
-                        
+
                         <div className="border-t border-gray-200 my-1" />
-                        
+
                         <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
-                        <button
-                          onClick={() => handleStatusChange('open')}
-                          className={classNames(
-                            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
-                            selectedProblem.status === 'open' ? 'text-primary-600' : 'text-gray-700'
-                          )}
-                        >
-                          <Circle className="h-4 w-4" />
-                          Open
-                          {selectedProblem.status === 'open' && <CheckCircle className="h-4 w-4 ml-auto" />}
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange('closed')}
-                          className={classNames(
-                            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
-                            selectedProblem.status === 'closed' ? 'text-green-600' : 'text-gray-700'
-                          )}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          Closed
-                          {selectedProblem.status === 'closed' && <CheckCircle className="h-4 w-4 ml-auto text-green-600" />}
-                        </button>
-                        
+                        {PROBLEM_STATUSES.map((s) => (
+                          <button
+                            key={s.value}
+                            onClick={() => handleStatusChange(s.value as ProblemStatus)}
+                            className={classNames(
+                              'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
+                              selectedProblem.status === s.value ? 'text-primary-600' : 'text-gray-700'
+                            )}
+                          >
+                            {selectedProblem.status === s.value ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <Circle className="h-4 w-4" />
+                            )}
+                            {s.label}
+                          </button>
+                        ))}
+
                         <div className="border-t border-gray-200 my-1" />
-                        
+
                         <button
                           onClick={() => {
                             setShowActions(false);
@@ -295,20 +313,34 @@ export const ProblemDetailPage: React.FC = () => {
                   {authorName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {selectedProblem.author?.team || 'N/A'}
+                  Author
                 </p>
               </div>
             </div>
 
-            {selectedProblem.linked_room_id && (
-              <Link
-                to={`/rooms/${selectedProblem.linked_room_id}`}
-                className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
-              >
-                <BrainCircuit className="h-4 w-4" />
-                View Brainstorming Room
-              </Link>
-            )}
+            <div className="flex items-center gap-3">
+              {selectedProblem.room_id ? (
+                <Link
+                  to={`/rooms/${selectedProblem.room_id}`}
+                  className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
+                >
+                  <BrainCircuit className="h-4 w-4" />
+                  View Brainstorming Room
+                </Link>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setBrainstormName(`Brainstorm: ${selectedProblem.title}`);
+                    setIsBrainstormModalOpen(true);
+                  }}
+                >
+                  <BrainCircuit className="h-4 w-4 mr-2" />
+                  Brainstorm Solutions
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -321,7 +353,7 @@ export const ProblemDetailPage: React.FC = () => {
               onClick={() => handleReaction('like')}
               className={classNames(
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
-                userReaction === 'like'
+                selectedProblem.user_reaction === 'like'
                   ? 'bg-primary-100 text-primary-700'
                   : 'hover:bg-gray-100 text-gray-600'
               )}
@@ -333,7 +365,7 @@ export const ProblemDetailPage: React.FC = () => {
               onClick={() => handleReaction('insight')}
               className={classNames(
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
-                userReaction === 'insight'
+                selectedProblem.user_reaction === 'insight'
                   ? 'bg-yellow-100 text-yellow-700'
                   : 'hover:bg-gray-100 text-gray-600'
               )}
@@ -345,12 +377,13 @@ export const ProblemDetailPage: React.FC = () => {
               onClick={() => handleReaction('dislike')}
               className={classNames(
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
-                userReaction === 'dislike'
+                selectedProblem.user_reaction === 'dislike'
                   ? 'bg-red-100 text-red-700'
                   : 'hover:bg-gray-100 text-gray-600'
               )}
             >
               <ThumbsDown className="h-5 w-5" />
+              <span>{selectedProblem.dislikes_count || 0}</span>
             </button>
           </div>
         </CardContent>
@@ -474,6 +507,36 @@ export const ProblemDetailPage: React.FC = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Create Brainstorm Room Modal */}
+      <Modal
+        isOpen={isBrainstormModalOpen}
+        onClose={() => setIsBrainstormModalOpen(false)}
+        title="Create Brainstorming Room"
+      >
+        <form onSubmit={handleCreateBrainstormRoom} className="space-y-4">
+          <Input
+            label="Room Name"
+            value={brainstormName}
+            onChange={(e) => setBrainstormName(e.target.value)}
+            required
+          />
+          <Textarea
+            label="Description (optional)"
+            value={brainstormDesc}
+            onChange={(e) => setBrainstormDesc(e.target.value)}
+            rows={3}
+          />
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setIsBrainstormModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Room'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

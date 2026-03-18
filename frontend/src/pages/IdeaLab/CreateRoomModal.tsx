@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,12 +10,11 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
-import { useEffect } from 'react';
 
 const createRoomSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  linked_problem_id: z.string().optional(),
+  problem_id: z.string().optional(),
 });
 
 type CreateRoomForm = z.infer<typeof createRoomSchema>;
@@ -32,7 +31,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
 
   useEffect(() => {
     if (isOpen) {
-      fetchProblems({ status: 'open', page_size: 100 });
+      fetchProblems({ status: 'open', limit: 100 });
     }
   }, [isOpen, fetchProblems]);
 
@@ -50,7 +49,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
       await roomsApi.create({
         name: data.name,
         description: data.description,
-        linked_problem_id: data.linked_problem_id || undefined,
+        problem_id: data.problem_id || undefined,
       });
       showToast({ type: 'success', message: 'Room created successfully!' });
       reset();
@@ -113,7 +112,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
         <Select
           label="Link to Problem (Optional)"
           options={problemOptions}
-          {...register('linked_problem_id')}
+          {...register('problem_id')}
         />
       </form>
     </Modal>

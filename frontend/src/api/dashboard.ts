@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { DashboardStats, User, Problem, Idea } from '@/types';
+import type { DashboardStats, TopContributor, Problem, Idea } from '@/types';
 
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
@@ -7,8 +7,8 @@ export const dashboardApi = {
     return response.data;
   },
 
-  getTopContributors: async (limit: number = 10): Promise<User[]> => {
-    const response = await apiClient.get<User[]>(`/dashboard/top-contributors?limit=${limit}`);
+  getTopContributors: async (limit: number = 10): Promise<TopContributor[]> => {
+    const response = await apiClient.get<TopContributor[]>(`/dashboard/top-contributors?limit=${limit}`);
     return response.data;
   },
 

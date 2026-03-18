@@ -12,11 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  full_name: z.string().min(1, 'Full name is required'),
-  team: z.string().min(1, 'Team is required'),
-  department: z.string().min(1, 'Department is required'),
+  email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  full_name: z.string().optional(),
+  team: z.string().optional(),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -46,9 +45,15 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterForm) => {
     try {
-      await registerUser(data);
-      showToast({ type: 'success', message: 'Registration successful! Please sign in.' });
-      navigate('/login');
+      await registerUser({
+        username: data.username,
+        password: data.password,
+        email: data.email || undefined,
+        full_name: data.full_name || undefined,
+        team: data.team || undefined,
+      });
+      showToast({ type: 'success', message: 'Welcome to Innovation Hub!' });
+      navigate('/');
     } catch {
       showToast({ type: 'error', message: 'Registration failed. Please try again.' });
     }
@@ -73,45 +78,38 @@ export const RegisterPage: React.FC = () => {
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <Input
-                label="Username"
+                label="Username *"
                 type="text"
                 {...register('username')}
                 error={errors.username?.message}
               />
 
               <Input
-                label="Email"
-                type="email"
-                {...register('email')}
-                error={errors.email?.message}
-              />
-
-              <Input
-                label="Password"
+                label="Password *"
                 type="password"
                 {...register('password')}
                 error={errors.password?.message}
               />
 
               <Input
-                label="Full Name"
+                label="Email (optional)"
+                type="email"
+                {...register('email')}
+                error={errors.email?.message}
+              />
+
+              <Input
+                label="Full Name (optional)"
                 type="text"
                 {...register('full_name')}
                 error={errors.full_name?.message}
               />
 
               <Input
-                label="Team"
+                label="Team (optional)"
                 type="text"
                 {...register('team')}
                 error={errors.team?.message}
-              />
-
-              <Input
-                label="Department"
-                type="text"
-                {...register('department')}
-                error={errors.department?.message}
               />
 
               {error && (

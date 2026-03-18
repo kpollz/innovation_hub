@@ -8,7 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   login: (credentials: UserLogin) => Promise<void>;
   register: (data: UserRegister) => Promise<void>;
@@ -31,15 +31,15 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.login(credentials);
           localStorage.setItem('access_token', response.access_token);
           localStorage.setItem('refresh_token', response.refresh_token);
-          set({ 
-            user: response.user, 
-            isAuthenticated: true, 
-            isLoading: false 
+          set({
+            user: response.user,
+            isAuthenticated: true,
+            isLoading: false
           });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Login failed', 
-            isLoading: false 
+          set({
+            error: error instanceof Error ? error.message : 'Login failed',
+            isLoading: false
           });
           throw error;
         }
@@ -48,12 +48,18 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          await authApi.register(data);
-          set({ isLoading: false });
+          const response = await authApi.register(data);
+          localStorage.setItem('access_token', response.access_token);
+          localStorage.setItem('refresh_token', response.refresh_token);
+          set({
+            user: response.user,
+            isAuthenticated: true,
+            isLoading: false
+          });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Registration failed', 
-            isLoading: false 
+          set({
+            error: error instanceof Error ? error.message : 'Registration failed',
+            isLoading: false
           });
           throw error;
         }
@@ -62,10 +68,10 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        set({ 
-          user: null, 
-          isAuthenticated: false, 
-          error: null 
+        set({
+          user: null,
+          isAuthenticated: false,
+          error: null
         });
       },
 
@@ -80,13 +86,13 @@ export const useAuthStore = create<AuthState>()(
         try {
           const user = await authApi.getMe();
           set({ user, isAuthenticated: true, isLoading: false });
-        } catch (error) {
+        } catch {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          set({ 
-            user: null, 
-            isAuthenticated: false, 
-            isLoading: false 
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false
           });
         }
       },

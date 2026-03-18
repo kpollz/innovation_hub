@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
+import { ideasApi } from '@/api/ideas';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -38,12 +39,12 @@ export const RoomDetailPage: React.FC = () => {
   const fetchRoomData = async () => {
     if (!id) return;
     try {
-      const [roomData, ideasData] = await Promise.all([
+      const [roomData, ideasResponse] = await Promise.all([
         roomsApi.getById(id),
-        roomsApi.listIdeas(id),
+        ideasApi.list({ room_id: id }),
       ]);
       setRoom(roomData);
-      setIdeas(ideasData);
+      setIdeas(ideasResponse.items);
     } catch (error) {
       console.error('Failed to fetch room data:', error);
     } finally {
@@ -100,17 +101,17 @@ export const RoomDetailPage: React.FC = () => {
               </Badge>
             </div>
             <p className="text-gray-600">{room.description}</p>
-            
-            {room.linked_problem && (
+
+            {room.problem_id && (
               <div className="mt-4 p-3 bg-primary-50 rounded-lg flex items-center gap-3">
                 <BrainCircuit className="h-5 w-5 text-primary-600" />
                 <div>
                   <p className="text-xs text-primary-600 font-medium">Linked Problem</p>
                   <Link
-                    to={`/problems/${room.linked_problem.id}`}
+                    to={`/problems/${room.problem_id}`}
                     className="text-sm text-primary-700 hover:underline"
                   >
-                    {room.linked_problem.title}
+                    View linked problem
                   </Link>
                 </div>
               </div>
@@ -155,7 +156,7 @@ export const RoomDetailPage: React.FC = () => {
           {KANBAN_COLUMNS.map((column) => {
             const columnIdeas = getIdeasByStatus(column.status);
             const statusConfig = IDEA_STATUSES.find((s) => s.value === column.status);
-            
+
             return (
               <div key={column.status} className="bg-gray-100 rounded-xl p-3">
                 <div className="flex items-center justify-between mb-3">
@@ -169,7 +170,6 @@ export const RoomDetailPage: React.FC = () => {
                     <IdeaCard
                       key={idea.id}
                       idea={idea}
-                      roomId={room.id}
                       onUpdate={fetchRoomData}
                     />
                   ))}
@@ -197,7 +197,6 @@ export const RoomDetailPage: React.FC = () => {
               <IdeaCard
                 key={idea.id}
                 idea={idea}
-                roomId={room.id}
                 onUpdate={fetchRoomData}
                 detailed
               />

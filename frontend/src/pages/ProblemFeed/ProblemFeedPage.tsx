@@ -17,15 +17,15 @@ const sortOptions = [
 
 export const ProblemFeedPage: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    problems, 
-    totalProblems, 
-    currentPage, 
-    totalPages, 
-    filters, 
-    isLoading, 
-    fetchProblems, 
-    setFilters 
+  const {
+    problems,
+    totalProblems,
+    currentPage,
+    totalPages,
+    filters,
+    isLoading,
+    fetchProblems,
+    setFilters
   } = useProblemStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -51,10 +51,6 @@ export const ProblemFeedPage: React.FC = () => {
     fetchProblems({ ...filters, page });
   };
 
-  const handleCreateProblem = () => {
-    navigate('/problems/new');
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -65,7 +61,7 @@ export const ProblemFeedPage: React.FC = () => {
             {totalProblems} problems shared by the community
           </p>
         </div>
-        <Button onClick={handleCreateProblem} leftIcon={<Plus className="h-4 w-4" />}>
+        <Button onClick={() => navigate('/problems/new')} leftIcon={<Plus className="h-4 w-4" />}>
           Share Problem
         </Button>
       </div>
@@ -112,8 +108,8 @@ export const ProblemFeedPage: React.FC = () => {
             />
             <Select
               label="Sort By"
-              value={filters.sort_by || 'newest'}
-              onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+              value={filters.sort || 'newest'}
+              onChange={(e) => handleFilterChange('sort', e.target.value)}
               options={sortOptions}
             />
           </div>
@@ -128,7 +124,7 @@ export const ProblemFeedPage: React.FC = () => {
       ) : problems.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
           <p className="text-gray-500">No problems found</p>
-          <Button variant="secondary" className="mt-4" onClick={handleCreateProblem}>
+          <Button variant="secondary" className="mt-4" onClick={() => navigate('/problems/new')}>
             Share the first problem
           </Button>
         </div>

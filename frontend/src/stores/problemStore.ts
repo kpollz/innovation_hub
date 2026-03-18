@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { problemsApi } from '@/api/problems';
-import type { 
-  Problem, 
-  CreateProblem, 
-  UpdateProblem, 
+import type {
+  Problem,
+  CreateProblem,
+  UpdateProblem,
   ProblemFilters,
-  PaginatedResponse 
+  PaginatedResponse
 } from '@/types';
 
 interface ProblemState {
@@ -13,12 +13,11 @@ interface ProblemState {
   selectedProblem: Problem | null;
   totalProblems: number;
   currentPage: number;
-  pageSize: number;
   totalPages: number;
   filters: ProblemFilters;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   fetchProblems: (filters?: ProblemFilters) => Promise<void>;
   fetchProblem: (id: string) => Promise<void>;
@@ -30,10 +29,12 @@ interface ProblemState {
   clearError: () => void;
 }
 
+const DEFAULT_PAGE_LIMIT = 10;
+
 const DEFAULT_FILTERS: ProblemFilters = {
   page: 1,
-  page_size: 10,
-  sort_by: 'newest',
+  limit: DEFAULT_PAGE_LIMIT,
+  sort: 'newest',
 };
 
 export const useProblemStore = create<ProblemState>((set, get) => ({
@@ -41,7 +42,6 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
   selectedProblem: null,
   totalProblems: 0,
   currentPage: 1,
-  pageSize: 10,
   totalPages: 0,
   filters: DEFAULT_FILTERS,
   isLoading: false,
@@ -52,19 +52,19 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
     try {
       const mergedFilters = { ...get().filters, ...filters };
       const response: PaginatedResponse<Problem> = await problemsApi.list(mergedFilters);
-      set({ 
+      const limit = mergedFilters.limit || DEFAULT_PAGE_LIMIT;
+      set({
         problems: response.items,
         totalProblems: response.total,
         currentPage: response.page,
-        pageSize: response.page_size,
-        totalPages: response.pages,
+        totalPages: Math.ceil(response.total / limit),
         filters: mergedFilters,
         isLoading: false,
       });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch problems',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -75,9 +75,9 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
       const problem = await problemsApi.getById(id);
       set({ selectedProblem: problem, isLoading: false });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch problem',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -86,16 +86,16 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const problem = await problemsApi.create(data);
-      set((state) => ({ 
+      set((state) => ({
         problems: [problem, ...state.problems],
         totalProblems: state.totalProblems + 1,
-        isLoading: false 
+        isLoading: false
       }));
       return problem;
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to create problem',
-        isLoading: false 
+        isLoading: false
       });
       throw error;
     }
@@ -111,9 +111,9 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to update problem',
-        isLoading: false 
+        isLoading: false
       });
       throw error;
     }
@@ -129,9 +129,9 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to delete problem',
-        isLoading: false 
+        isLoading: false
       });
       throw error;
     }

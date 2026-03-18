@@ -60,7 +60,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
               </span>
             </div>
 
-            {problem.linked_room_id && (
+            {problem.room_id && (
               <span className="flex items-center gap-1 text-xs text-primary-600">
                 <BrainCircuit className="h-3.5 w-3.5" />
                 Brainstorming
@@ -75,7 +75,6 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
               </span>
             </div>
             <span className="text-sm text-gray-700">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
-            {problem.author?.team && <span className="text-xs text-gray-500">• {problem.author.team}</span>}
           </div>
         </CardContent>
       </Link>

@@ -12,6 +12,7 @@ export const PROBLEM_CATEGORIES = [
 
 export const PROBLEM_STATUSES = [
   { value: 'open', label: 'Open', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'discussing', label: 'Discussing', color: 'bg-indigo-100 text-indigo-800' },
   { value: 'brainstorming', label: 'Brainstorming', color: 'bg-blue-100 text-blue-800' },
   { value: 'solved', label: 'Solved', color: 'bg-green-100 text-green-800' },
   { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800' },
