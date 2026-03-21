@@ -41,4 +41,8 @@ export const roomsApi = {
     const response = await apiClient.patch<Room>(`/rooms/${id}`, data);
     return response.data;
   },
+
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/rooms/${id}`);
+  },
 };

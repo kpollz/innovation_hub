@@ -122,3 +122,21 @@ async def update_room(
 
     updated = await room_repo.update(room)
     return await enrich_room(updated, user_repo, idea_repo)
+
+
+@router.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_room(
+    room_id: UUID,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
+):
+    """Delete a room (creator or admin only)."""
+    room = await room_repo.get_by_id(room_id)
+    if not room:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
+
+    if room.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+
+    await room_repo.delete(room_id)
+    return None

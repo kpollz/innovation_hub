@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
+import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { CreateIdeaModal } from './CreateIdeaModal';
 import { IdeaCard } from './IdeaCard';
 import type { Room, Idea, IdeaStatus } from '@/types';
@@ -24,11 +26,25 @@ const KANBAN_COLUMNS: { status: IdeaStatus; title: string }[] = [
 
 export const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [room, setRoom] = useState<Room | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
-  const { showModal } = useUIStore();
+  const { showModal, showToast } = useUIStore();
+
+  // Edit/Delete states
+  const [showActions, setShowActions] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const canModify = user && room && (
+    user.id === room.created_by || user.role === 'admin'
+  );
 
   useEffect(() => {
     if (id) {
@@ -54,6 +70,50 @@ export const RoomDetailPage: React.FC = () => {
 
   const openCreateIdeaModal = () => {
     showModal({ type: 'createIdea' });
+  };
+
+  const openEditModal = () => {
+    if (!room) return;
+    setEditName(room.name);
+    setEditDescription(room.description || '');
+    setIsEditModalOpen(true);
+    setShowActions(false);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !editName.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const updated = await roomsApi.update(id, {
+        name: editName.trim(),
+        description: editDescription.trim() || undefined,
+      });
+      setRoom(updated);
+      showToast({ type: 'success', message: 'Room updated!' });
+      setIsEditModalOpen(false);
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      showToast({ type: 'error', message: detail || 'Failed to update room' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      await roomsApi.delete(id);
+      showToast({ type: 'success', message: 'Room deleted!' });
+      setIsDeleteModalOpen(false);
+      navigate('/rooms');
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      showToast({ type: 'error', message: detail || 'Failed to delete room' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getIdeasByStatus = (status: IdeaStatus) => {
@@ -146,6 +206,45 @@ export const RoomDetailPage: React.FC = () => {
             <Button onClick={openCreateIdeaModal} leftIcon={<Plus className="h-4 w-4" />}>
               Add Idea
             </Button>
+
+            {canModify && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowActions(!showActions)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="h-5 w-5 text-gray-500" />
+                </button>
+                {showActions && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowActions(false)}
+                    />
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                      <button
+                        onClick={openEditModal}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Room
+                      </button>
+                      <div className="border-t border-gray-200 my-1" />
+                      <button
+                        onClick={() => {
+                          setShowActions(false);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Room
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -206,6 +305,58 @@ export const RoomDetailPage: React.FC = () => {
       )}
 
       <CreateIdeaModal roomId={room.id} onSuccess={fetchRoomData} />
+
+      {/* Edit Room Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Room">
+        <form onSubmit={handleEdit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+              minLength={3}
+              maxLength={255}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              rows={3}
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Room">
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete this room? All ideas in this room will also be removed. This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
+              {isSubmitting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

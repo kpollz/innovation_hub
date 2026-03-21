@@ -371,7 +371,12 @@ Authorization: Bearer <access_token>
 
 **Response:** RoomObject
 
-### 5.5 POST `/problems/{problem_id}/rooms` — Tạo phòng từ vấn đề (1-click) 🔒
+### 5.5 DELETE `/rooms/{room_id}` — Xóa phòng 🔒
+- **Quyền**: Người tạo hoặc Admin
+- **Status**: 204 No Content
+- **Error**: 404 Not Found, 403 Forbidden
+
+### 5.6 POST `/problems/{problem_id}/rooms` — Tạo phòng từ vấn đề (1-click) 🔒
 - **Status**: 201 Created
 - **Error**: 409 Conflict nếu problem đã có room liên kết (`"A room already exists for this problem"`)
 - **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. Mỗi problem chỉ được liên kết tối đa 1 room.
