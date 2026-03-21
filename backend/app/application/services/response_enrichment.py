@@ -33,9 +33,16 @@ async def enrich_problem(
     reaction_repo,
     comment_repo,
     current_user_id: Optional[UUID] = None,
+    room_repo=None,
 ) -> ProblemResponseDTO:
     """Enrich a single problem with author, counts, and user reaction."""
     dto = ProblemResponseDTO.model_validate(problem)
+
+    # Room linkback (Problem doesn't store room_id; look it up via Room.problem_id)
+    if room_repo and not dto.room_id:
+        linked_room = await room_repo.get_by_problem_id(problem.id)
+        if linked_room:
+            dto.room_id = linked_room.id
 
     # Author
     author = await user_repo.get_by_id(problem.author_id)
@@ -68,6 +75,7 @@ async def enrich_problems(
     reaction_repo,
     comment_repo,
     current_user_id: Optional[UUID] = None,
+    room_repo=None,
 ) -> List[ProblemResponseDTO]:
     """Enrich a list of problems (batch)."""
     if not problems:
@@ -84,6 +92,12 @@ async def enrich_problems(
     results = []
     for problem in problems:
         dto = ProblemResponseDTO.model_validate(problem)
+
+        # Room linkback
+        if room_repo and not dto.room_id:
+            linked_room = await room_repo.get_by_problem_id(problem.id)
+            if linked_room:
+                dto.room_id = linked_room.id
 
         # Author
         author = authors.get(problem.author_id)

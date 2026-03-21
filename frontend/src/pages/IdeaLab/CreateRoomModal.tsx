@@ -55,8 +55,9 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
       reset();
       closeModal();
       onSuccess();
-    } catch {
-      showToast({ type: 'error', message: 'Failed to create room' });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      showToast({ type: 'error', message: detail || 'Failed to create room' });
     }
   };
 

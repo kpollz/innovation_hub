@@ -64,15 +64,17 @@ async def create_room(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="A room already exists for this problem",
             )
+        # Transition problem status to brainstorming
         from app.domain.value_objects.status import ProblemStatus
         try:
             problem.transition_to(ProblemStatus.BRAINSTORMING)
             await problem_repo.update(problem)
         except ValueError:
-            pass  # Allow room creation even if status transition fails
+            pass  # Already in brainstorming or later status
 
     use_case = CreateRoomUseCase(room_repo)
     room = await use_case.execute(data, current_user.id)
+
     return await enrich_room(room, user_repo, idea_repo)
 
 

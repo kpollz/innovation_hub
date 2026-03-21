@@ -188,11 +188,12 @@ async def get_recent_problems(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Get most recent problems with enriched data."""
     problems, _ = await problem_repo.list({}, page=1, limit=limit)
     return await enrich_problems(
-        problems, user_repo, reaction_repo, comment_repo, current_user.id
+        problems, user_repo, reaction_repo, comment_repo, current_user.id, room_repo
     )
 
 

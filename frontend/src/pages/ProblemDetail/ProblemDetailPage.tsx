@@ -175,8 +175,9 @@ export const ProblemDetailPage: React.FC = () => {
       setBrainstormName('');
       setBrainstormDesc('');
       fetchProblem(id);
-    } catch {
-      showToast({ type: 'error', message: 'Failed to create brainstorming room' });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      showToast({ type: 'error', message: detail || 'Failed to create brainstorming room' });
     } finally {
       setIsSubmitting(false);
     }

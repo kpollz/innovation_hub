@@ -58,6 +58,7 @@ async def list_problems(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """List problems with pagination, filters, and enriched data."""
     current_user_id = await _get_optional_user_id(request)
@@ -65,7 +66,7 @@ async def list_problems(
         filters.model_dump(exclude_none=True), page, limit
     )
     items = await enrich_problems(
-        problems, user_repo, reaction_repo, comment_repo, current_user_id
+        problems, user_repo, reaction_repo, comment_repo, current_user_id, room_repo
     )
     return ProblemListResponseDTO(items=items, total=total, page=page, limit=limit)
 
@@ -78,12 +79,13 @@ async def create_problem(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Create a new problem."""
     use_case = CreateProblemUseCase(problem_repo)
     problem = await use_case.execute(data, current_user.id)
     return await enrich_problem(
-        problem, user_repo, reaction_repo, comment_repo, current_user.id
+        problem, user_repo, reaction_repo, comment_repo, current_user.id, room_repo
     )
 
 
@@ -95,6 +97,7 @@ async def get_problem(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Get a problem by ID with enriched data."""
     current_user_id = await _get_optional_user_id(request)
@@ -105,7 +108,7 @@ async def get_problem(
             detail="Problem not found",
         )
     return await enrich_problem(
-        problem, user_repo, reaction_repo, comment_repo, current_user_id
+        problem, user_repo, reaction_repo, comment_repo, current_user_id, room_repo
     )
 
 
@@ -118,6 +121,7 @@ async def update_problem(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Update a problem."""
     use_case = UpdateProblemUseCase(problem_repo)
@@ -125,7 +129,7 @@ async def update_problem(
         problem_id, data, current_user.id, current_user.role == "admin"
     )
     return await enrich_problem(
-        problem, user_repo, reaction_repo, comment_repo, current_user.id
+        problem, user_repo, reaction_repo, comment_repo, current_user.id, room_repo
     )
 
 
@@ -193,7 +197,7 @@ async def create_room_from_problem(
         problem.transition_to(ProblemStatus.BRAINSTORMING)
         await problem_repo.update(problem)
     except ValueError:
-        pass  # Allow room creation even if status transition fails
+        pass  # Already in brainstorming or later status
 
     # Create the room
     from app.application.dto.room_dto import CreateRoomDTO
@@ -204,4 +208,5 @@ async def create_room_from_problem(
     )
     use_case = CreateRoomUseCase(room_repo)
     room = await use_case.execute(room_dto, current_user.id)
+
     return await enrich_room(room, user_repo, idea_repo)
