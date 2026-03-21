@@ -271,8 +271,9 @@ export const ProblemDetailPage: React.FC = () => {
                           const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
                           const currentIdx = order.indexOf(current);
                           const targetIdx = order.indexOf(s.value);
-                          // Only show forward transitions (not current or past)
-                          return targetIdx > currentIdx;
+                          // Only show manual transitions: solved, closed (discussing/brainstorming are auto)
+                          const manualOnly = ['solved', 'closed'];
+                          return targetIdx > currentIdx && manualOnly.includes(s.value);
                         }).map((s) => (
                           <button
                             key={s.value}

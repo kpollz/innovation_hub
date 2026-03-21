@@ -37,6 +37,15 @@ class UpdateProblemUseCase:
         if dto.category is not None:
             problem.category = dto.category
         if dto.status is not None:
+            from app.domain.value_objects.status import ProblemStatus as PS
+            # discussing/brainstorming are auto-transitions only
+            auto_only = {PS.DISCUSSING, PS.BRAINSTORMING}
+            if dto.status in auto_only:
+                from fastapi import HTTPException, status
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"'{dto.status.value}' is auto-transitioned by the system and cannot be set manually"
+                )
             if not problem.can_transition_to(dto.status):
                 from fastapi import HTTPException, status
                 raise HTTPException(
