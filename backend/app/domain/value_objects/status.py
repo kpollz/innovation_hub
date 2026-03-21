@@ -20,8 +20,8 @@ class ProblemStatus(str, Enum):
             cls.OPEN: [cls.DISCUSSING, cls.BRAINSTORMING, cls.CLOSED],
             cls.DISCUSSING: [cls.BRAINSTORMING, cls.SOLVED, cls.CLOSED],
             cls.BRAINSTORMING: [cls.SOLVED, cls.CLOSED],
-            cls.SOLVED: [cls.CLOSED],
-            cls.CLOSED: []
+            cls.SOLVED: [],   # terminal status (parallel with closed)
+            cls.CLOSED: []    # terminal status (parallel with solved)
         }
 
 

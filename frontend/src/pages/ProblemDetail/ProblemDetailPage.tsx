@@ -107,9 +107,9 @@ export const ProblemDetailPage: React.FC = () => {
   const handleStatusChange = async (newStatus: ProblemStatus) => {
     if (!id || !canModify) return;
     try {
-      await problemsApi.update(id, { status: newStatus });
+      const updated = await problemsApi.update(id, { status: newStatus });
+      useProblemStore.setState({ selectedProblem: updated });
       showToast({ type: 'success', message: `Status changed to ${newStatus}` });
-      fetchProblem(id);
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       showToast({ type: 'error', message: detail || 'Failed to update status' });
@@ -265,16 +265,21 @@ export const ProblemDetailPage: React.FC = () => {
 
                         <div className="border-t border-gray-200 my-1" />
 
-                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
-                        {PROBLEM_STATUSES.filter((s) => {
+                        {(() => {
                           const current = selectedProblem.status;
+                          const terminal = ['solved', 'closed'];
+                          // Terminal statuses have no further transitions
+                          if (terminal.includes(current)) return null;
                           const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
                           const currentIdx = order.indexOf(current);
-                          const targetIdx = order.indexOf(s.value);
-                          // Only show manual transitions: solved, closed (discussing/brainstorming are auto)
-                          const manualOnly = ['solved', 'closed'];
-                          return targetIdx > currentIdx && manualOnly.includes(s.value);
-                        }).map((s) => (
+                          const options = PROBLEM_STATUSES.filter((s) => {
+                            const targetIdx = order.indexOf(s.value);
+                            return targetIdx > currentIdx && terminal.includes(s.value);
+                          });
+                          if (options.length === 0) return null;
+                          return (<>
+                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
+                        {options.map((s) => (
                           <button
                             key={s.value}
                             onClick={() => handleStatusChange(s.value as ProblemStatus)}
@@ -284,6 +289,8 @@ export const ProblemDetailPage: React.FC = () => {
                             {s.label}
                           </button>
                         ))}
+                          </>);
+                        })()}
 
                         <div className="border-t border-gray-200 my-1" />
 
@@ -341,7 +348,7 @@ export const ProblemDetailPage: React.FC = () => {
                   <BrainCircuit className="h-4 w-4" />
                   View Brainstorming Room
                 </Link>
-              ) : (
+              ) : !['solved', 'closed'].includes(selectedProblem.status) ? (
                 <Button
                   variant="secondary"
                   size="sm"
@@ -353,7 +360,7 @@ export const ProblemDetailPage: React.FC = () => {
                   <BrainCircuit className="h-4 w-4 mr-2" />
                   Brainstorm Solutions
                 </Button>
-              )}
+              ) : null}
             </div>
           </div>
         </CardContent>

@@ -51,11 +51,18 @@ async def create_room(
     """Create a new room. If problem_id is provided, link to problem and update its status."""
     # If linked to a problem, transition problem to brainstorming
     if data.problem_id:
+        from app.domain.value_objects.status import ProblemStatus
         problem = await problem_repo.get_by_id(data.problem_id)
         if not problem:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Linked problem not found",
+            )
+        # Block room creation for terminal statuses
+        if problem.status in (ProblemStatus.SOLVED, ProblemStatus.CLOSED):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot create room for a problem with status '{problem.status.value}'",
             )
         # Check if room already exists for this problem
         existing_room = await room_repo.get_by_problem_id(data.problem_id)
@@ -65,7 +72,6 @@ async def create_room(
                 detail="A room already exists for this problem",
             )
         # Transition problem status to brainstorming
-        from app.domain.value_objects.status import ProblemStatus
         try:
             problem.transition_to(ProblemStatus.BRAINSTORMING)
             await problem_repo.update(problem)

@@ -183,6 +183,14 @@ async def create_room_from_problem(
             status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found"
         )
 
+    # Block room creation for terminal statuses
+    from app.domain.value_objects.status import ProblemStatus
+    if problem.status in (ProblemStatus.SOLVED, ProblemStatus.CLOSED):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot create room for a problem with status '{problem.status.value}'",
+        )
+
     # Check if room already exists for this problem
     existing_room = await room_repo.get_by_problem_id(problem_id)
     if existing_room:

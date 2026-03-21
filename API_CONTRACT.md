@@ -644,9 +644,11 @@ Authorization: Bearer <access_token>
 
 ### Problem Status
 ```
-open → discussing → brainstorming → solved → closed
-  ↓         ↑              ↑
-  └─────────┘──────────────┘ (open có thể chuyển thẳng sang brainstorming)
+open → discussing → brainstorming → solved
+  ↓         ↑              ↑      → closed
+  └─────────┘──────────────┘
+  (open có thể chuyển thẳng sang brainstorming)
+  (solved và closed là 2 trạng thái terminal ngang hàng)
 ```
 
 **Auto-transitions (hệ thống tự chuyển):**
@@ -660,9 +662,12 @@ open → discussing → brainstorming → solved → closed
 |----|------|-------------|
 | brainstorming | solved | Author hoặc Admin |
 | brainstorming | closed | Author hoặc Admin |
-| solved | closed | Author hoặc Admin |
 
-> **Lưu ý**: FE chỉ hiển thị các status hợp lệ tiến về phía trước trong dropdown. Các status tự động (discussing, brainstorming) không cần hiển thị trong dropdown vì được hệ thống tự chuyển.
+> **Lưu ý**:
+> - `solved` và `closed` là 2 trạng thái terminal ngang hàng, không chuyển đổi qua lại.
+> - `solved`: Problem đã có giải pháp. `closed`: Problem bị đóng/không giải quyết được.
+> - Khi problem ở trạng thái `solved` hoặc `closed`, không thể tạo brainstorm room mới.
+> - FE chỉ hiển thị các status hợp lệ trong dropdown. Các status tự động (discussing, brainstorming) không hiển thị.
 
 ### Idea Status
 ```
