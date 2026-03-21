@@ -1,7 +1,7 @@
 """Room SQLAlchemy model."""
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,12 +15,8 @@ if TYPE_CHECKING:
 
 class RoomModel(BaseModel):
     """Room ORM model."""
-    
+
     __tablename__ = "rooms"
-    
-    __table_args__ = (
-        UniqueConstraint("problem_id", name="uq_room_problem"),
-    )
     
     problem_id: Mapped[Optional[str]] = mapped_column(
         PGUUID(as_uuid=False),

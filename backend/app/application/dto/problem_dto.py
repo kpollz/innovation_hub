@@ -46,6 +46,13 @@ class ProblemAuthorDTO(BaseModel):
     avatar_url: Optional[str] = None
 
 
+class ProblemRoomSummaryDTO(BaseModel):
+    """Lightweight room info embedded in problem response."""
+    id: UUID
+    name: str
+    status: str
+
+
 # Output DTOs
 class ProblemResponseDTO(BaseModel):
     """Output for problem data."""
@@ -59,7 +66,8 @@ class ProblemResponseDTO(BaseModel):
     status: ProblemStatus
     author_id: UUID
     author: Optional[ProblemAuthorDTO] = None
-    room_id: Optional[UUID] = None
+    room_id: Optional[UUID] = None  # deprecated: first room id for backwards compat
+    rooms: List[ProblemRoomSummaryDTO] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
     likes_count: int = 0

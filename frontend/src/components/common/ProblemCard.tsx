@@ -60,10 +60,10 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
               </span>
             </div>
 
-            {problem.room_id && (
+            {problem.rooms?.length > 0 && (
               <span className="flex items-center gap-1 text-xs text-primary-600">
                 <BrainCircuit className="h-3.5 w-3.5" />
-                Brainstorming
+                {problem.rooms.length} room{problem.rooms.length > 1 ? 's' : ''}
               </span>
             )}
           </div>

@@ -11,7 +11,7 @@ from app.domain.entities.idea import Idea
 from app.domain.entities.room import Room
 from app.domain.entities.comment import Comment
 from app.domain.entities.reaction import ReactionType
-from app.application.dto.problem_dto import ProblemResponseDTO, ProblemAuthorDTO
+from app.application.dto.problem_dto import ProblemResponseDTO, ProblemAuthorDTO, ProblemRoomSummaryDTO
 from app.application.dto.idea_dto import IdeaResponseDTO, IdeaAuthorDTO, UserVoteDTO
 from app.application.dto.room_dto import RoomResponseDTO, RoomCreatorDTO
 from app.application.dto.comment_dto import CommentResponseDTO, CommentAuthorDTO
@@ -39,10 +39,14 @@ async def enrich_problem(
     dto = ProblemResponseDTO.model_validate(problem)
 
     # Room linkback (Problem doesn't store room_id; look it up via Room.problem_id)
-    if room_repo and not dto.room_id:
-        linked_room = await room_repo.get_by_problem_id(problem.id)
-        if linked_room:
-            dto.room_id = linked_room.id
+    if room_repo:
+        linked_rooms = await room_repo.list_by_problem_id(problem.id)
+        if linked_rooms:
+            dto.room_id = linked_rooms[0].id  # backwards compat
+            dto.rooms = [
+                ProblemRoomSummaryDTO(id=r.id, name=r.name, status=r.status.value)
+                for r in linked_rooms
+            ]
 
     # Author
     author = await user_repo.get_by_id(problem.author_id)
@@ -94,10 +98,14 @@ async def enrich_problems(
         dto = ProblemResponseDTO.model_validate(problem)
 
         # Room linkback
-        if room_repo and not dto.room_id:
-            linked_room = await room_repo.get_by_problem_id(problem.id)
-            if linked_room:
-                dto.room_id = linked_room.id
+        if room_repo:
+            linked_rooms = await room_repo.list_by_problem_id(problem.id)
+            if linked_rooms:
+                dto.room_id = linked_rooms[0].id  # backwards compat
+                dto.rooms = [
+                    ProblemRoomSummaryDTO(id=r.id, name=r.name, status=r.status.value)
+                    for r in linked_rooms
+                ]
 
         # Author
         author = authors.get(problem.author_id)

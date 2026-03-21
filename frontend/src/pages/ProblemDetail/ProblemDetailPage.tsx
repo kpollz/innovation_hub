@@ -186,10 +186,17 @@ export const ProblemDetailPage: React.FC = () => {
       setIsBrainstormModalOpen(false);
       setBrainstormName('');
       setBrainstormDesc('');
-      fetchProblem(id);
+      // Refresh problem silently to update rooms list
+      const updated = await problemsApi.getById(id);
+      useProblemStore.setState({ selectedProblem: updated });
     } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to create brainstorming room' });
+      const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+      const message = typeof raw === 'string'
+        ? raw
+        : Array.isArray(raw)
+          ? raw.map((e: { msg?: string }) => e.msg).join('; ')
+          : 'Failed to create brainstorming room';
+      showToast({ type: 'error', message });
     } finally {
       setIsSubmitting(false);
     }
@@ -339,32 +346,58 @@ export const ProblemDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {selectedProblem.room_id ? (
-                <Link
-                  to={`/rooms/${selectedProblem.room_id}`}
-                  className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
-                >
-                  <BrainCircuit className="h-4 w-4" />
-                  View Brainstorming Room
-                </Link>
-              ) : !['solved', 'closed'].includes(selectedProblem.status) ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setBrainstormName(`Brainstorm: ${selectedProblem.title}`);
-                    setIsBrainstormModalOpen(true);
-                  }}
-                >
-                  <BrainCircuit className="h-4 w-4 mr-2" />
-                  Brainstorm Solutions
-                </Button>
-              ) : null}
-            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Brainstorming Rooms Section */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BrainCircuit className="h-5 w-5 text-primary-600" />
+            <h3 className="font-semibold text-gray-900">Brainstorming Rooms</h3>
+            {selectedProblem.rooms?.length > 0 && (
+              <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
+                {selectedProblem.rooms.length}
+              </span>
+            )}
+          </div>
+          {!['solved', 'closed'].includes(selectedProblem.status) && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setBrainstormName(`Brainstorm: ${selectedProblem.title}`);
+                setIsBrainstormModalOpen(true);
+              }}
+            >
+              {selectedProblem.rooms?.length > 0 ? 'Add Room' : 'Brainstorm Solutions'}
+            </Button>
+          )}
+        </div>
+        {selectedProblem.rooms?.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {selectedProblem.rooms.map((room) => (
+              <Link
+                key={room.id}
+                to={`/rooms/${room.id}`}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+              >
+                <BrainCircuit className="h-4 w-4 text-primary-600 shrink-0" />
+                <span className="text-sm font-medium text-gray-800">{room.name}</span>
+                <span className={classNames(
+                  'ml-auto text-xs px-2 py-0.5 rounded-full',
+                  room.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                )}>
+                  {room.status}
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-gray-500">No brainstorming rooms yet.</p>
+        )}
+      </div>
 
       {/* Reactions */}
       <Card>
@@ -548,10 +581,12 @@ export const ProblemDetailPage: React.FC = () => {
       >
         <form onSubmit={handleCreateBrainstormRoom} className="space-y-4">
           <Input
-            label="Room Name"
+            label="Room Name (min 3 characters)"
             value={brainstormName}
             onChange={(e) => setBrainstormName(e.target.value)}
             required
+            minLength={3}
+            maxLength={255}
           />
           <Textarea
             label="Description (optional)"

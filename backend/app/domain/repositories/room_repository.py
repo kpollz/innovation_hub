@@ -26,7 +26,12 @@ class RoomRepository(ABC):
     
     @abstractmethod
     async def get_by_problem_id(self, problem_id: UUID) -> Optional[Room]:
-        """Get room linked to a problem."""
+        """Get first room linked to a problem."""
+        pass
+
+    @abstractmethod
+    async def list_by_problem_id(self, problem_id: UUID) -> List[Room]:
+        """Get all rooms linked to a problem."""
         pass
     
     @abstractmethod

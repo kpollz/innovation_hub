@@ -92,6 +92,13 @@ class SQLRoomRepository(RoomRepository):
         )
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
+
+    async def list_by_problem_id(self, problem_id: UUID) -> List[Room]:
+        result = await self.session.execute(
+            select(RoomModel).where(RoomModel.problem_id == str(problem_id))
+        )
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]
     
     async def create(self, room: Room) -> Room:
         model = self._to_model(room)

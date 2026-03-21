@@ -64,12 +64,12 @@ async def create_room(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot create room for a problem with status '{problem.status.value}'",
             )
-        # Check if room already exists for this problem
-        existing_room = await room_repo.get_by_problem_id(data.problem_id)
-        if existing_room:
+        # Check duplicate room name within same problem
+        existing_rooms = await room_repo.list_by_problem_id(data.problem_id)
+        if any(r.name == data.name for r in existing_rooms):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="A room already exists for this problem",
+                detail=f"A room named '{data.name}' already exists for this problem",
             )
         # Transition problem status to brainstorming
         try:

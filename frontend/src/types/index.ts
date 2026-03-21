@@ -49,6 +49,12 @@ export interface ProblemAuthor {
   avatar_url: string | null;
 }
 
+export interface ProblemRoomSummary {
+  id: string;
+  name: string;
+  status: string;
+}
+
 export interface Problem {
   id: string;
   title: string;
@@ -59,6 +65,7 @@ export interface Problem {
   author_id: string;
   author: ProblemAuthor | null;
   room_id: string | null;
+  rooms: ProblemRoomSummary[];
   created_at: string;
   updated_at: string | null;
   likes_count: number;

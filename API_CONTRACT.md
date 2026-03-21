@@ -208,7 +208,8 @@ Authorization: Bearer <access_token>
   "status": "open | discussing | brainstorming | solved | closed",
   "author_id": "uuid",
   "author": { → UserObject },
-  "room_id": "uuid | null  ← enriched: lookup từ Room.problem_id (Problem không lưu trực tiếp)",
+  "room_id": "uuid | null  ← enriched: ID của room đầu tiên (backwards compat)",
+  "rooms": "[{id, name, status}]  ← enriched: danh sách tất cả rooms liên kết với problem",
   "created_at": "datetime",
   "updated_at": "datetime | null",
   "likes_count": 0,
@@ -337,7 +338,6 @@ Authorization: Bearer <access_token>
 
 ### 5.2 POST `/rooms` — Tạo phòng mới (standalone) 🔒
 - **Status**: 201 Created
-- **Error**: 409 Conflict nếu `problem_id` được cung cấp và problem đó đã có room liên kết
 
 **Request Body:**
 ```json
@@ -348,7 +348,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-> **Logic khi có problem_id**: Tự động chuyển problem status sang `brainstorming`. Mỗi problem chỉ được liên kết tối đa 1 room.
+> **Logic khi có problem_id**: Tự động chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room.
 
 **Response:** RoomObject
 
@@ -378,8 +378,8 @@ Authorization: Bearer <access_token>
 
 ### 5.6 POST `/problems/{problem_id}/rooms` — Tạo phòng từ vấn đề (1-click) 🔒
 - **Status**: 201 Created
-- **Error**: 409 Conflict nếu problem đã có room liên kết (`"A room already exists for this problem"`)
-- **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. Mỗi problem chỉ được liên kết tối đa 1 room.
+- **Error**: 400 Bad Request nếu problem đã ở trạng thái `solved` hoặc `closed`
+- **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room.
 
 **Request Body:**
 ```json
