@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, User } from 'lucide-react';
 import { useProblemStore } from '@/stores/problemStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -17,6 +18,7 @@ const sortOptions = [
 
 export const ProblemFeedPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const {
     problems,
     totalProblems,
@@ -29,6 +31,7 @@ export const ProblemFeedPage: React.FC = () => {
   } = useProblemStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showMyProblems, setShowMyProblems] = useState(false);
 
   useEffect(() => {
     fetchProblems();
@@ -49,6 +52,14 @@ export const ProblemFeedPage: React.FC = () => {
   const handlePageChange = (page: number) => {
     setFilters({ page });
     fetchProblems({ ...filters, page });
+  };
+
+  const toggleMyProblems = () => {
+    const next = !showMyProblems;
+    setShowMyProblems(next);
+    const authorId = next && user ? user.id : undefined;
+    setFilters({ author_id: authorId, page: 1 });
+    fetchProblems({ ...filters, author_id: authorId, page: 1 });
   };
 
   return (
@@ -81,6 +92,14 @@ export const ProblemFeedPage: React.FC = () => {
           </div>
           <Button type="submit" variant="secondary">
             Search
+          </Button>
+          <Button
+            type="button"
+            variant={showMyProblems ? 'primary' : 'ghost'}
+            onClick={toggleMyProblems}
+            leftIcon={<User className="h-4 w-4" />}
+          >
+            My Problems
           </Button>
           <Button
             type="button"
