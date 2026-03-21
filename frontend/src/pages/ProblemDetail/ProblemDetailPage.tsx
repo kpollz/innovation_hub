@@ -10,7 +10,6 @@ import {
   Edit,
   Trash2,
   MoreVertical,
-  CheckCircle,
   Circle
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
@@ -94,8 +93,11 @@ export const ProblemDetailPage: React.FC = () => {
       await commentsApi.create({ target_id: id, target_type: 'problem', content: newComment });
       showToast({ type: 'success', message: 'Comment added!' });
       setNewComment('');
-      fetchComments();
-      fetchProblem(id);
+      // Await comments first so they render before fetchProblem triggers isLoading spinner
+      await fetchComments();
+      // Refresh problem silently (status may have auto-transitioned)
+      const updated = await problemsApi.getById(id);
+      useProblemStore.setState({ selectedProblem: updated });
     } catch {
       showToast({ type: 'error', message: 'Failed to add comment' });
     }
@@ -107,8 +109,9 @@ export const ProblemDetailPage: React.FC = () => {
       await problemsApi.update(id, { status: newStatus });
       showToast({ type: 'success', message: `Status changed to ${newStatus}` });
       fetchProblem(id);
-    } catch {
-      showToast({ type: 'error', message: 'Failed to update status' });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      showToast({ type: 'error', message: detail || 'Failed to update status' });
     }
     setShowActions(false);
   };
@@ -254,20 +257,20 @@ export const ProblemDetailPage: React.FC = () => {
                         <div className="border-t border-gray-200 my-1" />
 
                         <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
-                        {PROBLEM_STATUSES.map((s) => (
+                        {PROBLEM_STATUSES.filter((s) => {
+                          const current = selectedProblem.status;
+                          const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
+                          const currentIdx = order.indexOf(current);
+                          const targetIdx = order.indexOf(s.value);
+                          // Only show forward transitions (not current or past)
+                          return targetIdx > currentIdx;
+                        }).map((s) => (
                           <button
                             key={s.value}
                             onClick={() => handleStatusChange(s.value as ProblemStatus)}
-                            className={classNames(
-                              'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2',
-                              selectedProblem.status === s.value ? 'text-primary-600' : 'text-gray-700'
-                            )}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                           >
-                            {selectedProblem.status === s.value ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
-                              <Circle className="h-4 w-4" />
-                            )}
+                            <Circle className="h-4 w-4" />
                             {s.label}
                           </button>
                         ))}

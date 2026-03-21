@@ -259,8 +259,10 @@ Authorization: Bearer <access_token>
 }
 ```
 
-> **Lưu ý**: Status phải tuân theo workflow: open → discussing → brainstorming → solved → closed.
-> Admin có thể thay đổi status. Member chỉ có thể thay đổi status bài của mình.
+> **Lưu ý**: Status phải tuân theo workflow (chỉ tiến, không lùi). Xem chi tiết auto/manual transitions ở Section 11.
+> - `discussing` và `brainstorming` được hệ thống tự chuyển (không cần gửi qua PATCH)
+> - Qua PATCH chỉ nên chuyển: `solved`, `closed`
+> - Admin có thể thay đổi status. Member chỉ có thể thay đổi status bài của mình.
 
 **Response:** ProblemObject
 
@@ -641,6 +643,21 @@ open → discussing → brainstorming → solved → closed
   ↓         ↑              ↑
   └─────────┘──────────────┘ (open có thể chuyển thẳng sang brainstorming)
 ```
+
+**Auto-transitions (hệ thống tự chuyển):**
+| Từ | Sang | Trigger |
+|----|------|---------|
+| open | discussing | Khi có comment từ người khác (không phải author của problem) |
+| open / discussing | brainstorming | Khi tạo brainstorm room liên kết với problem |
+
+**Manual transitions (user/admin chuyển thủ công):**
+| Từ | Sang | Ai được phép |
+|----|------|-------------|
+| brainstorming | solved | Author hoặc Admin |
+| brainstorming | closed | Author hoặc Admin |
+| solved | closed | Author hoặc Admin |
+
+> **Lưu ý**: FE chỉ hiển thị các status hợp lệ tiến về phía trước trong dropdown. Các status tự động (discussing, brainstorming) không cần hiển thị trong dropdown vì được hệ thống tự chuyển.
 
 ### Idea Status
 ```

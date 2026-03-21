@@ -37,6 +37,12 @@ class UpdateProblemUseCase:
         if dto.category is not None:
             problem.category = dto.category
         if dto.status is not None:
+            if not problem.can_transition_to(dto.status):
+                from fastapi import HTTPException, status
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot transition from '{problem.status.value}' to '{dto.status.value}'"
+                )
             problem.transition_to(dto.status)
 
         return await self.problem_repo.update(problem)

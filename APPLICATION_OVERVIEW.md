@@ -43,7 +43,7 @@
 | Tính năng | Chi tiết |
 |:----------|:---------|
 | **Tạo Post Vấn đề** | - Tiêu đề rõ ràng<br>- Mô tả chi tiết (hỗ trợ nhiều loại Typing như Markdown hay Quill,...)<br>- Tag/Category: *Quy trình, Kỹ thuật, Con người, Công cụ, Patent...*<br>|
-| **Trạng thái Vấn đề** | *Mở → Đang thảo luận → Chuyển sang Brainstorming → Đã có giải pháp → Đóng* |
+| **Trạng thái Vấn đề** | *Mở → Đang thảo luận → Chuyển sang Brainstorming → Đã có giải pháp → Đóng*<br>**Tự động chuyển:** Mở→Đang thảo luận (khi có comment từ người khác), Mở/Đang thảo luận→Brainstorming (khi tạo phòng brainstorm).<br>**Thủ công:** Đã có giải pháp, Đóng (do tác giả hoặc Admin chuyển). |
 | **Tương tác Cơ bản** | - **Comment** threaded (trả lời lồng nhau)<br>- **Reaction** đơn giản: 👍 👎 💡 (Ý hay)<br>- **@mention** để tag đồng nghiệp vào thảo luận |
 | **Tìm kiếm/Lọc** | Tìm theo từ khóa, Lọc theo Category, Sắp xếp theo: Mới nhất / Nhiều bình luận nhất / Reaction |
 
