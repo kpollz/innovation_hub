@@ -1,8 +1,9 @@
 """FastAPI application entry point."""
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.infrastructure.database.config import DatabaseConfig
@@ -53,6 +54,16 @@ def create_application() -> FastAPI:
         allow_headers=settings.cors_allow_headers,
     )
     
+    # Global exception handler for domain/app exceptions
+    from app.core.exceptions import AppException
+
+    @app.exception_handler(AppException)
+    async def app_exception_handler(request: Request, exc: AppException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.message},
+        )
+
     # Include routers
     app.include_router(api_router, prefix="/api")
     

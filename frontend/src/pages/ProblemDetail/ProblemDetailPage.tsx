@@ -43,6 +43,7 @@ export const ProblemDetailPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBrainstormModalOpen, setIsBrainstormModalOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [editSummary, setEditSummary] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<ProblemCategory>('process');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,6 +120,7 @@ export const ProblemDetailPage: React.FC = () => {
   const openEditModal = () => {
     if (selectedProblem) {
       setEditTitle(selectedProblem.title);
+      setEditSummary(selectedProblem.summary || '');
       setEditContent(selectedProblem.content);
       setEditCategory(selectedProblem.category);
       setIsEditModalOpen(true);
@@ -134,14 +136,21 @@ export const ProblemDetailPage: React.FC = () => {
     try {
       await problemsApi.update(id, {
         title: editTitle,
+        summary: editSummary.trim() || undefined,
         content: editContent,
         category: editCategory,
       });
       showToast({ type: 'success', message: 'Problem updated!' });
       setIsEditModalOpen(false);
       fetchProblem(id);
-    } catch {
-      showToast({ type: 'error', message: 'Failed to update problem' });
+    } catch (err: unknown) {
+      const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+      const message = typeof raw === 'string'
+        ? raw
+        : Array.isArray(raw)
+          ? raw.map((e: { msg?: string }) => e.msg).join('; ')
+          : 'Failed to update problem';
+      showToast({ type: 'error', message });
     } finally {
       setIsSubmitting(false);
     }
@@ -463,17 +472,27 @@ export const ProblemDetailPage: React.FC = () => {
       >
         <form onSubmit={handleEdit} className="space-y-4">
           <Input
-            label="Title"
+            label="Title (min 5 characters)"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             required
+            minLength={5}
+            maxLength={255}
+          />
+          <Input
+            label="Summary (optional)"
+            value={editSummary}
+            onChange={(e) => setEditSummary(e.target.value)}
+            placeholder="Brief summary, max 500 chars"
+            maxLength={500}
           />
           <Textarea
-            label="Content"
+            label="Content (min 10 characters)"
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
             rows={5}
             required
+            minLength={10}
           />
           <Select
             label="Category"
