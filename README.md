@@ -1,146 +1,160 @@
-# Innovation Hub 🚀
+# Innovation Hub
 
-Nền tảng thu thập vấn đề và brainstorming ý tưởng nội bộ
+Internal platform for collecting problems and brainstorming ideas.
 
-## Tính năng chính
+## Features
 
-- 📋 **Problem Feed** - Đăng và thảo luận vấn đề
-- 💡 **Idea Lab** - Brainstorming với kanban board
-- 📊 **Dashboard** - Thống kê và theo dõi OKR
-- 🔐 **Authentication** - JWT-based auth
+- **Problem Feed** - Post and discuss problems with threaded comments
+- **Idea Lab** - Brainstorming rooms with kanban board and voting
+- **Dashboard** - Statistics with date range filtering
+- **Authentication** - JWT-based auth with admin/member roles
+- **i18n** - English and Vietnamese language support
 
 ## Tech Stack
 
-### Backend
-- Python 3.11 + FastAPI
-- PostgreSQL + SQLAlchemy 2.0 (async)
-- Clean Architecture
-- JWT Authentication
-
-### Frontend
-- React 18 + TypeScript
-- Vite + Tailwind CSS
-- Zustand (state management)
-- Axios
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, Zustand |
+| Backend | Python 3.11, FastAPI, SQLAlchemy 2.0 (async) |
+| Database | PostgreSQL 16 |
+| Storage | MinIO (avatar uploads) |
+| Deploy | Docker Compose |
 
 ## Quick Start
 
-### 1. Clone và setup
+### 1. Clone and setup environment
 
 ```bash
 git clone https://github.com/kpollz/innovation_hub.git
 cd innovation_hub
-
-# Copy env file
-cp .env.example .env
 ```
 
-### 2. Chạy với Docker Compose (Recommended)
+Copy both env files:
 
 ```bash
-# Build và chạy tất cả services
+cp .env.example .env
+cp backend/.env.example backend/.env
+```
+
+> **Important:** `backend/.env` is used by the API service. Make sure `DATABASE_URL` uses `db` as host (Docker container name), not `localhost`.
+
+### 2. Run with Docker Compose
+
+```bash
+# Build and start all services
 docker-compose up --build
 
-# Hoặc chạy ngầm
+# Or run in background
 docker-compose up -d --build
 ```
 
-### 3. Truy cập
+This starts 4 services: PostgreSQL, MinIO, Backend API, and Frontend (Nginx).
+
+### 3. Access the app
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost |
+| Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
+| API Docs (Swagger) | http://localhost:8000/docs |
+| MinIO Console | http://localhost:9001 |
 
-### 4. Tạo admin user
+> The frontend proxies `/api/` requests to the backend via Nginx, so everything works through `http://localhost:3000`.
 
-**Cách 1: Chạy script trong container (Recommended)**
-
-```bash
-# Vào container backend
-docker-compose exec api bash
-
-# Chạy script tạo admin
-poetry run python scripts/create_admin.py
-
-# Hoặc với tham số tùy chỉnh
-poetry run python scripts/create_admin.py --username myadmin --password mypassword123
-```
-
-**Cách 2: Chạy từ local (khi đã cài poetry)**
+### 4. Create admin user
 
 ```bash
-cd backend
-poetry run python scripts/create_admin.py
+# Run inside the API container
+docker-compose exec api poetry run python scripts/create_admin.py
+
+# Or with custom credentials
+docker-compose exec api poetry run python scripts/create_admin.py \
+  --username myadmin \
+  --password mypassword123 \
+  --email admin@company.com
+
+# List existing admins
+docker-compose exec api poetry run python scripts/create_admin.py --list
 ```
 
-**Cách 3: Dùng API (nếu đã có user thường)**
+Default credentials: `admin` / `abc13579`
 
-```bash
-# Đăng ký user mới qua API
-curl -X POST http://localhost:8000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123","email":"admin@company.com","role":"admin"}'
-```
+### 5. Register a regular user
 
-**Lưu ý:** Cách 3 chỉ hoạt động nếu backend cho phép set role=admin khi register. Nếu không, hãy dùng cách 1 hoặc 2.
+Open http://localhost:3000 and click **Register** to create a member account.
 
-## Development
+## Environment Variables
 
-### Chạy Backend dev
+### Root `.env` (Docker Compose)
 
-```bash
-cd backend
-poetry install
-poetry run uvicorn app.main:app --reload
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_USER` | `innovation_user` | PostgreSQL username |
+| `DB_PASSWORD` | `innovation_pass` | PostgreSQL password |
+| `DB_NAME` | `innovation_hub` | Database name |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `API_PORT` | `8000` | Backend API port |
+| `FRONTEND_PORT` | `3000` | Frontend port |
+| `MINIO_ROOT_USER` | `minioadmin` | MinIO root username |
+| `MINIO_ROOT_PASSWORD` | `minioadmin` | MinIO root password |
 
-### Chạy Frontend dev
+### `backend/.env` (API Application)
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string (use `db` as host in Docker) |
+| `JWT_SECRET` | Yes | Secret key for JWT tokens |
+| `MINIO_ENDPOINT` | No | MinIO endpoint (default: `minio:9000`) |
+| `LOG_LEVEL` | No | Logging level (default: `INFO`) |
 
 ## Project Structure
 
 ```
 innovation_hub/
-├── backend/          # FastAPI + Clean Architecture
-├── frontend/         # React + TypeScript
-├── plans/            # Architecture documentation
+├── backend/                # FastAPI + Clean Architecture
+│   ├── app/
+│   │   ├── core/           # Config, exceptions
+│   │   ├── domain/         # Entities, repository interfaces
+│   │   ├── application/    # DTOs, services
+│   │   └── infrastructure/ # Database, API routes, security
+│   ├── scripts/            # Admin management scripts
+│   ├── Dockerfile
+│   └── .env.example
+├── frontend/               # React + TypeScript
+│   ├── src/
+│   │   ├── api/            # API client
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── stores/         # Zustand state management
+│   │   ├── i18n/           # Translations (EN/VI)
+│   │   └── types/          # TypeScript types
+│   ├── nginx.conf          # Nginx config with API proxy
+│   └── Dockerfile
 ├── docker-compose.yml
+├── API_CONTRACT.md         # API specification (source of truth)
+├── APPLICATION_OVERVIEW.md # Product requirements
 └── README.md
 ```
 
-## Architecture
-
-![Clean Architecture](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
-
-Project follows Clean Architecture principles with 3 layers:
-- **Domain**: Business logic, entities, repository interfaces
-- **Application**: Use cases, DTOs, application services
-- **Infrastructure**: Database, API routes, external services
-
 ## API Endpoints
 
-### Authentication
-- `POST /api/v1/auth/register` - Đăng ký
-- `POST /api/v1/auth/login` - Đăng nhập
-- `POST /api/v1/auth/refresh` - Refresh token
+Full API documentation is available at http://localhost:8000/docs after starting the services.
 
-### Problems
-- `GET /api/v1/problems` - Danh sách vấn đề
-- `POST /api/v1/problems` - Tạo vấn đề mới
-- `GET /api/v1/problems/{id}` - Chi tiết vấn đề
+See [API_CONTRACT.md](API_CONTRACT.md) for the complete API specification.
 
-### Rooms & Ideas
-- `GET /api/v1/rooms` - Danh sách phòng brainstorming
-- `POST /api/v1/rooms` - Tạo phòng mới
-- `GET /api/v1/ideas` - Danh sách ý tưởng
-- `POST /api/v1/ideas/{id}/vote` - Vote ý tưởng
+### Key endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/auth/register` | Register |
+| POST | `/api/v1/auth/login` | Login |
+| GET | `/api/v1/problems` | List problems |
+| POST | `/api/v1/problems` | Create problem |
+| GET | `/api/v1/rooms` | List brainstorming rooms |
+| POST | `/api/v1/rooms` | Create room |
+| GET | `/api/v1/ideas` | List ideas |
+| POST | `/api/v1/ideas/{id}/votes` | Vote on idea (1-5 stars) |
+| GET | `/api/v1/dashboard/stats` | Dashboard statistics |
 
 ## License
 
