@@ -195,9 +195,9 @@ export const DashboardPage: React.FC = () => {
                 <div key={status} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Badge variant={
-                      status === 'selected' ? 'success' :
-                      status === 'ready' ? 'warning' :
-                      status === 'rejected' ? 'danger' : 'default'
+                      status === 'submitted' ? 'success' :
+                      status === 'reviewing' ? 'warning' :
+                      status === 'closed' ? 'danger' : 'default'
                     }>
                       {status}
                     </Badge>

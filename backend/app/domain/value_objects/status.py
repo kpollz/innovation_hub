@@ -27,25 +27,27 @@ class ProblemStatus(str, Enum):
 
 class IdeaStatus(str, Enum):
     """Status workflow for ideas:
-    draft → refining → ready → selected
-       ↓                   ↓
-    rejected            (or rejected)
+    draft ↔ refining ↔ reviewing → submitted / closed
+    (Board view allows free drag-drop between draft/refining/reviewing)
     """
     DRAFT = "draft"
     REFINING = "refining"
-    READY = "ready"
-    SELECTED = "selected"
-    REJECTED = "rejected"
+    REVIEWING = "reviewing"
+    SUBMITTED = "submitted"
+    CLOSED = "closed"
 
     @classmethod
     def valid_transitions(cls) -> Dict["IdeaStatus", List["IdeaStatus"]]:
-        """Define valid status transitions."""
+        """Define valid status transitions.
+        draft/refining/reviewing can freely move between each other.
+        submitted and closed are terminal.
+        """
         return {
-            cls.DRAFT: [cls.REFINING, cls.REJECTED],
-            cls.REFINING: [cls.READY, cls.REJECTED],
-            cls.READY: [cls.SELECTED, cls.REJECTED],
-            cls.SELECTED: [],
-            cls.REJECTED: []
+            cls.DRAFT: [cls.REFINING, cls.REVIEWING, cls.SUBMITTED, cls.CLOSED],
+            cls.REFINING: [cls.DRAFT, cls.REVIEWING, cls.SUBMITTED, cls.CLOSED],
+            cls.REVIEWING: [cls.DRAFT, cls.REFINING, cls.SUBMITTED, cls.CLOSED],
+            cls.SUBMITTED: [],
+            cls.CLOSED: []
         }
 
 

@@ -21,9 +21,9 @@ export const PROBLEM_STATUSES = [
 export const IDEA_STATUSES = [
   { value: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-800' },
   { value: 'refining', label: 'Refining', color: 'bg-blue-100 text-blue-800' },
-  { value: 'ready', label: 'Ready for Pilot', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'selected', label: 'Selected', color: 'bg-green-100 text-green-800' },
-  { value: 'rejected', label: 'Rejected', color: 'bg-red-100 text-red-800' },
+  { value: 'reviewing', label: 'Reviewing', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'submitted', label: 'Submitted', color: 'bg-green-100 text-green-800' },
+  { value: 'closed', label: 'Closed', color: 'bg-red-100 text-red-800' },
 ] as const;
 
 export const REACTION_TYPES = [

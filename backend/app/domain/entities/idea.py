@@ -15,7 +15,7 @@ class Idea:
     description: str
     author_id: UUID
     id: UUID = field(default_factory=uuid4)
-    outcome: Optional[str] = None
+    summary: Optional[str] = None
     status: IdeaStatus = field(default=IdeaStatus.DRAFT)
     is_pinned: bool = field(default=False)
     created_at: datetime = field(default_factory=datetime.utcnow)
@@ -49,13 +49,13 @@ class Idea:
         self,
         title: Optional[str] = None,
         description: Optional[str] = None,
-        outcome: Optional[str] = None
+        summary: Optional[str] = None
     ) -> None:
         """Update idea content."""
         if title is not None:
             self.title = title
         if description is not None:
             self.description = description
-        if outcome is not None:
-            self.outcome = outcome
+        if summary is not None:
+            self.summary = summary
         self.updated_at = datetime.utcnow()

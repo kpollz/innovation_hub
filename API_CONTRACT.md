@@ -402,8 +402,8 @@ Authorization: Bearer <access_token>
   "room_id": "uuid",
   "title": "string",
   "description": "string",
-  "outcome": "string | null",
-  "status": "draft | refining | ready | selected | rejected",
+  "summary": "string | null",
+  "status": "draft | refining | reviewing | submitted | closed",
   "author_id": "uuid",
   "author": { → UserObject },
   "is_pinned": false,
@@ -432,7 +432,7 @@ Authorization: Bearer <access_token>
   "room_id": "uuid (bắt buộc)",
   "title": "string (3-255 ký tự, bắt buộc)",
   "description": "string (tối thiểu 10 ký tự, bắt buộc)",
-  "outcome": "string (tùy chọn)"
+  "summary": "string (tối đa 500 ký tự, tùy chọn)"
 }
 ```
 
@@ -451,13 +451,13 @@ Authorization: Bearer <access_token>
 {
   "title": "string (3-255 ký tự)",
   "description": "string (tối thiểu 10 ký tự)",
-  "outcome": "string",
-  "status": "draft | refining | ready | selected | rejected",
+  "summary": "string",
+  "status": "draft | refining | reviewing | submitted | closed",
   "is_pinned": "boolean (chỉ Admin)"
 }
 ```
 
-> **Status workflow**: draft → refining → ready → selected|rejected
+> **Status workflow**: draft → refining → reviewing → submitted | closed. Board view cho phép kéo thả tự do giữa các status (trừ terminal).
 
 **Response:** IdeaObject
 
@@ -671,9 +671,10 @@ open → discussing → brainstorming → solved
 
 ### Idea Status
 ```
-draft → refining → ready → selected
-  ↓                  ↓
-  rejected       rejected
+draft ↔ refining ↔ reviewing → submitted
+                              → closed
+(Board view cho phép kéo thả tự do giữa draft/refining/reviewing)
+(submitted và closed là terminal status)
 ```
 
 ### Room Status

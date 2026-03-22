@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 const createIdeaSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  outcome: z.string().optional(),
+  summary: z.string().optional(),
 });
 
 type CreateIdeaForm = z.infer<typeof createIdeaSchema>;
@@ -42,7 +42,7 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
         room_id: roomId,
         title: data.title,
         description: data.description,
-        outcome: data.outcome || undefined,
+        summary: data.summary || undefined,
       });
       showToast({ type: 'success', message: 'Idea created successfully!' });
       reset();
@@ -98,8 +98,8 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
           label="Expected Outcome (optional)"
           placeholder="What benefits will this idea bring?"
           rows={3}
-          {...register('outcome')}
-          error={errors.outcome?.message}
+          {...register('summary')}
+          error={errors.summary?.message}
         />
       </form>
     </Modal>

@@ -65,9 +65,9 @@
 | Tính năng | Chi tiết |
 |:----------|:---------|
 | **Chuyển đổi từ Vấn đề** | Từ bài Post Vấn đề, bấm nút **"Brainstorm Giải pháp"** → Tự động tạo Room mới với link reference ngược lại |
-| **Cấu trúc Ý tưởng** | Mỗi ý tưởng trong Room gồm:<br>- Tiêu đề<br>- Mô tả giải pháp<br>- Lợi ích mong đợi (Outcome)<br>|
+| **Cấu trúc Ý tưởng** | Mỗi ý tưởng trong Room gồm:<br>- Tiêu đề<br>- Tóm tắt ngắn (Summary, tùy chọn — hiển thị khi listing)<br>- Mô tả chi tiết giải pháp<br>|
 | **Thảo luận chuyên sâu** | - Comment riêng cho từng ý tưởng<br>- **Vote** bằng sao (1-5 sao) để đánh giá mức độ khả thi<br>- Ghim ý tưởng hay nhất lên đầu |
-| **Trạng thái Ý tưởng** | *Draft → Đang hoàn thiện → Sẵn sàng Pilot → Được chọn → Từ chối* |
+| **Trạng thái Ý tưởng** | *Draft → Đang hoàn thiện (Refining) → Đang xem xét (Reviewing) → Đã nộp (Submitted) / Đóng (Closed)*<br>Board view cho phép kéo thả tự do giữa Draft/Refining/Reviewing. Submitted và Closed là trạng thái kết thúc. |
 
 #### Hai chế độ xem (View):
 1. **Board View:** Kanban board kéo thả ý tưởng theo trạng thái (như Trello)

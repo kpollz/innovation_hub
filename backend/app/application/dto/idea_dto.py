@@ -14,14 +14,14 @@ class CreateIdeaDTO(BaseModel):
     room_id: UUID
     title: str = Field(..., min_length=3, max_length=255)
     description: str = Field(..., min_length=10)
-    outcome: Optional[str] = None
+    summary: Optional[str] = None
 
 
 class UpdateIdeaDTO(BaseModel):
     """Input for updating an idea."""
     title: Optional[str] = Field(None, min_length=3, max_length=255)
     description: Optional[str] = Field(None, min_length=10)
-    outcome: Optional[str] = None
+    summary: Optional[str] = None
     status: Optional[IdeaStatus] = None
     is_pinned: Optional[bool] = None
 
@@ -58,7 +58,7 @@ class IdeaResponseDTO(BaseModel):
     room_id: UUID
     title: str
     description: str
-    outcome: Optional[str] = None
+    summary: Optional[str] = None
     status: IdeaStatus
     author_id: UUID
     author: Optional[IdeaAuthorDTO] = None

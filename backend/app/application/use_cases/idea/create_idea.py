@@ -25,7 +25,7 @@ class CreateIdeaUseCase:
             room_id=dto.room_id,
             title=dto.title,
             description=dto.description,
-            outcome=dto.outcome,
+            summary=dto.summary,
             author_id=author_id,
         )
         return await self.idea_repo.create(idea)

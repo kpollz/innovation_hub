@@ -24,7 +24,7 @@ class SQLIdeaRepository(IdeaRepository):
             room_id=UUID(model.room_id),
             title=model.title,
             description=model.description,
-            outcome=model.outcome,
+            summary=model.summary,
             status=IdeaStatus(model.status),
             author_id=UUID(model.author_id),
             is_pinned=model.is_pinned,
@@ -39,7 +39,7 @@ class SQLIdeaRepository(IdeaRepository):
             room_id=str(entity.room_id),
             title=entity.title,
             description=entity.description,
-            outcome=entity.outcome,
+            summary=entity.summary,
             status=entity.status.value,
             author_id=str(entity.author_id),
             is_pinned=entity.is_pinned,
@@ -128,7 +128,7 @@ class SQLIdeaRepository(IdeaRepository):
         
         model.title = idea.title
         model.description = idea.description
-        model.outcome = idea.outcome
+        model.summary = idea.summary
         model.status = idea.status.value
         model.is_pinned = idea.is_pinned
         model.updated_at = idea.updated_at

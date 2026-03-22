@@ -114,7 +114,7 @@ async def get_stats(
             problems_by_status[s] += 1
 
     # Ideas by status
-    ideas_by_status = {"draft": 0, "refining": 0, "ready": 0, "selected": 0, "rejected": 0}
+    ideas_by_status = {"draft": 0, "refining": 0, "reviewing": 0, "submitted": 0, "closed": 0}
     for i in ideas_all:
         s = i.status.value if hasattr(i.status, "value") else str(i.status)
         if s in ideas_by_status:

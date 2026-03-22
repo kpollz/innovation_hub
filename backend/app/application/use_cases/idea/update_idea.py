@@ -32,8 +32,8 @@ class UpdateIdeaUseCase:
             idea.title = dto.title
         if dto.description:
             idea.description = dto.description
-        if dto.outcome is not None:
-            idea.outcome = dto.outcome
+        if dto.summary is not None:
+            idea.summary = dto.summary
         if dto.status:
             idea.transition_to(dto.status)
         if dto.is_pinned is not None:

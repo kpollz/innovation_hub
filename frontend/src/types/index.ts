@@ -147,7 +147,7 @@ export interface CreateRoom {
 }
 
 // Idea Types
-export type IdeaStatus = 'draft' | 'refining' | 'ready' | 'selected' | 'rejected';
+export type IdeaStatus = 'draft' | 'refining' | 'reviewing' | 'submitted' | 'closed';
 
 export interface IdeaAuthor {
   id: string;
@@ -165,7 +165,7 @@ export interface Idea {
   room_id: string;
   title: string;
   description: string;
-  outcome: string | null;
+  summary: string | null;
   status: IdeaStatus;
   author_id: string;
   author: IdeaAuthor | null;
@@ -183,13 +183,13 @@ export interface CreateIdea {
   room_id: string;
   title: string;
   description: string;
-  outcome?: string;
+  summary?: string;
 }
 
 export interface UpdateIdea {
   title?: string;
   description?: string;
-  outcome?: string;
+  summary?: string;
   status?: IdeaStatus;
   is_pinned?: boolean;
 }

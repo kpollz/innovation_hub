@@ -26,7 +26,7 @@ class IdeaModel(BaseModel):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    outcome: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(30), default="draft")
     author_id: Mapped[str] = mapped_column(
         PGUUID(as_uuid=False),

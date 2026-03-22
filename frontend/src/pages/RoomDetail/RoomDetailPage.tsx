@@ -8,7 +8,6 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { CreateIdeaModal } from './CreateIdeaModal';
 import { IdeaCard } from './IdeaCard';
 import type { Room, Idea, IdeaStatus } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
@@ -19,9 +18,9 @@ type ViewMode = 'board' | 'list';
 const KANBAN_COLUMNS: { status: IdeaStatus; title: string }[] = [
   { status: 'draft', title: 'Draft' },
   { status: 'refining', title: 'Refining' },
-  { status: 'ready', title: 'Ready for Pilot' },
-  { status: 'selected', title: 'Selected' },
-  { status: 'rejected', title: 'Rejected' },
+  { status: 'reviewing', title: 'Reviewing' },
+  { status: 'submitted', title: 'Submitted' },
+  { status: 'closed', title: 'Closed' },
 ];
 
 export const RoomDetailPage: React.FC = () => {
@@ -32,7 +31,11 @@ export const RoomDetailPage: React.FC = () => {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
-  const { showModal, showToast } = useUIStore();
+  const { showToast } = useUIStore();
+
+  // Drag-and-drop state
+  const [draggedIdeaId, setDraggedIdeaId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   // Edit/Delete states
   const [showActions, setShowActions] = useState(false);
@@ -68,8 +71,8 @@ export const RoomDetailPage: React.FC = () => {
     }
   };
 
-  const openCreateIdeaModal = () => {
-    showModal({ type: 'createIdea' });
+  const openCreateIdeaPage = () => {
+    navigate(`/rooms/${id}/ideas/new`);
   };
 
   const openEditModal = () => {
@@ -118,6 +121,64 @@ export const RoomDetailPage: React.FC = () => {
 
   const getIdeasByStatus = (status: IdeaStatus) => {
     return ideas.filter((idea) => idea.status === status);
+  };
+
+  // Drag-and-drop handlers
+  const handleDragStart = (e: React.DragEvent, ideaId: string) => {
+    setDraggedIdeaId(ideaId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: IdeaStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    if (!draggedIdeaId) return;
+
+    const idea = ideas.find((i) => i.id === draggedIdeaId);
+    if (!idea || idea.status === newStatus) {
+      setDraggedIdeaId(null);
+      return;
+    }
+
+    // Only author or admin can change status
+    const canChange = user && (user.id === idea.author_id || user.role === 'admin');
+    if (!canChange) {
+      showToast({ type: 'error', message: 'You can only change the status of your own ideas' });
+      setDraggedIdeaId(null);
+      return;
+    }
+
+    // Terminal statuses cannot be dragged out
+    if (idea.status === 'submitted' || idea.status === 'closed') {
+      showToast({ type: 'error', message: `Cannot move ideas out of "${idea.status}" status` });
+      setDraggedIdeaId(null);
+      return;
+    }
+
+    try {
+      await ideasApi.update(draggedIdeaId, { status: newStatus });
+      showToast({ type: 'success', message: 'Status updated!' });
+      fetchRoomData();
+    } catch {
+      showToast({ type: 'error', message: 'Failed to update status' });
+    } finally {
+      setDraggedIdeaId(null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdeaId(null);
+    setDragOverColumn(null);
   };
 
   if (isLoading) {
@@ -203,7 +264,7 @@ export const RoomDetailPage: React.FC = () => {
                 <List className="h-4 w-4" />
               </button>
             </div>
-            <Button onClick={openCreateIdeaModal} leftIcon={<Plus className="h-4 w-4" />}>
+            <Button onClick={openCreateIdeaPage} leftIcon={<Plus className="h-4 w-4" />}>
               Add Idea
             </Button>
 
@@ -255,22 +316,42 @@ export const RoomDetailPage: React.FC = () => {
           {KANBAN_COLUMNS.map((column) => {
             const columnIdeas = getIdeasByStatus(column.status);
             const statusConfig = IDEA_STATUSES.find((s) => s.value === column.status);
+            const isOver = dragOverColumn === column.status;
 
             return (
-              <div key={column.status} className="bg-gray-100 rounded-xl p-3">
+              <div
+                key={column.status}
+                className={classNames(
+                  'bg-gray-100 rounded-xl p-3 transition-colors',
+                  isOver && 'bg-primary-50 ring-2 ring-primary-300'
+                )}
+                onDragOver={(e) => handleDragOver(e, column.status)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, column.status)}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-700">{column.title}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
                     {columnIdeas.length}
                   </span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 min-h-[60px]">
                   {columnIdeas.map((idea) => (
-                    <IdeaCard
+                    <div
                       key={idea.id}
-                      idea={idea}
-                      onUpdate={fetchRoomData}
-                    />
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, idea.id)}
+                      onDragEnd={handleDragEnd}
+                      className={classNames(
+                        'cursor-grab active:cursor-grabbing',
+                        draggedIdeaId === idea.id && 'opacity-50'
+                      )}
+                    >
+                      <IdeaCard
+                        idea={idea}
+                        onUpdate={fetchRoomData}
+                      />
+                    </div>
                   ))}
                   {columnIdeas.length === 0 && (
                     <p className="text-center text-sm text-gray-400 py-4">
@@ -287,7 +368,7 @@ export const RoomDetailPage: React.FC = () => {
           {ideas.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
               <p className="text-gray-500">No ideas yet</p>
-              <Button variant="secondary" className="mt-4" onClick={openCreateIdeaModal}>
+              <Button variant="secondary" className="mt-4" onClick={openCreateIdeaPage}>
                 Add the first idea
               </Button>
             </div>
@@ -303,8 +384,6 @@ export const RoomDetailPage: React.FC = () => {
           )}
         </div>
       )}
-
-      <CreateIdeaModal roomId={room.id} onSuccess={fetchRoomData} />
 
       {/* Edit Room Modal */}
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Room">

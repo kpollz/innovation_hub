@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Star,
   MessageCircle,
@@ -15,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import type { Idea, IdeaStatus } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
-import { timeAgo, truncateText, classNames } from '@/utils/helpers';
+import { truncateText, classNames } from '@/utils/helpers';
 
 interface IdeaCardProps {
   idea: Idea;
@@ -91,8 +92,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
     <>
       <Card className={classNames(idea.is_pinned && 'border-warning-300 ring-1 ring-warning-200')}>
         <CardContent className={classNames('p-4', detailed && 'p-6')}>
-          {/* Header */}
-          <div className="flex items-start justify-between mb-3">
+          {/* Header: Status */}
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               {idea.is_pinned && (
                 <Pin className="h-4 w-4 text-warning-500" />
@@ -100,78 +101,74 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
                 {statusConfig?.label}
               </span>
-            </div>
 
-            {canModify && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowActions(!showActions)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <MoreVertical className="h-4 w-4 text-gray-500" />
-                </button>
+              {canModify && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowActions(!showActions)}
+                    className="p-1 hover:bg-gray-100 rounded"
+                  >
+                    <MoreVertical className="h-4 w-4 text-gray-500" />
+                  </button>
 
-                {showActions && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowActions(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                      {isAdmin && (
+                  {showActions && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowActions(false)}
+                      />
+                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              handlePinToggle();
+                              setShowActions(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                          >
+                            {idea.is_pinned ? 'Unpin' : 'Pin'} Idea
+                          </button>
+                        )}
                         <button
                           onClick={() => {
-                            handlePinToggle();
                             setShowActions(false);
+                            setIsDeleteModalOpen(true);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                         >
-                          {idea.is_pinned ? 'Unpin' : 'Pin'} Idea
+                          <Trash2 className="h-4 w-4" />
+                          Delete Idea
                         </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          setShowActions(false);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete Idea
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Content */}
-          <h3 className={classNames(
-            'font-semibold text-gray-900 mb-2',
-            detailed ? 'text-xl' : 'text-sm line-clamp-2'
-          )}>
-            {idea.title}
-          </h3>
+          <Link to={`/ideas/${idea.id}`}>
+            <h3 className={classNames(
+              'font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors',
+              detailed ? 'text-xl' : 'text-sm line-clamp-2'
+            )}>
+              {idea.title}
+            </h3>
+          </Link>
 
-          <p className={classNames(
-            'text-gray-600 mb-3',
-            detailed ? 'text-base' : 'text-xs line-clamp-3'
-          )}>
-            {detailed ? idea.description : truncateText(idea.description, 100)}
-          </p>
-
-          {/* Outcome */}
-          {detailed && idea.outcome && (
-            <div className="bg-success-50 rounded-lg p-3 mb-4">
-              <p className="text-xs text-success-700 font-medium mb-1">Expected Outcome</p>
-              <p className="text-sm text-success-800">{idea.outcome}</p>
-            </div>
+          {idea.summary && (
+            <p className={classNames(
+              'text-gray-600 mb-3',
+              detailed ? 'text-base' : 'text-xs line-clamp-3'
+            )}>
+              {detailed ? idea.summary : truncateText(idea.summary, 100)}
+            </p>
           )}
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <div className="flex items-center gap-3 text-sm text-gray-500">
+          {/* Footer: Vote + Comments + Avatar */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-sm text-gray-500">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowVoteModal(true)}
                 className={classNames(
@@ -188,14 +185,10 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 {idea.comments_count || 0}
               </span>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
-                <span className="text-xs font-medium text-primary-700">
-                  {authorName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="text-xs text-gray-500">{timeAgo(idea.created_at)}</span>
+            <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center" title={authorName}>
+              <span className="text-xs font-medium text-primary-700">
+                {authorName.charAt(0).toUpperCase()}
+              </span>
             </div>
           </div>
 
