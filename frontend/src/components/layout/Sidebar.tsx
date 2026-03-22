@@ -127,11 +127,15 @@ export const Sidebar: React.FC = () => {
           title="Account Settings"
         >
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-medium text-primary-700">
-                {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="Avatar" className="h-8 w-8 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-medium text-primary-700">
+                  {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate leading-tight">
                 {user?.full_name || user?.username || 'User'}

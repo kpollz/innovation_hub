@@ -41,6 +41,7 @@ env/
 .DS_Store
 
 # Database
+minio_data/
 postgres_data/
 *.db
 *.sqlite

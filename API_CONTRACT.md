@@ -240,6 +240,21 @@ Authorization: Bearer <access_token>
 }
 ```
 
+### 2.9 POST `/uploads/avatar` — Upload avatar 🔒
+- **Status**: 200 OK
+- **Content-Type**: multipart/form-data
+
+**Request:** Form field `file` (image/png, image/jpeg, image/webp, max 10MB)
+
+**Response:**
+```json
+{
+  "url": "string (URL path to avatar on MinIO)"
+}
+```
+
+> **Logic**: Upload ảnh lên MinIO bucket `avatars`, trả về URL. Frontend dùng URL này gọi PATCH `/users/me` để cập nhật `avatar_url`.
+
 ---
 
 ## 3. PROBLEMS (`/problems`)

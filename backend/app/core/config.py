@@ -35,6 +35,14 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 7
 
+    # MinIO
+    minio_endpoint: str = "minio:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_secure: bool = False
+    minio_bucket: str = "avatars"
+    minio_public_url: str = ""  # External URL for accessing files, empty = use proxy
+
     # CORS
     cors_origins: List[str] = ["*"]
     cors_allow_credentials: bool = True

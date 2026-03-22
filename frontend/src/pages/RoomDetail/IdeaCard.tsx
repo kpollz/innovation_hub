@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/Select';
 import type { Idea, IdeaStatus } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { truncateText, classNames } from '@/utils/helpers';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface IdeaCardProps {
   idea: Idea;
@@ -187,11 +188,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 {idea.comments_count || 0}
               </span>
             </div>
-            <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center" title={authorName}>
-              <span className="text-xs font-medium text-primary-700">
-                {authorName.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            <Avatar src={idea.author?.avatar_url} name={authorName} size="sm" />
           </div>
 
           {/* Status Change (for author or admin) */}

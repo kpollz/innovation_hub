@@ -11,6 +11,7 @@ import {
 import { dashboardApi } from '@/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Avatar } from '@/components/ui/Avatar';
 import type { DashboardStats, TopContributor } from '@/types';
 
 const StatCard: React.FC<{
@@ -237,11 +238,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
                       {index + 1}
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
-                        {(contributor.user.full_name || contributor.user.username).charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <Avatar src={contributor.user.avatar_url} name={contributor.user.full_name || contributor.user.username} size="lg" />
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         {contributor.user.full_name || contributor.user.username}

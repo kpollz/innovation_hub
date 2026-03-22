@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageCircle, ThumbsUp, Lightbulb, BrainCircuit } from 'lucide-react';
 import type { Problem } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo } from '@/utils/helpers';
@@ -69,11 +70,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
-            <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
-              <span className="text-xs font-medium text-primary-700">
-                {(problem.author?.full_name || problem.author?.username || 'U').charAt(0).toUpperCase()}
-              </span>
-            </div>
+            <Avatar src={problem.author?.avatar_url} name={problem.author?.full_name || problem.author?.username} size="sm" />
             <span className="text-sm text-gray-700">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
           </div>
         </CardContent>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { CreateRoomModal } from './CreateRoomModal';
+import { Avatar } from '@/components/ui/Avatar';
 import type { Room } from '@/types';
 import { timeAgo } from '@/utils/helpers';
 
@@ -45,11 +46,7 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
-            <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center">
-              <span className="text-xs font-medium text-primary-700">
-                {creatorName.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            <Avatar src={room.creator?.avatar_url} name={creatorName} size="sm" />
             <span className="text-xs text-gray-600">{creatorName}</span>
             <span className="text-xs text-gray-400 ml-auto">
               {timeAgo(room.created_at)}

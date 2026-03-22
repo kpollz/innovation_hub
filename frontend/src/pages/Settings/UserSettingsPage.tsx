@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, KeyRound, LogOut } from 'lucide-react';
+import { User, KeyRound, LogOut, Camera } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { authApi } from '@/api/auth';
+import { uploadsApi } from '@/api/uploads';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -36,6 +37,8 @@ export const UserSettingsPage: React.FC = () => {
   const { user, updateProfile, logout } = useAuthStore();
   const { showToast } = useUIStore();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register: registerProfile,
@@ -58,6 +61,30 @@ export const UserSettingsPage: React.FC = () => {
   } = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
   });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      showToast({ type: 'error', message: 'Only JPG, PNG, and WebP are allowed' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast({ type: 'error', message: 'Image must be under 10MB' });
+      return;
+    }
+    setIsUploadingAvatar(true);
+    try {
+      const { url } = await uploadsApi.uploadAvatar(file);
+      await updateProfile({ avatar_url: url });
+      showToast({ type: 'success', message: 'Avatar updated!' });
+    } catch {
+      showToast({ type: 'error', message: 'Failed to upload avatar' });
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const onProfileSubmit = async (data: ProfileForm) => {
     try {
@@ -98,10 +125,39 @@ export const UserSettingsPage: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl font-semibold text-primary-700">
-                {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
-              </span>
+            <div className="relative group">
+              {user?.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt="Avatar"
+                  className="h-16 w-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl font-semibold text-primary-700">
+                    {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer"
+              >
+                <Camera className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              {isUploadingAvatar && (
+                <div className="absolute inset-0 rounded-full bg-black bg-opacity-40 flex items-center justify-center">
+                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">

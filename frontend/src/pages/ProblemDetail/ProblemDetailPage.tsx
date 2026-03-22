@@ -27,6 +27,7 @@ import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
+import { Avatar } from '@/components/ui/Avatar';
 import type { Comment, ReactionType, ProblemStatus, ProblemCategory } from '@/types';
 
 export const ProblemDetailPage: React.FC = () => {
@@ -214,7 +215,7 @@ export const ProblemDetailPage: React.FC = () => {
   const category = PROBLEM_CATEGORIES.find((c) => c.value === selectedProblem.category);
   const status = PROBLEM_STATUSES.find((s) => s.value === selectedProblem.status);
   const authorName = selectedProblem.author?.full_name || selectedProblem.author?.username || 'Unknown User';
-  const authorInitial = authorName.charAt(0).toUpperCase();
+  const authorAvatar = selectedProblem.author?.avatar_url;
 
   return (
     <div className="space-y-6">
@@ -333,11 +334,7 @@ export const ProblemDetailPage: React.FC = () => {
           {/* Author Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-primary-700">
-                  {authorInitial}
-                </span>
-              </div>
+              <Avatar src={authorAvatar} name={authorName} size="lg" />
               <div>
                 <p className="text-sm font-medium text-gray-900">
                   {authorName}
@@ -483,11 +480,7 @@ export const ProblemDetailPage: React.FC = () => {
                 const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
                 return (
                   <div key={comment.id} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                    <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-primary-700">
-                        {commentAuthorName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-gray-900">
