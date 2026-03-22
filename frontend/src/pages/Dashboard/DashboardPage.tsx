@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Lightbulb,
   MessageCircle,
@@ -43,6 +44,7 @@ const StatCard: React.FC<{
 );
 
 export const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [contributors, setContributors] = useState<TopContributor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,33 +79,33 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome to Innovation Hub</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+        <p className="text-gray-600 mt-1">{t('dashboard.welcome')}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Ideas"
+          title={t('dashboard.total_ideas')}
           value={stats?.total_ideas || 0}
           icon={Lightbulb}
           color="bg-primary-600"
-          trend={stats?.new_this_week ? `+${stats.new_this_week} this week` : undefined}
+          trend={stats?.new_this_week ? t('dashboard.this_week', { count: stats.new_this_week }) : undefined}
         />
         <StatCard
-          title="Total Problems"
+          title={t('dashboard.total_problems')}
           value={stats?.total_problems || 0}
           icon={AlertCircle}
           color="bg-warning-500"
         />
         <StatCard
-          title="Active Rooms"
+          title={t('dashboard.active_rooms')}
           value={stats?.total_rooms || 0}
           icon={MessageCircle}
           color="bg-success-500"
         />
         <StatCard
-          title="Total Users"
+          title={t('dashboard.total_users')}
           value={stats?.total_users || 0}
           icon={Users}
           color="bg-purple-500"
@@ -119,7 +121,7 @@ export const DashboardPage: React.FC = () => {
                 <Activity className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Interaction Rate</p>
+                <p className="text-sm text-gray-500">{t('dashboard.interaction_rate')}</p>
                 <p className="text-xl font-bold text-gray-900">
                   {stats.interaction_rate?.toFixed(1) || 0}%
                 </p>
@@ -132,7 +134,7 @@ export const DashboardPage: React.FC = () => {
                 <Rocket className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Resolved Problems</p>
+                <p className="text-sm text-gray-500">{t('dashboard.resolved_problems')}</p>
                 <p className="text-xl font-bold text-gray-900">{stats.resolved_problems || 0}</p>
               </div>
             </CardContent>
@@ -143,7 +145,7 @@ export const DashboardPage: React.FC = () => {
                 <TrendingUp className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">New This Week</p>
+                <p className="text-sm text-gray-500">{t('dashboard.new_this_week')}</p>
                 <p className="text-xl font-bold text-gray-900">{stats.new_this_week || 0}</p>
               </div>
             </CardContent>
@@ -155,7 +157,7 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Problems by Status</CardTitle>
+            <CardTitle>{t('dashboard.problems_by_status')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -180,7 +182,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               ))}
               {!stats?.problems_by_status && (
-                <p className="text-gray-500 text-sm text-center py-4">No data</p>
+                <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
               )}
             </div>
           </CardContent>
@@ -188,7 +190,7 @@ export const DashboardPage: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Ideas by Status</CardTitle>
+            <CardTitle>{t('dashboard.ideas_by_status')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -217,7 +219,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               ))}
               {!stats?.ideas_by_status && (
-                <p className="text-gray-500 text-sm text-center py-4">No data</p>
+                <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
               )}
             </div>
           </CardContent>
@@ -228,7 +230,7 @@ export const DashboardPage: React.FC = () => {
       {contributors.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Top Contributors</CardTitle>
+            <CardTitle>{t('dashboard.top_contributors')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="divide-y divide-gray-200">
@@ -249,15 +251,15 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center gap-6 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <Lightbulb className="h-4 w-4" />
-                      {contributor.ideas_count} ideas
+                      {contributor.ideas_count} {t('dashboard.ideas')}
                     </span>
                     <span className="flex items-center gap-1">
                       <AlertCircle className="h-4 w-4" />
-                      {contributor.problems_count} problems
+                      {contributor.problems_count} {t('dashboard.problems')}
                     </span>
                     <span className="flex items-center gap-1">
                       <Rocket className="h-4 w-4" />
-                      {contributor.votes_received} votes
+                      {contributor.votes_received} {t('dashboard.votes')}
                     </span>
                   </div>
                 </div>

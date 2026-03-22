@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, LayoutGrid, List, Lightbulb } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { useUIStore } from '@/stores/uiStore';
@@ -14,6 +15,7 @@ import { timeAgo } from '@/utils/helpers';
 type ViewMode = 'list' | 'board';
 
 const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
+  const { t } = useTranslation();
   const creatorName = room.creator?.full_name || room.creator?.username || 'Unknown';
 
   return (
@@ -41,7 +43,7 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <Lightbulb className="h-4 w-4" />
-              {room.idea_count} ideas
+              {t('rooms.ideas_count', { count: room.idea_count })}
             </span>
           </div>
 
@@ -59,6 +61,7 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
 };
 
 export const IdeaLabPage: React.FC = () => {
+  const { t } = useTranslation();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -91,9 +94,9 @@ export const IdeaLabPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Idea Lab</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('rooms.title')}</h1>
           <p className="text-gray-600 mt-1">
-            Brainstorming rooms for collaborative problem solving
+            {t('rooms.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -120,7 +123,7 @@ export const IdeaLabPage: React.FC = () => {
             </button>
           </div>
           <Button onClick={openCreateModal} leftIcon={<Plus className="h-4 w-4" />}>
-            Create Room
+            {t('rooms.create_room')}
           </Button>
         </div>
       </div>
@@ -128,7 +131,7 @@ export const IdeaLabPage: React.FC = () => {
       {/* Active Rooms */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Active Rooms ({activeRooms.length})
+          {t('rooms.active_rooms', { count: activeRooms.length })}
         </h2>
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
@@ -136,9 +139,9 @@ export const IdeaLabPage: React.FC = () => {
           </div>
         ) : activeRooms.length === 0 ? (
           <div className="text-center py-8 bg-white rounded-xl border border-gray-200">
-            <p className="text-gray-500">No active rooms</p>
+            <p className="text-gray-500">{t('rooms.no_active')}</p>
             <Button variant="secondary" className="mt-4" onClick={openCreateModal}>
-              Create the first room
+              {t('rooms.create_first')}
             </Button>
           </div>
         ) : (
@@ -154,7 +157,7 @@ export const IdeaLabPage: React.FC = () => {
       {archivedRooms.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Archived Rooms ({archivedRooms.length})
+            {t('rooms.archived_rooms', { count: archivedRooms.length })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
             {archivedRooms.map((room) => (

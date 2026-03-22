@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Star,
   MessageCircle,
@@ -30,6 +31,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   onUpdate,
   detailed = false
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const { showToast } = useUIStore();
   const [showVoteModal, setShowVoteModal] = useState(false);
@@ -45,21 +47,21 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const handleVote = async () => {
     try {
       await ideasApi.vote(idea.id, { stars: voteStars });
-      showToast({ type: 'success', message: 'Vote recorded!' });
+      showToast({ type: 'success', message: t('ideas.vote_recorded') });
       setShowVoteModal(false);
       onUpdate();
     } catch {
-      showToast({ type: 'error', message: 'Failed to vote' });
+      showToast({ type: 'error', message: t('ideas.vote_error') });
     }
   };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
       await ideasApi.update(idea.id, { status: newStatus as IdeaStatus });
-      showToast({ type: 'success', message: 'Status updated!' });
+      showToast({ type: 'success', message: t('ideas.status_updated') });
       onUpdate();
     } catch {
-      showToast({ type: 'error', message: 'Failed to update status' });
+      showToast({ type: 'error', message: t('ideas.status_error') });
     }
   };
 
@@ -68,22 +70,22 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       await ideasApi.update(idea.id, { is_pinned: !idea.is_pinned });
       showToast({
         type: 'success',
-        message: idea.is_pinned ? 'Idea unpinned' : 'Idea pinned!'
+        message: idea.is_pinned ? t('ideas.unpin_success') : t('ideas.pin_success')
       });
       onUpdate();
     } catch {
-      showToast({ type: 'error', message: 'Failed to toggle pin' });
+      showToast({ type: 'error', message: t('ideas.pin_error') });
     }
   };
 
   const handleDelete = async () => {
     try {
       await ideasApi.delete(idea.id);
-      showToast({ type: 'success', message: 'Idea deleted!' });
+      showToast({ type: 'success', message: t('ideas.deleted_success') });
       setIsDeleteModalOpen(false);
       onUpdate();
     } catch {
-      showToast({ type: 'error', message: 'Failed to delete idea' });
+      showToast({ type: 'error', message: t('ideas.delete_error') });
     }
   };
 
@@ -129,7 +131,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                             }}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                           >
-                            {idea.is_pinned ? 'Unpin' : 'Pin'} Idea
+                            {idea.is_pinned ? t('ideas.unpin_idea') : t('ideas.pin_idea')}
                           </button>
                         )}
                         <button
@@ -140,7 +142,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete Idea
+                          {t('ideas.delete_idea')}
                         </button>
                       </div>
                     </>
@@ -195,7 +197,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {canModify && detailed && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <Select
-                label="Change Status"
+                label={t('ideas.change_status')}
                 value={idea.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 options={[...IDEA_STATUSES]}
@@ -209,20 +211,20 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       <Modal
         isOpen={showVoteModal}
         onClose={() => setShowVoteModal(false)}
-        title={`Vote on "${truncateText(idea.title, 30)}"`}
+        title={t('ideas.vote_title', { title: truncateText(idea.title, 30) })}
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowVoteModal(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleVote}>
-              Submit Vote
+              {t('ideas.submit_vote')}
             </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <p className="text-gray-600">Rate this idea from 1-5 stars:</p>
+          <p className="text-gray-600">{t('ideas.vote_desc')}</p>
           <div className="flex items-center justify-center gap-3">
             {[1, 2, 3, 4, 5].map((stars) => (
               <button
@@ -243,12 +245,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             ))}
           </div>
           <div className="flex justify-between text-sm text-gray-500">
-            <span>Poor</span>
-            <span>Excellent</span>
+            <span>{t('ideas.vote_poor')}</span>
+            <span>{t('ideas.vote_excellent')}</span>
           </div>
           {idea.user_vote && (
             <p className="text-center text-sm text-primary-600">
-              You previously voted: {idea.user_vote.stars} star{idea.user_vote.stars !== 1 ? 's' : ''}
+              {t('ideas.vote_previous', { stars: idea.user_vote.stars })}
             </p>
           )}
         </div>
@@ -258,18 +260,18 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Idea"
+        title={t('ideas.delete_idea')}
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to delete this idea? This action cannot be undone.
+            {t('ideas.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" onClick={handleDelete}>
-              Delete
+              {t('common.delete')}
             </Button>
           </div>
         </div>

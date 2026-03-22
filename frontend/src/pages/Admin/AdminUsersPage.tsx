@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { usersApi } from '@/api/users';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -36,6 +37,7 @@ interface UserStats {
 const LIMIT = 10;
 
 export const AdminUsersPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuthStore();
   const { showToast } = useUIStore();
 
@@ -70,11 +72,11 @@ export const AdminUsersPage: React.FC = () => {
       setUsers(res.items);
       setTotal(res.total);
     } catch {
-      showToast({ type: 'error', message: 'Failed to load users' });
+      showToast({ type: 'error', message: t('admin.load_users_error') });
     } finally {
       setIsLoading(false);
     }
-  }, [page, search, roleFilter, showToast]);
+  }, [page, search, roleFilter, showToast, t]);
 
   useEffect(() => {
     fetchUsers();
@@ -100,11 +102,11 @@ export const AdminUsersPage: React.FC = () => {
         role: editRole as 'member' | 'admin',
         is_active: editActive,
       });
-      showToast({ type: 'success', message: 'User updated!' });
+      showToast({ type: 'success', message: t('admin.user_updated') });
       setEditUser(null);
       fetchUsers();
     } catch {
-      showToast({ type: 'error', message: 'Failed to update user' });
+      showToast({ type: 'error', message: t('admin.user_update_error') });
     }
   };
 
@@ -112,11 +114,11 @@ export const AdminUsersPage: React.FC = () => {
     if (!deleteUser) return;
     try {
       await usersApi.adminDelete(deleteUser.id);
-      showToast({ type: 'success', message: 'User deleted!' });
+      showToast({ type: 'success', message: t('admin.user_deleted') });
       setDeleteUser(null);
       fetchUsers();
     } catch {
-      showToast({ type: 'error', message: 'Failed to delete user' });
+      showToast({ type: 'error', message: t('admin.user_delete_error') });
     }
   };
 
@@ -128,7 +130,7 @@ export const AdminUsersPage: React.FC = () => {
       const res = await usersApi.adminResetPassword(u.id);
       setNewPassword(res.new_password);
     } catch {
-      showToast({ type: 'error', message: 'Failed to reset password' });
+      showToast({ type: 'error', message: t('admin.reset_password_error') });
       setResetUser(null);
     }
   };
@@ -148,8 +150,8 @@ export const AdminUsersPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-        <p className="text-gray-500 mt-1">{total} users total</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('admin.users_title')}</h1>
+        <p className="text-gray-500 mt-1">{t('admin.users_count', { count: total })}</p>
       </div>
 
       {/* Filters */}
@@ -158,7 +160,7 @@ export const AdminUsersPage: React.FC = () => {
           <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="Search by name, username, or email..."
+                placeholder={t('admin.search_placeholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -168,13 +170,13 @@ export const AdminUsersPage: React.FC = () => {
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
               className="rounded-lg border border-gray-300 px-4 py-2.5 text-base text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm transition-colors"
             >
-              <option value="">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="member">Member</option>
+              <option value="">{t('admin.all_roles')}</option>
+              <option value="admin">{t('common.administrator')}</option>
+              <option value="member">{t('common.member')}</option>
             </select>
             <Button type="submit" className="px-5 py-2.5">
               <Search className="h-4 w-4 mr-1.5" />
-              Search
+              {t('common.search')}
             </Button>
           </form>
         </CardContent>
@@ -186,21 +188,21 @@ export const AdminUsersPage: React.FC = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">User</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Team</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Role</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Actions</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('admin.user_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.team_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.role_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.status_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.actions_column')}</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-400">Loading...</td>
+                  <td colSpan={5} className="text-center py-8 text-gray-400">{t('common.loading')}</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-400">No users found</td>
+                  <td colSpan={5} className="text-center py-8 text-gray-400">{t('admin.no_users')}</td>
                 </tr>
               ) : (
                 users.map((u) => {
@@ -220,7 +222,7 @@ export const AdminUsersPage: React.FC = () => {
                           <div>
                             <p className="font-medium text-gray-900">
                               {u.full_name || u.username}
-                              {isSelf && <span className="ml-1 text-xs text-primary-600">(you)</span>}
+                              {isSelf && <span className="ml-1 text-xs text-primary-600">({t('admin.you')})</span>}
                             </p>
                             <p className="text-xs text-gray-500">@{u.username}</p>
                           </div>
@@ -234,7 +236,7 @@ export const AdminUsersPage: React.FC = () => {
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-gray-100 text-gray-600'
                         )}>
-                          {u.role === 'admin' ? 'Admin' : 'Member'}
+                          {u.role === 'admin' ? t('common.administrator') : t('common.member')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -244,7 +246,7 @@ export const AdminUsersPage: React.FC = () => {
                             ? 'bg-green-100 text-green-700'
                             : 'bg-red-100 text-red-700'
                         )}>
-                          {u.is_active ? 'Active' : 'Inactive'}
+                          {u.is_active ? t('admin.active') : t('admin.inactive')}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -252,7 +254,7 @@ export const AdminUsersPage: React.FC = () => {
                           <button
                             onClick={() => openEdit(u)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-700"
-                            title="Edit User"
+                            title={t('admin.edit_user')}
                           >
                             <Shield className="h-4 w-4" />
                           </button>
@@ -261,14 +263,14 @@ export const AdminUsersPage: React.FC = () => {
                               <button
                                 onClick={() => handleResetPassword(u)}
                                 className="p-1.5 rounded hover:bg-amber-100 text-gray-500 hover:text-amber-600"
-                                title="Reset Password"
+                                title={t('admin.reset_password')}
                               >
                                 <KeyRound className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => setDeleteUser(u)}
                                 className="p-1.5 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
-                                title="Delete User"
+                                title={t('admin.delete_user')}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -288,7 +290,7 @@ export const AdminUsersPage: React.FC = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Page {page} of {totalPages}
+              {t('common.page_of', { current: page, total: totalPages })}
             </p>
             <div className="flex gap-1">
               <Button
@@ -316,7 +318,7 @@ export const AdminUsersPage: React.FC = () => {
       <Modal
         isOpen={!!editUser}
         onClose={() => setEditUser(null)}
-        title={`Edit User: ${editUser?.full_name || editUser?.username}`}
+        title={t('admin.edit_user_title', { name: editUser?.full_name || editUser?.username })}
       >
         {editUser && (
           <div className="space-y-5">
@@ -329,7 +331,7 @@ export const AdminUsersPage: React.FC = () => {
               </div>
               <div>
                 <p className="font-medium">{editUser.full_name || editUser.username}</p>
-                <p className="text-xs text-gray-500">@{editUser.username} · {editUser.email || 'No email'}</p>
+                <p className="text-xs text-gray-500">@{editUser.username} · {editUser.email || t('admin.no_email')}</p>
               </div>
             </div>
 
@@ -339,29 +341,29 @@ export const AdminUsersPage: React.FC = () => {
                 <div className="text-center p-2 bg-blue-50 rounded-lg">
                   <AlertCircle className="h-4 w-4 mx-auto text-blue-600 mb-1" />
                   <p className="text-lg font-semibold text-blue-700">{editStats.problems_count}</p>
-                  <p className="text-xs text-blue-600">Problems</p>
+                  <p className="text-xs text-blue-600">{t('admin.problems_count')}</p>
                 </div>
                 <div className="text-center p-2 bg-amber-50 rounded-lg">
                   <Lightbulb className="h-4 w-4 mx-auto text-amber-600 mb-1" />
                   <p className="text-lg font-semibold text-amber-700">{editStats.ideas_count}</p>
-                  <p className="text-xs text-amber-600">Ideas</p>
+                  <p className="text-xs text-amber-600">{t('admin.ideas_count')}</p>
                 </div>
                 <div className="text-center p-2 bg-green-50 rounded-lg">
                   <MessageCircle className="h-4 w-4 mx-auto text-green-600 mb-1" />
                   <p className="text-lg font-semibold text-green-700">{editStats.comments_count}</p>
-                  <p className="text-xs text-green-600">Comments</p>
+                  <p className="text-xs text-green-600">{t('admin.comments_count')}</p>
                 </div>
                 <div className="text-center p-2 bg-purple-50 rounded-lg">
                   <DoorOpen className="h-4 w-4 mx-auto text-purple-600 mb-1" />
                   <p className="text-lg font-semibold text-purple-700">{editStats.rooms_count}</p>
-                  <p className="text-xs text-purple-600">Rooms</p>
+                  <p className="text-xs text-purple-600">{t('admin.rooms_count')}</p>
                 </div>
               </div>
             )}
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.role_label')}</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -374,7 +376,7 @@ export const AdminUsersPage: React.FC = () => {
                   )}
                 >
                   <ShieldOff className="h-4 w-4" />
-                  Member
+                  {t('common.member')}
                 </button>
                 <button
                   type="button"
@@ -387,14 +389,14 @@ export const AdminUsersPage: React.FC = () => {
                   )}
                 >
                   <Shield className="h-4 w-4" />
-                  Admin
+                  {t('common.administrator')}
                 </button>
               </div>
             </div>
 
             {/* Active status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Account Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.account_status')}</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -407,7 +409,7 @@ export const AdminUsersPage: React.FC = () => {
                   )}
                 >
                   <UserCheck className="h-4 w-4" />
-                  Active
+                  {t('admin.active')}
                 </button>
                 <button
                   type="button"
@@ -420,14 +422,14 @@ export const AdminUsersPage: React.FC = () => {
                   )}
                 >
                   <UserX className="h-4 w-4" />
-                  Inactive
+                  {t('admin.inactive')}
                 </button>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="ghost" onClick={() => setEditUser(null)}>Cancel</Button>
-              <Button onClick={handleSaveEdit}>Save Changes</Button>
+              <Button variant="ghost" onClick={() => setEditUser(null)}>{t('common.cancel')}</Button>
+              <Button onClick={handleSaveEdit}>{t('common.save')}</Button>
             </div>
           </div>
         )}
@@ -437,16 +439,13 @@ export const AdminUsersPage: React.FC = () => {
       <Modal
         isOpen={!!deleteUser}
         onClose={() => setDeleteUser(null)}
-        title="Delete User"
+        title={t('admin.delete_user')}
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
-            Are you sure you want to delete <strong>{deleteUser?.full_name || deleteUser?.username}</strong>?
-            This will also delete all their problems, ideas, comments, and rooms. This action cannot be undone.
-          </p>
+          <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: t('admin.delete_user_confirm', { name: deleteUser?.full_name || deleteUser?.username }) }} />
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={() => setDeleteUser(null)}>Cancel</Button>
-            <Button variant="danger" onClick={handleDelete}>Delete User</Button>
+            <Button variant="ghost" onClick={() => setDeleteUser(null)}>{t('common.cancel')}</Button>
+            <Button variant="danger" onClick={handleDelete}>{t('admin.delete_user')}</Button>
           </div>
         </div>
       </Modal>
@@ -455,18 +454,18 @@ export const AdminUsersPage: React.FC = () => {
       <Modal
         isOpen={!!resetUser}
         onClose={() => setResetUser(null)}
-        title={`Reset Password: ${resetUser?.full_name || resetUser?.username}`}
+        title={t('admin.reset_password_title', { name: resetUser?.full_name || resetUser?.username })}
       >
         <div className="space-y-4">
           {!newPassword ? (
             <div className="flex items-center justify-center py-6">
               <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full" />
-              <span className="ml-3 text-gray-500">Generating new password...</span>
+              <span className="ml-3 text-gray-500">{t('admin.generating_password')}</span>
             </div>
           ) : (
             <>
               <p className="text-gray-600">
-                Password has been reset. Copy and send this to the user. They should change it after logging in.
+                {t('admin.password_reset_msg')}
               </p>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <code className="flex-1 text-lg font-mono font-semibold text-gray-900 select-all">
@@ -475,7 +474,7 @@ export const AdminUsersPage: React.FC = () => {
                 <button
                   onClick={handleCopyPassword}
                   className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                  title="Copy to clipboard"
+                  title={t('admin.copy_clipboard')}
                 >
                   {copied ? (
                     <Check className="h-5 w-5 text-green-600" />
@@ -485,12 +484,12 @@ export const AdminUsersPage: React.FC = () => {
                 </button>
               </div>
               {copied && (
-                <p className="text-sm text-green-600 text-center">Copied to clipboard!</p>
+                <p className="text-sm text-green-600 text-center">{t('admin.copied')}</p>
               )}
             </>
           )}
           <div className="flex justify-end pt-2">
-            <Button variant="secondary" onClick={() => setResetUser(null)}>Close</Button>
+            <Button variant="secondary" onClick={() => setResetUser(null)}>{t('common.close')}</Button>
           </div>
         </div>
       </Modal>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ThumbsUp,
@@ -31,6 +32,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import type { Comment, ReactionType, ProblemStatus, ProblemCategory } from '@/types';
 
 export const ProblemDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -84,7 +86,7 @@ export const ProblemDetailPage: React.FC = () => {
       }
       fetchProblem(id);
     } catch {
-      showToast({ type: 'error', message: 'Failed to add reaction' });
+      showToast({ type: 'error', message: t('problems.reaction_error') });
     }
   };
 
@@ -94,7 +96,7 @@ export const ProblemDetailPage: React.FC = () => {
 
     try {
       await commentsApi.create({ target_id: id, target_type: 'problem', content: newComment });
-      showToast({ type: 'success', message: 'Comment added!' });
+      showToast({ type: 'success', message: t('comments.added') });
       setNewComment('');
       // Await comments first so they render before fetchProblem triggers isLoading spinner
       await fetchComments();
@@ -102,7 +104,7 @@ export const ProblemDetailPage: React.FC = () => {
       const updated = await problemsApi.getById(id);
       useProblemStore.setState({ selectedProblem: updated });
     } catch {
-      showToast({ type: 'error', message: 'Failed to add comment' });
+      showToast({ type: 'error', message: t('comments.add_error') });
     }
   };
 
@@ -111,10 +113,10 @@ export const ProblemDetailPage: React.FC = () => {
     try {
       const updated = await problemsApi.update(id, { status: newStatus });
       useProblemStore.setState({ selectedProblem: updated });
-      showToast({ type: 'success', message: `Status changed to ${newStatus}` });
+      showToast({ type: 'success', message: t('problems.status_changed', { status: newStatus }) });
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to update status' });
+      showToast({ type: 'error', message: detail || t('problems.update_error') });
     }
     setShowActions(false);
   };
@@ -142,7 +144,7 @@ export const ProblemDetailPage: React.FC = () => {
         content: editContent,
         category: editCategory,
       });
-      showToast({ type: 'success', message: 'Problem updated!' });
+      showToast({ type: 'success', message: t('problems.updated_success') });
       setIsEditModalOpen(false);
       fetchProblem(id);
     } catch (err: unknown) {
@@ -151,7 +153,7 @@ export const ProblemDetailPage: React.FC = () => {
         ? raw
         : Array.isArray(raw)
           ? raw.map((e: { msg?: string }) => e.msg).join('; ')
-          : 'Failed to update problem';
+          : t('problems.update_error');
       showToast({ type: 'error', message });
     } finally {
       setIsSubmitting(false);
@@ -164,11 +166,11 @@ export const ProblemDetailPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await problemsApi.delete(id);
-      showToast({ type: 'success', message: 'Problem deleted!' });
+      showToast({ type: 'success', message: t('problems.deleted_success') });
       setIsDeleteModalOpen(false);
       navigate('/problems');
     } catch {
-      showToast({ type: 'error', message: 'Failed to delete problem' });
+      showToast({ type: 'error', message: t('problems.delete_error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +186,7 @@ export const ProblemDetailPage: React.FC = () => {
         name: brainstormName,
         description: brainstormDesc || undefined,
       });
-      showToast({ type: 'success', message: 'Brainstorming room created!' });
+      showToast({ type: 'success', message: t('problems.room_created') });
       setIsBrainstormModalOpen(false);
       setBrainstormName('');
       setBrainstormDesc('');
@@ -197,7 +199,7 @@ export const ProblemDetailPage: React.FC = () => {
         ? raw
         : Array.isArray(raw)
           ? raw.map((e: { msg?: string }) => e.msg).join('; ')
-          : 'Failed to create brainstorming room';
+          : t('problems.room_create_error');
       showToast({ type: 'error', message });
     } finally {
       setIsSubmitting(false);
@@ -225,7 +227,7 @@ export const ProblemDetailPage: React.FC = () => {
         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Problems
+        {t('problems.back_to_problems')}
       </Link>
 
       {/* Problem Header */}
@@ -269,7 +271,7 @@ export const ProblemDetailPage: React.FC = () => {
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Edit className="h-4 w-4" />
-                          Edit Problem
+                          {t('problems.edit_problem')}
                         </button>
 
                         <div className="border-t border-gray-200 my-1" />
@@ -287,7 +289,7 @@ export const ProblemDetailPage: React.FC = () => {
                           });
                           if (options.length === 0) return null;
                           return (<>
-                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
+                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
                         {options.map((s) => (
                           <button
                             key={s.value}
@@ -311,7 +313,7 @@ export const ProblemDetailPage: React.FC = () => {
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete Problem
+                          {t('problems.delete_problem')}
                         </button>
                       </div>
                     </>
@@ -340,7 +342,7 @@ export const ProblemDetailPage: React.FC = () => {
                   {authorName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Author
+                  {t('common.author')}
                 </p>
               </div>
             </div>
@@ -354,7 +356,7 @@ export const ProblemDetailPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BrainCircuit className="h-5 w-5 text-primary-600" />
-            <h3 className="font-semibold text-gray-900">Brainstorming Rooms</h3>
+            <h3 className="font-semibold text-gray-900">{t('problems.brainstorming_rooms')}</h3>
             {selectedProblem.rooms?.length > 0 && (
               <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
                 {selectedProblem.rooms.length}
@@ -370,7 +372,7 @@ export const ProblemDetailPage: React.FC = () => {
                 setIsBrainstormModalOpen(true);
               }}
             >
-              {selectedProblem.rooms?.length > 0 ? 'Add Room' : 'Brainstorm Solutions'}
+              {selectedProblem.rooms?.length > 0 ? t('problems.add_room') : t('problems.brainstorm_solutions')}
             </Button>
           )}
         </div>
@@ -394,7 +396,7 @@ export const ProblemDetailPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-gray-500">No brainstorming rooms yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{t('problems.no_rooms')}</p>
         )}
       </div>
 
@@ -448,7 +450,7 @@ export const ProblemDetailPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-gray-500" />
             <h2 className="text-lg font-semibold text-gray-900">
-              Comments ({comments.length})
+              {t('comments.title', { count: comments.length })}
             </h2>
           </div>
         </CardHeader>
@@ -457,14 +459,14 @@ export const ProblemDetailPage: React.FC = () => {
           {/* Add Comment */}
           <form onSubmit={handleSubmitComment} className="space-y-3">
             <Textarea
-              placeholder="Add a comment..."
+              placeholder={t('comments.add_placeholder')}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={3}
             />
             <div className="flex justify-end">
               <Button type="submit" disabled={!newComment.trim()}>
-                Post Comment
+                {t('comments.post')}
               </Button>
             </div>
           </form>
@@ -473,7 +475,7 @@ export const ProblemDetailPage: React.FC = () => {
           <div className="space-y-4">
             {comments.length === 0 ? (
               <p className="text-center text-gray-500 py-4">
-                No comments yet. Be the first to share your thoughts!
+                {t('comments.no_comments')}
               </p>
             ) : (
               comments.map((comment) => {
@@ -504,11 +506,11 @@ export const ProblemDetailPage: React.FC = () => {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Problem"
+        title={t('problems.edit_problem')}
       >
         <form onSubmit={handleEdit} className="space-y-4">
           <Input
-            label="Title (min 5 characters)"
+            label={t('problems.title_min_label')}
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             required
@@ -516,30 +518,30 @@ export const ProblemDetailPage: React.FC = () => {
             maxLength={255}
           />
           <Input
-            label="Summary (optional)"
+            label={t('problems.summary_label')}
             value={editSummary}
             onChange={(e) => setEditSummary(e.target.value)}
             placeholder="Brief summary, max 500 chars"
             maxLength={500}
           />
           <RichTextEditor
-            label="Content"
+            label={t('problems.description_label')}
             value={editContent}
             onChange={setEditContent}
             minHeight="200px"
           />
           <Select
-            label="Category"
+            label={t('problems.category_label')}
             value={editCategory}
             onChange={(e) => setEditCategory(e.target.value as ProblemCategory)}
             options={PROBLEM_CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? t('common.saving') : t('common.save')}
             </Button>
           </div>
         </form>
@@ -549,18 +551,18 @@ export const ProblemDetailPage: React.FC = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Problem"
+        title={t('problems.delete_problem')}
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to delete this problem? This action cannot be undone.
+            {t('problems.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-              {isSubmitting ? 'Deleting...' : 'Delete'}
+              {isSubmitting ? t('common.deleting') : t('common.delete')}
             </Button>
           </div>
         </div>
@@ -570,11 +572,11 @@ export const ProblemDetailPage: React.FC = () => {
       <Modal
         isOpen={isBrainstormModalOpen}
         onClose={() => setIsBrainstormModalOpen(false)}
-        title="Create Brainstorming Room"
+        title={t('problems.create_room_title')}
       >
         <form onSubmit={handleCreateBrainstormRoom} className="space-y-4">
           <Input
-            label="Room Name (min 3 characters)"
+            label={t('problems.room_name_label')}
             value={brainstormName}
             onChange={(e) => setBrainstormName(e.target.value)}
             required
@@ -582,17 +584,17 @@ export const ProblemDetailPage: React.FC = () => {
             maxLength={255}
           />
           <Textarea
-            label="Description (optional)"
+            label={t('problems.room_desc_label')}
             value={brainstormDesc}
             onChange={(e) => setBrainstormDesc(e.target.value)}
             rows={3}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="ghost" onClick={() => setIsBrainstormModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Room'}
+              {isSubmitting ? t('common.creating') : t('problems.create_room')}
             </Button>
           </div>
         </form>

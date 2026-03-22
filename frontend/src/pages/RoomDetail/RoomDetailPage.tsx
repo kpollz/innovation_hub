@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
@@ -24,6 +25,7 @@ const KANBAN_COLUMNS: { status: IdeaStatus; title: string }[] = [
 ];
 
 export const RoomDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -93,11 +95,11 @@ export const RoomDetailPage: React.FC = () => {
         description: editDescription.trim() || undefined,
       });
       setRoom(updated);
-      showToast({ type: 'success', message: 'Room updated!' });
+      showToast({ type: 'success', message: t('rooms.updated') });
       setIsEditModalOpen(false);
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to update room' });
+      showToast({ type: 'error', message: detail || t('rooms.update_error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -108,12 +110,12 @@ export const RoomDetailPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await roomsApi.delete(id);
-      showToast({ type: 'success', message: 'Room deleted!' });
+      showToast({ type: 'success', message: t('rooms.deleted') });
       setIsDeleteModalOpen(false);
       navigate('/rooms');
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to delete room' });
+      showToast({ type: 'error', message: detail || t('rooms.delete_error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -153,24 +155,24 @@ export const RoomDetailPage: React.FC = () => {
     // Only author or admin can change status
     const canChange = user && (user.id === idea.author_id || user.role === 'admin');
     if (!canChange) {
-      showToast({ type: 'error', message: 'You can only change the status of your own ideas' });
+      showToast({ type: 'error', message: t('rooms.drag_error_own') });
       setDraggedIdeaId(null);
       return;
     }
 
     // Terminal statuses cannot be dragged out
     if (idea.status === 'submitted' || idea.status === 'closed') {
-      showToast({ type: 'error', message: `Cannot move ideas out of "${idea.status}" status` });
+      showToast({ type: 'error', message: t('rooms.drag_error_terminal', { status: idea.status }) });
       setDraggedIdeaId(null);
       return;
     }
 
     try {
       await ideasApi.update(draggedIdeaId, { status: newStatus });
-      showToast({ type: 'success', message: 'Status updated!' });
+      showToast({ type: 'success', message: t('rooms.status_updated') });
       fetchRoomData();
     } catch {
-      showToast({ type: 'error', message: 'Failed to update status' });
+      showToast({ type: 'error', message: t('ideas.status_error') });
     } finally {
       setDraggedIdeaId(null);
     }
@@ -192,9 +194,9 @@ export const RoomDetailPage: React.FC = () => {
   if (!room) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Room not found</p>
+        <p className="text-gray-500">{t('rooms.not_found')}</p>
         <Link to="/rooms" className="text-primary-600 hover:text-primary-700 mt-2 inline-block">
-          Back to Idea Lab
+          {t('rooms.back_to_rooms')}
         </Link>
       </div>
     );
@@ -208,7 +210,7 @@ export const RoomDetailPage: React.FC = () => {
         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Idea Lab
+        {t('rooms.back_to_rooms')}
       </Link>
 
       {/* Room Header */}
@@ -227,12 +229,12 @@ export const RoomDetailPage: React.FC = () => {
               <div className="mt-4 p-3 bg-primary-50 rounded-lg flex items-center gap-3">
                 <BrainCircuit className="h-5 w-5 text-primary-600" />
                 <div>
-                  <p className="text-xs text-primary-600 font-medium">Linked Problem</p>
+                  <p className="text-xs text-primary-600 font-medium">{t('rooms.linked_problem')}</p>
                   <Link
                     to={`/problems/${room.problem_id}`}
                     className="text-sm text-primary-700 hover:underline"
                   >
-                    View linked problem
+                    {t('rooms.view_linked')}
                   </Link>
                 </div>
               </div>
@@ -265,7 +267,7 @@ export const RoomDetailPage: React.FC = () => {
               </button>
             </div>
             <Button onClick={openCreateIdeaPage} leftIcon={<Plus className="h-4 w-4" />}>
-              Add Idea
+              {t('rooms.add_idea')}
             </Button>
 
             {canModify && (
@@ -288,7 +290,7 @@ export const RoomDetailPage: React.FC = () => {
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                       >
                         <Edit className="h-4 w-4" />
-                        Edit Room
+                        {t('rooms.edit_room')}
                       </button>
                       <div className="border-t border-gray-200 my-1" />
                       <button
@@ -299,7 +301,7 @@ export const RoomDetailPage: React.FC = () => {
                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete Room
+                        {t('rooms.delete_room')}
                       </button>
                     </div>
                   </>
@@ -355,7 +357,7 @@ export const RoomDetailPage: React.FC = () => {
                   ))}
                   {columnIdeas.length === 0 && (
                     <p className="text-center text-sm text-gray-400 py-4">
-                      No ideas
+                      {t('rooms.no_ideas')}
                     </p>
                   )}
                 </div>
@@ -367,9 +369,9 @@ export const RoomDetailPage: React.FC = () => {
         <div className="space-y-4">
           {ideas.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <p className="text-gray-500">No ideas yet</p>
+              <p className="text-gray-500">{t('rooms.no_ideas_yet')}</p>
               <Button variant="secondary" className="mt-4" onClick={openCreateIdeaPage}>
-                Add the first idea
+                {t('rooms.add_first_idea')}
               </Button>
             </div>
           ) : (
@@ -386,10 +388,10 @@ export const RoomDetailPage: React.FC = () => {
       )}
 
       {/* Edit Room Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Room">
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t('rooms.edit_room')}>
         <form onSubmit={handleEdit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('rooms.name_label')}</label>
             <input
               type="text"
               value={editName}
@@ -401,7 +403,7 @@ export const RoomDetailPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('rooms.desc_label')}</label>
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
@@ -411,27 +413,27 @@ export const RoomDetailPage: React.FC = () => {
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? t('common.saving') : t('common.save')}
             </Button>
           </div>
         </form>
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Room">
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('rooms.delete_room')}>
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to delete this room? All ideas in this room will also be removed. This action cannot be undone.
+            {t('rooms.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3">
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-              {isSubmitting ? 'Deleting...' : 'Delete'}
+              {isSubmitting ? t('common.deleting') : t('common.delete')}
             </Button>
           </div>
         </div>

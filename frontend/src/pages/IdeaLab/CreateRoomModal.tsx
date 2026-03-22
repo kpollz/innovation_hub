@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { roomsApi } from '@/api/rooms';
@@ -24,6 +25,7 @@ interface CreateRoomModalProps {
 }
 
 export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const { problems, fetchProblems } = useProblemStore();
   const { modal, closeModal, showToast } = useUIStore();
 
@@ -51,13 +53,13 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
         description: data.description,
         problem_id: data.problem_id || undefined,
       });
-      showToast({ type: 'success', message: 'Room created successfully!' });
+      showToast({ type: 'success', message: t('rooms.created_success') });
       reset();
       closeModal();
       onSuccess();
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to create room' });
+      showToast({ type: 'error', message: detail || t('rooms.create_error') });
     }
   };
 
@@ -67,7 +69,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
   };
 
   const problemOptions = [
-    { value: '', label: 'Link to a problem (optional)' },
+    { value: '', label: t('rooms.link_problem_option') },
     ...problems.map((p) => ({
       value: p.id,
       label: p.title,
@@ -78,40 +80,40 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create Brainstorming Room"
+      title={t('rooms.create_room_title')}
       size="lg"
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
             isLoading={isSubmitting}
           >
-            Create Room
+            {t('rooms.create_room')}
           </Button>
         </>
       }
     >
       <form className="space-y-4">
         <Input
-          label="Room Name"
-          placeholder="Enter room name..."
+          label={t('rooms.room_name_label')}
+          placeholder={t('rooms.room_name_placeholder')}
           {...register('name')}
           error={errors.name?.message}
         />
 
         <Textarea
-          label="Description"
-          placeholder="What will you brainstorm about?"
+          label={t('rooms.desc_label')}
+          placeholder={t('rooms.room_desc_placeholder')}
           rows={4}
           {...register('description')}
           error={errors.description?.message}
         />
 
         <Select
-          label="Link to Problem (Optional)"
+          label={t('rooms.link_problem')}
           options={problemOptions}
           {...register('problem_id')}
         />

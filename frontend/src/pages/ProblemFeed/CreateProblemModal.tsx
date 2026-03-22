@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +25,7 @@ const createProblemSchema = z.object({
 type CreateProblemForm = z.infer<typeof createProblemSchema>;
 
 export const CreateProblemModal: React.FC = () => {
+  const { t } = useTranslation();
   const { createProblem, isLoading } = useProblemStore();
   const { modal, closeModal, showToast } = useUIStore();
 
@@ -49,11 +51,11 @@ export const CreateProblemModal: React.FC = () => {
         content: data.content,
         category: data.category as ProblemCategory,
       });
-      showToast({ type: 'success', message: 'Problem created successfully!' });
+      showToast({ type: 'success', message: t('problems.created_success') });
       reset();
       closeModal();
     } catch {
-      showToast({ type: 'error', message: 'Failed to create problem' });
+      showToast({ type: 'error', message: t('problems.create_error') });
     }
   };
 
@@ -66,49 +68,49 @@ export const CreateProblemModal: React.FC = () => {
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Share a Problem"
+      title={t('problems.create_title')}
       size="lg"
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
             isLoading={isLoading}
           >
-            Create Problem
+            {t('problems.create_problem')}
           </Button>
         </>
       }
     >
       <form className="space-y-4">
         <Input
-          label="Title"
-          placeholder="What's the problem?"
+          label={t('problems.title_label')}
+          placeholder={t('problems.title_placeholder')}
           {...register('title')}
           error={errors.title?.message}
         />
 
         <Input
-          label="Summary (Optional)"
-          placeholder="Brief summary of the problem (max 200 characters)"
+          label={t('problems.summary_label')}
+          placeholder={t('problems.summary_placeholder')}
           {...register('summary')}
           error={errors.summary?.message}
         />
 
         <Select
-          label="Category"
-          options={[{ value: '', label: 'Select a category' }, ...PROBLEM_CATEGORIES]}
+          label={t('problems.category_label')}
+          options={[{ value: '', label: t('problems.select_category') }, ...PROBLEM_CATEGORIES]}
           {...register('category')}
           error={errors.category?.message}
         />
 
         <RichTextEditor
-          label="Description"
+          label={t('problems.description_label')}
           value={watch('content')}
           onChange={(html) => setValue('content', html, { shouldValidate: true })}
-          placeholder="Describe the problem in detail..."
+          placeholder={t('problems.description_placeholder')}
           error={errors.content?.message}
           minHeight="200px"
         />

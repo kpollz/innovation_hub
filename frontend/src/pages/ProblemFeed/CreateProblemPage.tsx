@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useProblemStore } from '@/stores/problemStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +12,7 @@ import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import type { ProblemCategory } from '@/types';
 
 export const CreateProblemPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { createProblem, isLoading } = useProblemStore();
   const { showToast } = useUIStore();
@@ -53,10 +55,10 @@ export const CreateProblemPage: React.FC = () => {
         content,
         category: category as ProblemCategory,
       });
-      showToast({ type: 'success', message: 'Problem created successfully!' });
+      showToast({ type: 'success', message: t('problems.created_success') });
       navigate('/problems');
     } catch {
-      showToast({ type: 'error', message: 'Failed to create problem' });
+      showToast({ type: 'error', message: t('problems.create_error') });
     }
   };
 
@@ -64,25 +66,25 @@ export const CreateProblemPage: React.FC = () => {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <Link to="/problems" className="text-sm text-gray-600 hover:text-gray-900 mb-4 inline-block">
-          ← Back to Problems
+          ← {t('problems.back_to_problems')}
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Share a Problem</h1>
-        <p className="text-gray-600 mt-1">Describe a problem you have encountered.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('problems.create_title')}</h1>
+        <p className="text-gray-600 mt-1">{t('problems.create_desc')}</p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader className="border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Problem Details</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('problems.problem_details')}</h2>
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title <span className="text-red-500">*</span>
+                {t('problems.title_label')} <span className="text-red-500">*</span>
               </label>
               <Input
-                placeholder="What is the problem?"
+                placeholder={t('problems.title_placeholder_alt')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 error={errors.title}
@@ -91,10 +93,10 @@ export const CreateProblemPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Summary <span className="text-gray-400">(optional)</span>
+                {t('problems.summary_label')}
               </label>
               <Input
-                placeholder="Brief summary (max 200 characters)"
+                placeholder={t('problems.summary_placeholder')}
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 error={errors.summary}
@@ -104,10 +106,10 @@ export const CreateProblemPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category <span className="text-red-500">*</span>
+                {t('problems.category_label')} <span className="text-red-500">*</span>
               </label>
               <Select
-                options={[{ value: '', label: 'Select a category' }, ...PROBLEM_CATEGORIES]}
+                options={[{ value: '', label: t('problems.select_category') }, ...PROBLEM_CATEGORIES]}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 error={errors.category}
@@ -115,10 +117,10 @@ export const CreateProblemPage: React.FC = () => {
             </div>
 
             <RichTextEditor
-              label="Description *"
+              label={t('problems.description_label') + ' *'}
               value={content}
               onChange={setContent}
-              placeholder="Describe the problem in detail..."
+              placeholder={t('problems.description_placeholder')}
               error={errors.content}
               minHeight="250px"
             />
@@ -127,10 +129,10 @@ export const CreateProblemPage: React.FC = () => {
 
         <div className="flex items-center justify-end gap-3 mt-6">
           <Button type="button" variant="secondary" onClick={() => navigate('/problems')}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isLoading}>
-            Create Problem
+            {t('problems.create_problem')}
           </Button>
         </div>
       </form>

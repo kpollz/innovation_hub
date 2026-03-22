@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { User, KeyRound, LogOut, Camera } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { authApi } from '@/api/auth';
@@ -34,6 +35,7 @@ type ProfileForm = z.infer<typeof profileSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 export const UserSettingsPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, updateProfile, logout } = useAuthStore();
   const { showToast } = useUIStore();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
@@ -66,20 +68,20 @@ export const UserSettingsPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      showToast({ type: 'error', message: 'Only JPG, PNG, and WebP are allowed' });
+      showToast({ type: 'error', message: t('settings.avatar_type_error') });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      showToast({ type: 'error', message: 'Image must be under 10MB' });
+      showToast({ type: 'error', message: t('settings.avatar_size_error') });
       return;
     }
     setIsUploadingAvatar(true);
     try {
       const { url } = await uploadsApi.uploadAvatar(file);
       await updateProfile({ avatar_url: url });
-      showToast({ type: 'success', message: 'Avatar updated!' });
+      showToast({ type: 'success', message: t('settings.avatar_updated') });
     } catch {
-      showToast({ type: 'error', message: 'Failed to upload avatar' });
+      showToast({ type: 'error', message: t('settings.avatar_error') });
     } finally {
       setIsUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -93,32 +95,32 @@ export const UserSettingsPage: React.FC = () => {
         email: data.email || undefined,
         team: data.team || undefined,
       });
-      showToast({ type: 'success', message: 'Profile updated!' });
+      showToast({ type: 'success', message: t('settings.profile_updated') });
     } catch {
-      showToast({ type: 'error', message: 'Failed to update profile' });
+      showToast({ type: 'error', message: t('settings.profile_error') });
     }
   };
 
   const onPasswordSubmit = async (data: PasswordForm) => {
     try {
       await authApi.changePassword(data.old_password, data.new_password);
-      showToast({ type: 'success', message: 'Password changed!' });
+      showToast({ type: 'success', message: t('settings.password_changed') });
       resetPassword();
     } catch {
-      showToast({ type: 'error', message: 'Failed to change password. Check your current password.' });
+      showToast({ type: 'error', message: t('settings.password_error') });
     }
   };
 
   const tabs = [
-    { id: 'profile' as const, label: 'Profile', icon: User },
-    { id: 'password' as const, label: 'Password', icon: KeyRound },
+    { id: 'profile' as const, label: 'settings.profile', icon: User },
+    { id: 'password' as const, label: 'settings.password', icon: KeyRound },
   ];
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your account settings</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+        <p className="text-gray-500 mt-1">{t('settings.subtitle')}</p>
       </div>
 
       {/* User card */}
@@ -165,7 +167,7 @@ export const UserSettingsPage: React.FC = () => {
               </h2>
               <p className="text-sm text-gray-500">@{user?.username}</p>
               <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
-                {user?.role === 'admin' ? 'Administrator' : 'Member'}
+                {user?.role === 'admin' ? t('common.administrator') : t('common.member')}
               </span>
             </div>
           </div>
@@ -188,7 +190,7 @@ export const UserSettingsPage: React.FC = () => {
               )}
             >
               <Icon className="h-4 w-4" />
-              {tab.label}
+              {t(tab.label)}
             </button>
           );
         })}
@@ -198,38 +200,38 @@ export const UserSettingsPage: React.FC = () => {
       {activeTab === 'profile' && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">Profile Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('settings.profile_info')}</h3>
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
               <Input
-                label="Username"
+                label={t('auth.username')}
                 value={user?.username || ''}
                 disabled
-                helperText="Username cannot be changed"
+                helperText={t('settings.username_hint')}
               />
               <Input
-                label="Full Name"
-                placeholder="Your full name"
+                label={t('settings.fullname_label')}
+                placeholder={t('settings.fullname_placeholder')}
                 error={profileErrors.full_name?.message}
                 {...registerProfile('full_name')}
               />
               <Input
-                label="Email"
+                label={t('settings.email_label')}
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t('settings.email_placeholder')}
                 error={profileErrors.email?.message}
                 {...registerProfile('email')}
               />
               <Input
-                label="Team"
-                placeholder="e.g. Engineering, Design..."
+                label={t('settings.team_label')}
+                placeholder={t('settings.team_placeholder')}
                 error={profileErrors.team?.message}
                 {...registerProfile('team')}
               />
               <div className="flex justify-end pt-2">
                 <Button type="submit" isLoading={isProfileSubmitting}>
-                  Save Changes
+                  {t('common.save')}
                 </Button>
               </div>
             </form>
@@ -241,34 +243,34 @@ export const UserSettingsPage: React.FC = () => {
       {activeTab === 'password' && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('settings.change_password')}</h3>
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
               <Input
-                label="Current Password"
+                label={t('settings.current_password')}
                 type="password"
-                placeholder="Enter current password"
+                placeholder={t('settings.current_password_placeholder')}
                 error={passwordErrors.old_password?.message}
                 {...registerPassword('old_password')}
               />
               <Input
-                label="New Password"
+                label={t('settings.new_password')}
                 type="password"
-                placeholder="Min 8 characters"
+                placeholder={t('settings.new_password_placeholder')}
                 error={passwordErrors.new_password?.message}
                 {...registerPassword('new_password')}
               />
               <Input
-                label="Confirm New Password"
+                label={t('settings.confirm_password')}
                 type="password"
-                placeholder="Re-enter new password"
+                placeholder={t('settings.confirm_password_placeholder')}
                 error={passwordErrors.confirm_password?.message}
                 {...registerPassword('confirm_password')}
               />
               <div className="flex justify-end pt-2">
                 <Button type="submit" isLoading={isPasswordSubmitting}>
-                  Change Password
+                  {t('settings.change_password')}
                 </Button>
               </div>
             </form>
@@ -276,17 +278,37 @@ export const UserSettingsPage: React.FC = () => {
         </Card>
       )}
 
+      {/* Language */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">{t('settings.language')}</h3>
+              <p className="text-sm text-gray-500">{t('settings.language_desc')}</p>
+            </div>
+            <select
+              value={i18n.language?.startsWith('vi') ? 'vi' : 'en'}
+              onChange={(e) => i18n.changeLanguage(e.target.value)}
+              className="rounded-lg border border-gray-300 px-4 py-2.5 text-base text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm transition-colors"
+            >
+              <option value="en">English</option>
+              <option value="vi">Tiếng Việt</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Logout */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-900">Sign Out</h3>
-              <p className="text-sm text-gray-500">Sign out of your account on this device</p>
+              <h3 className="text-sm font-medium text-gray-900">{t('auth.sign_out')}</h3>
+              <p className="text-sm text-gray-500">{t('auth.sign_out_desc')}</p>
             </div>
             <Button variant="danger" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('auth.sign_out')}
             </Button>
           </div>
         </CardContent>

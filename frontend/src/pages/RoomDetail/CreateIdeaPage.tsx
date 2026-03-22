@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,6 +24,7 @@ const createIdeaSchema = z.object({
 type CreateIdeaForm = z.infer<typeof createIdeaSchema>;
 
 export const CreateIdeaPage: React.FC = () => {
+  const { t } = useTranslation();
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { showToast } = useUIStore();
@@ -47,11 +49,11 @@ export const CreateIdeaPage: React.FC = () => {
         description: data.description,
         summary: data.summary || undefined,
       });
-      showToast({ type: 'success', message: 'Idea created successfully!' });
+      showToast({ type: 'success', message: t('ideas.created_success') });
       navigate(`/ideas/${idea.id}`);
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : 'Failed to create idea';
+      const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : t('ideas.create_error');
       showToast({ type: 'error', message: detail });
     }
   };
@@ -63,35 +65,35 @@ export const CreateIdeaPage: React.FC = () => {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Room
+        {t('ideas.back_to_room')}
       </Link>
 
       <Card>
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">Create New Idea</h1>
-          <p className="text-gray-500 mt-1">Share your solution or suggestion for this brainstorming room.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('ideas.create_title')}</h1>
+          <p className="text-gray-500 mt-1">{t('ideas.create_desc')}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input
-              label="Idea Title"
-              placeholder="What is your idea? (min 3 characters)"
+              label={t('ideas.title_label')}
+              placeholder={t('ideas.title_placeholder')}
               {...register('title')}
               error={errors.title?.message}
             />
 
             <RichTextEditor
-              label="Description"
+              label={t('ideas.desc_label')}
               value={watch('description')}
               onChange={(html) => setValue('description', html, { shouldValidate: true })}
-              placeholder="Describe your solution in detail... (min 10 characters)"
+              placeholder={t('ideas.desc_placeholder')}
               error={errors.description?.message}
               minHeight="200px"
             />
 
             <Textarea
-              label="Summary (optional)"
-              placeholder="Brief summary of your idea (shown in listings)"
+              label={t('ideas.summary_label')}
+              placeholder={t('ideas.summary_placeholder')}
               rows={4}
               {...register('summary')}
               error={errors.summary?.message}
@@ -99,10 +101,10 @@ export const CreateIdeaPage: React.FC = () => {
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
               <Button type="button" variant="ghost" onClick={() => navigate(`/rooms/${roomId}`)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" isLoading={isSubmitting}>
-                Create Idea
+                {t('ideas.create_idea')}
               </Button>
             </div>
           </form>

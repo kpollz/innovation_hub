@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ThumbsUp,
@@ -29,6 +30,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import type { Idea, Comment, ReactionType, IdeaStatus } from '@/types';
 
 export const IdeaDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -65,7 +67,7 @@ export const IdeaDetailPage: React.FC = () => {
       const data = await ideasApi.getById(id);
       setIdea(data);
     } catch {
-      showToast({ type: 'error', message: 'Failed to load idea' });
+      showToast({ type: 'error', message: t('ideas.load_error') });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +98,7 @@ export const IdeaDetailPage: React.FC = () => {
       const updated = await ideasApi.getById(id);
       setIdea(updated);
     } catch {
-      showToast({ type: 'error', message: 'Failed to update reaction' });
+      showToast({ type: 'error', message: t('ideas.reaction_error') });
     }
   };
 
@@ -111,7 +113,7 @@ export const IdeaDetailPage: React.FC = () => {
       const updated = await ideasApi.getById(id);
       setIdea(updated);
     } catch {
-      showToast({ type: 'error', message: 'Failed to vote' });
+      showToast({ type: 'error', message: t('ideas.vote_error') });
     }
   };
 
@@ -120,13 +122,13 @@ export const IdeaDetailPage: React.FC = () => {
     if (!id || !newComment.trim()) return;
     try {
       await commentsApi.create({ target_id: id, target_type: 'idea', content: newComment });
-      showToast({ type: 'success', message: 'Comment added!' });
+      showToast({ type: 'success', message: t('comments.added') });
       setNewComment('');
       await fetchComments();
       const updated = await ideasApi.getById(id);
       setIdea(updated);
     } catch {
-      showToast({ type: 'error', message: 'Failed to add comment' });
+      showToast({ type: 'error', message: t('comments.add_error') });
     }
   };
 
@@ -135,10 +137,10 @@ export const IdeaDetailPage: React.FC = () => {
     try {
       const updated = await ideasApi.update(id, { status: newStatus });
       setIdea(updated);
-      showToast({ type: 'success', message: `Status changed to ${newStatus}` });
+      showToast({ type: 'success', message: t('ideas.status_updated') });
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || 'Failed to update status' });
+      showToast({ type: 'error', message: detail || t('ideas.status_error') });
     }
     setShowActions(false);
   };
@@ -164,11 +166,11 @@ export const IdeaDetailPage: React.FC = () => {
         summary: editSummary.trim() || undefined,
       });
       setIdea(updated);
-      showToast({ type: 'success', message: 'Idea updated!' });
+      showToast({ type: 'success', message: t('ideas.updated') });
       setIsEditModalOpen(false);
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : 'Failed to update idea';
+      const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : t('ideas.update_error');
       showToast({ type: 'error', message: detail });
     } finally {
       setIsSubmitting(false);
@@ -180,11 +182,11 @@ export const IdeaDetailPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await ideasApi.delete(id);
-      showToast({ type: 'success', message: 'Idea deleted!' });
+      showToast({ type: 'success', message: t('ideas.deleted_success') });
       setIsDeleteModalOpen(false);
       navigate(-1);
     } catch {
-      showToast({ type: 'error', message: 'Failed to delete idea' });
+      showToast({ type: 'error', message: t('ideas.delete_error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -195,9 +197,9 @@ export const IdeaDetailPage: React.FC = () => {
     try {
       const updated = await ideasApi.update(id, { is_pinned: !idea.is_pinned });
       setIdea(updated);
-      showToast({ type: 'success', message: idea.is_pinned ? 'Unpinned' : 'Pinned' });
+      showToast({ type: 'success', message: idea.is_pinned ? t('ideas.unpin_success') : t('ideas.pin_success') });
     } catch {
-      showToast({ type: 'error', message: 'Failed to update pin status' });
+      showToast({ type: 'error', message: t('ideas.pin_error') });
     }
     setShowActions(false);
   };
@@ -223,7 +225,7 @@ export const IdeaDetailPage: React.FC = () => {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Room
+        {t('ideas.back_to_room')}
       </Link>
 
       {/* Header Card */}
@@ -255,7 +257,7 @@ export const IdeaDetailPage: React.FC = () => {
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                       >
                         <Edit className="h-4 w-4" />
-                        Edit Idea
+                        {t('ideas.edit_idea')}
                       </button>
 
                       {user?.role === 'admin' && (
@@ -264,14 +266,14 @@ export const IdeaDetailPage: React.FC = () => {
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Pin className="h-4 w-4" />
-                          {idea.is_pinned ? 'Unpin' : 'Pin to Top'}
+                          {idea.is_pinned ? t('ideas.unpin') : t('ideas.pin_to_top')}
                         </button>
                       )}
 
                       {!isTerminal && (
                         <>
                           <div className="border-t border-gray-200 my-1" />
-                          <p className="px-4 py-1 text-xs text-gray-500 font-medium">Change Status</p>
+                          <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('ideas.change_status')}</p>
                           {IDEA_STATUSES.filter((s) => s.value !== idea.status).map((s) => (
                             <button
                               key={s.value}
@@ -290,7 +292,7 @@ export const IdeaDetailPage: React.FC = () => {
                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete Idea
+                        {t('ideas.delete_idea')}
                       </button>
                     </div>
                   </>
@@ -305,7 +307,7 @@ export const IdeaDetailPage: React.FC = () => {
 
           {idea.summary && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm font-medium text-green-800 mb-1">Summary</p>
+              <p className="text-sm font-medium text-green-800 mb-1">{t('ideas.summary')}</p>
               <p className="text-green-700">{idea.summary}</p>
             </div>
           )}
@@ -333,7 +335,7 @@ export const IdeaDetailPage: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Rate this idea:</span>
+              <span className="text-sm font-medium text-gray-700">{t('ideas.rate_idea')}</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -355,7 +357,7 @@ export const IdeaDetailPage: React.FC = () => {
                 ))}
               </div>
               <span className="text-sm text-gray-500 ml-2">
-                {idea.vote_avg.toFixed(1)} avg ({idea.vote_count} votes)
+                {t('ideas.avg_votes', { avg: idea.vote_avg.toFixed(1), count: idea.vote_count })}
               </span>
             </div>
 
@@ -398,25 +400,25 @@ export const IdeaDetailPage: React.FC = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Comments ({comments.length})</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('comments.title', { count: comments.length })}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmitComment} className="space-y-3">
             <Textarea
-              placeholder="Add a comment..."
+              placeholder={t('comments.add_placeholder')}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={3}
             />
             <div className="flex justify-end">
-              <Button type="submit" disabled={!newComment.trim()}>Post Comment</Button>
+              <Button type="submit" disabled={!newComment.trim()}>{t('comments.post')}</Button>
             </div>
           </form>
 
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No comments yet. Be the first to share your thoughts!</p>
+              <p className="text-center text-gray-500 py-4">{t('comments.no_comments')}</p>
             ) : (
               comments.map((comment) => {
                 const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
@@ -439,10 +441,10 @@ export const IdeaDetailPage: React.FC = () => {
       </Card>
 
       {/* Edit Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Idea">
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t('ideas.edit_idea')}>
         <form onSubmit={handleEdit} className="space-y-4">
           <Input
-            label="Title (min 3 characters)"
+            label={t('ideas.title_min_label')}
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             required
@@ -450,34 +452,34 @@ export const IdeaDetailPage: React.FC = () => {
             maxLength={255}
           />
           <RichTextEditor
-            label="Description"
+            label={t('ideas.desc_label')}
             value={editDescription}
             onChange={setEditDescription}
             minHeight="200px"
           />
           <Textarea
-            label="Summary (optional)"
+            label={t('ideas.summary_label')}
             value={editSummary}
             onChange={(e) => setEditSummary(e.target.value)}
             rows={3}
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>{t('common.cancel')}</Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? t('common.saving') : t('common.save')}
             </Button>
           </div>
         </form>
       </Modal>
 
       {/* Delete Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Idea">
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('ideas.delete_idea')}>
         <div className="space-y-4">
-          <p className="text-gray-600">Are you sure you want to delete this idea? This action cannot be undone.</p>
+          <p className="text-gray-600">{t('ideas.delete_confirm')}</p>
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>{t('common.cancel')}</Button>
             <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-              {isSubmitting ? 'Deleting...' : 'Delete'}
+              {isSubmitting ? t('common.deleting') : t('common.delete')}
             </Button>
           </div>
         </div>

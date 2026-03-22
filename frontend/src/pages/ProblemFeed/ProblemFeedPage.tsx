@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, Search, Filter, User } from 'lucide-react';
 import { useProblemStore } from '@/stores/problemStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -9,14 +10,8 @@ import { Select } from '@/components/ui/Select';
 import { ProblemCard } from '@/components/common/ProblemCard';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 
-const sortOptions = [
-  { value: 'newest', label: 'Newest First' },
-  { value: 'oldest', label: 'Oldest First' },
-  { value: 'most_liked', label: 'Most Liked' },
-  { value: 'most_commented', label: 'Most Commented' },
-];
-
 export const ProblemFeedPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const {
@@ -32,6 +27,13 @@ export const ProblemFeedPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showMyProblems, setShowMyProblems] = useState(false);
+
+  const sortOptions = [
+    { value: 'newest', label: t('problems.newest') },
+    { value: 'oldest', label: t('problems.oldest') },
+    { value: 'most_liked', label: t('problems.most_liked') },
+    { value: 'most_commented', label: t('problems.most_commented') },
+  ];
 
   useEffect(() => {
     fetchProblems();
@@ -67,13 +69,13 @@ export const ProblemFeedPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Problem Feed</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('problems.title')}</h1>
           <p className="text-gray-600 mt-1">
-            {totalProblems} problems shared by the community
+            {t('problems.count', { count: totalProblems })}
           </p>
         </div>
         <Button onClick={() => navigate('/problems/new')} leftIcon={<Plus className="h-4 w-4" />}>
-          Share Problem
+          {t('problems.share_problem')}
         </Button>
       </div>
 
@@ -84,14 +86,14 @@ export const ProblemFeedPage: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search problems..."
+              placeholder={t('problems.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
           <Button type="submit" variant="secondary">
-            Search
+            {t('common.search')}
           </Button>
           <Button
             type="button"
@@ -99,7 +101,7 @@ export const ProblemFeedPage: React.FC = () => {
             onClick={toggleMyProblems}
             leftIcon={<User className="h-4 w-4" />}
           >
-            My Problems
+            {t('problems.my_problems')}
           </Button>
           <Button
             type="button"
@@ -107,26 +109,26 @@ export const ProblemFeedPage: React.FC = () => {
             onClick={() => setShowFilters(!showFilters)}
             leftIcon={<Filter className="h-4 w-4" />}
           >
-            Filters
+            {t('problems.filters')}
           </Button>
         </form>
 
         {showFilters && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
             <Select
-              label="Category"
+              label={t('problems.category')}
               value={filters.category || ''}
               onChange={(e) => handleFilterChange('category', e.target.value)}
-              options={[{ value: '', label: 'All Categories' }, ...PROBLEM_CATEGORIES]}
+              options={[{ value: '', label: t('problems.all_categories') }, ...PROBLEM_CATEGORIES]}
             />
             <Select
-              label="Status"
+              label={t('problems.status')}
               value={filters.status || ''}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              options={[{ value: '', label: 'All Statuses' }, ...PROBLEM_STATUSES]}
+              options={[{ value: '', label: t('problems.all_statuses') }, ...PROBLEM_STATUSES]}
             />
             <Select
-              label="Sort By"
+              label={t('problems.sort_by')}
               value={filters.sort || 'newest'}
               onChange={(e) => handleFilterChange('sort', e.target.value)}
               options={sortOptions}
@@ -142,9 +144,9 @@ export const ProblemFeedPage: React.FC = () => {
         </div>
       ) : problems.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <p className="text-gray-500">No problems found</p>
+          <p className="text-gray-500">{t('problems.no_problems')}</p>
           <Button variant="secondary" className="mt-4" onClick={() => navigate('/problems/new')}>
-            Share the first problem
+            {t('problems.share_first')}
           </Button>
         </div>
       ) : (
@@ -164,10 +166,10 @@ export const ProblemFeedPage: React.FC = () => {
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            Previous
+            {t('common.previous')}
           </Button>
           <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
+            {t('common.page_of', { current: currentPage, total: totalPages })}
           </span>
           <Button
             variant="secondary"
@@ -175,7 +177,7 @@ export const ProblemFeedPage: React.FC = () => {
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            Next
+            {t('common.next')}
           </Button>
         </div>
       )}

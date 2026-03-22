@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Lightbulb } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, isAuthenticated, error, clearError } = useAuthStore();
   const { showToast } = useUIStore();
@@ -43,10 +45,10 @@ export const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginForm) => {
     try {
       await login(data);
-      showToast({ type: 'success', message: 'Login successful!' });
+      showToast({ type: 'success', message: t('auth.login_success') });
       navigate('/');
     } catch {
-      showToast({ type: 'error', message: 'Invalid username or password' });
+      showToast({ type: 'error', message: t('auth.login_error') });
     }
   };
 
@@ -64,19 +66,19 @@ export const LoginPage: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Sign in to your account</CardTitle>
+            <CardTitle className="text-center">{t('auth.sign_in_title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <Input
-                label="Username"
+                label={t('auth.username')}
                 type="text"
                 {...register('username')}
                 error={errors.username?.message}
               />
 
               <Input
-                label="Password"
+                label={t('auth.password')}
                 type="password"
                 {...register('password')}
                 error={errors.password?.message}
@@ -91,18 +93,18 @@ export const LoginPage: React.FC = () => {
                 className="w-full"
                 isLoading={isSubmitting}
               >
-                Sign in
+                {t('auth.sign_in')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                {t('auth.no_account')}{' '}
                 <Link
                   to="/register"
                   className="font-medium text-primary-600 hover:text-primary-500"
                 >
-                  Create one
+                  {t('auth.create_one')}
                 </Link>
               </p>
             </div>

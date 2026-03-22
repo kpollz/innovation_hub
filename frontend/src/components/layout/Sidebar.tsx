@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Home,
   AlertCircle,
@@ -13,17 +14,18 @@ import { useUIStore } from '@/stores/uiStore';
 import { classNames } from '@/utils/helpers';
 
 const navItems = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/problems', label: 'Problem Feed', icon: AlertCircle },
-  { path: '/rooms', label: 'Idea Lab', icon: Lightbulb },
+  { path: '/', label: 'nav.home', icon: Home },
+  { path: '/problems', label: 'nav.problem_feed', icon: AlertCircle },
+  { path: '/rooms', label: 'nav.idea_lab', icon: Lightbulb },
 ];
 
 const adminNavItems = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/users', label: 'User Management', icon: Users },
+  { path: '/admin', label: 'nav.dashboard', icon: LayoutDashboard },
+  { path: '/admin/users', label: 'nav.user_management', icon: Users },
 ];
 
 export const Sidebar: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const { sidebarOpen, setSidebarOpen } = useUIStore();
   const location = useLocation();
@@ -53,7 +55,7 @@ export const Sidebar: React.FC = () => {
         )}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 lg:hidden flex-shrink-0">
-          <span className="text-lg font-semibold text-gray-900">Menu</span>
+          <span className="text-lg font-semibold text-gray-900">{t('common.menu')}</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -81,7 +83,7 @@ export const Sidebar: React.FC = () => {
                 )}
               >
                 <Icon className={classNames('h-5 w-5', isActive ? 'text-primary-600' : 'text-gray-500')} />
-                {item.label}
+                {t(item.label)}
               </NavLink>
             );
           })}
@@ -90,7 +92,7 @@ export const Sidebar: React.FC = () => {
             <>
               <div className="pt-4 mt-4 border-t border-gray-200">
                 <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Admin
+                  {t('nav.admin')}
                 </p>
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;
@@ -111,7 +113,7 @@ export const Sidebar: React.FC = () => {
                       )}
                     >
                       <Icon className={classNames('h-5 w-5', isActive ? 'text-primary-600' : 'text-gray-500')} />
-                      {item.label}
+                      {t(item.label)}
                     </NavLink>
                   );
                 })}
@@ -124,7 +126,7 @@ export const Sidebar: React.FC = () => {
         <div
           className="flex-shrink-0 h-14 px-4 border-t border-gray-200 bg-white flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => { navigate('/settings'); setSidebarOpen(false); }}
-          title="Account Settings"
+          title={t('settings.title')}
         >
           <div className="flex items-center gap-3">
             {user?.avatar_url ? (
@@ -141,7 +143,7 @@ export const Sidebar: React.FC = () => {
                 {user?.full_name || user?.username || 'User'}
               </p>
               <p className="text-xs text-gray-500 truncate leading-tight">
-                {user?.role === 'admin' ? 'Administrator' : 'Member'}
+                {user?.role === 'admin' ? t('common.administrator') : t('common.member')}
               </p>
             </div>
           </div>

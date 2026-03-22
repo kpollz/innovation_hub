@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Lightbulb } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -21,6 +22,7 @@ const registerSchema = z.object({
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export const RegisterPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register: registerUser, isAuthenticated, error, clearError } = useAuthStore();
   const { showToast } = useUIStore();
@@ -52,10 +54,10 @@ export const RegisterPage: React.FC = () => {
         full_name: data.full_name || undefined,
         team: data.team || undefined,
       });
-      showToast({ type: 'success', message: 'Welcome to Innovation Hub!' });
+      showToast({ type: 'success', message: t('auth.register_success') });
       navigate('/');
     } catch {
-      showToast({ type: 'error', message: 'Registration failed. Please try again.' });
+      showToast({ type: 'error', message: t('auth.register_error') });
     }
   };
 
@@ -73,40 +75,40 @@ export const RegisterPage: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Create your account</CardTitle>
+            <CardTitle className="text-center">{t('auth.create_account_title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <Input
-                label="Username *"
+                label={t('auth.username') + ' *'}
                 type="text"
                 {...register('username')}
                 error={errors.username?.message}
               />
 
               <Input
-                label="Password *"
+                label={t('auth.password') + ' *'}
                 type="password"
                 {...register('password')}
                 error={errors.password?.message}
               />
 
               <Input
-                label="Email (optional)"
+                label={t('auth.email_optional')}
                 type="email"
                 {...register('email')}
                 error={errors.email?.message}
               />
 
               <Input
-                label="Full Name (optional)"
+                label={t('auth.fullname_optional')}
                 type="text"
                 {...register('full_name')}
                 error={errors.full_name?.message}
               />
 
               <Input
-                label="Team (optional)"
+                label={t('auth.team_optional')}
                 type="text"
                 {...register('team')}
                 error={errors.team?.message}
@@ -121,18 +123,18 @@ export const RegisterPage: React.FC = () => {
                 className="w-full"
                 isLoading={isSubmitting}
               >
-                Create account
+                {t('auth.create_account')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{' '}
+                {t('auth.have_account')}{' '}
                 <Link
                   to="/login"
                   className="font-medium text-primary-600 hover:text-primary-500"
                 >
-                  Sign in
+                  {t('auth.sign_in')}
                 </Link>
               </p>
             </div>
