@@ -2,12 +2,14 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.problem import Problem
 from app.domain.repositories.problem_repository import ProblemRepository
 from app.domain.value_objects.category import ProblemCategory
+from app.infrastructure.database.models.reaction_model import ReactionModel
+from app.infrastructure.database.models.comment_model import CommentModel
 from app.domain.value_objects.status import ProblemStatus
 from app.infrastructure.database.models.problem_model import ProblemModel
 
@@ -83,9 +85,42 @@ class SQLProblemRepository(ProblemRepository):
         count_query = select(func.count()).select_from(query.subquery())
         total = await self.session.scalar(count_query)
         
+        # Sorting
+        sort = filters.get("sort") if filters else None
+        if sort == "oldest":
+            query = query.order_by(asc(ProblemModel.created_at))
+        elif sort == "most_liked":
+            # Left join reactions where target_type='problem' and type='like'
+            like_count = (
+                select(
+                    ReactionModel.target_id,
+                    func.count().label("like_count")
+                )
+                .where(ReactionModel.target_type == "problem")
+                .group_by(ReactionModel.target_id)
+                .subquery()
+            )
+            query = query.outerjoin(
+                like_count, ProblemModel.id == like_count.c.target_id
+            ).order_by(desc(func.coalesce(like_count.c.like_count, 0)), desc(ProblemModel.created_at))
+        elif sort == "most_commented":
+            comment_count = (
+                select(
+                    CommentModel.target_id,
+                    func.count().label("comment_count")
+                )
+                .where(CommentModel.target_type == "problem")
+                .group_by(CommentModel.target_id)
+                .subquery()
+            )
+            query = query.outerjoin(
+                comment_count, ProblemModel.id == comment_count.c.target_id
+            ).order_by(desc(func.coalesce(comment_count.c.comment_count, 0)), desc(ProblemModel.created_at))
+        else:
+            query = query.order_by(desc(ProblemModel.created_at))
+
         # Pagination
         query = query.offset((page - 1) * limit).limit(limit)
-        query = query.order_by(ProblemModel.created_at.desc())
         
         result = await self.session.execute(query)
         models = result.scalars().all()

@@ -33,6 +33,7 @@ class ProblemListFiltersDTO(BaseModel):
     category: Optional[ProblemCategory] = None
     author_id: Optional[UUID] = None
     search: Optional[str] = None
+    sort: Optional[str] = None
 
 
 # Avoid circular import - use forward ref for author
