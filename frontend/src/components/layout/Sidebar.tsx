@@ -1,11 +1,10 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  AlertCircle, 
-  Lightbulb, 
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Home,
+  AlertCircle,
+  Lightbulb,
   LayoutDashboard,
-  Settings,
   X
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
@@ -20,13 +19,13 @@ const navItems = [
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuthStore();
   const { sidebarOpen, setSidebarOpen } = useUIStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAdmin = user?.role === 'admin';
 
@@ -117,8 +116,12 @@ export const Sidebar: React.FC = () => {
           )}
         </nav>
 
-        {/* User info at bottom - same height as footer */}
-        <div className="flex-shrink-0 h-14 px-4 border-t border-gray-200 bg-white flex items-center">
+        {/* User info at bottom - clickable to settings */}
+        <div
+          className="flex-shrink-0 h-14 px-4 border-t border-gray-200 bg-white flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => { navigate('/settings'); setSidebarOpen(false); }}
+          title="Account Settings"
+        >
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-medium text-primary-700">

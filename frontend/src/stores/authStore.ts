@@ -14,6 +14,7 @@ interface AuthState {
   register: (data: UserRegister) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
+  updateProfile: (data: { email?: string; full_name?: string; team?: string; avatar_url?: string }) => Promise<void>;
   clearError: () => void;
 }
 
@@ -95,6 +96,11 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false
           });
         }
+      },
+
+      updateProfile: async (data) => {
+        const updatedUser = await authApi.updateProfile(data);
+        set({ user: updatedUser });
       },
 
       clearError: () => set({ error: null }),

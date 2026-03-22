@@ -41,4 +41,9 @@ export const authApi = {
     });
     return response.data;
   },
+
+  updateProfile: async (data: { email?: string; full_name?: string; team?: string; avatar_url?: string }): Promise<User> => {
+    const response = await apiClient.patch<User>('/users/me', data);
+    return response.data;
+  },
 };

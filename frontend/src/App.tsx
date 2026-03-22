@@ -17,6 +17,7 @@ import { IdeaLabPage } from '@/pages/IdeaLab/IdeaLabPage';
 import { RoomDetailPage } from '@/pages/RoomDetail/RoomDetailPage';
 import { IdeaDetailPage } from '@/pages/IdeaDetail/IdeaDetailPage';
 import { CreateIdeaPage } from '@/pages/RoomDetail/CreateIdeaPage';
+import { UserSettingsPage } from '@/pages/Settings/UserSettingsPage';
 
 function App() {
   const { fetchCurrentUser } = useAuthStore();
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/rooms/:id" element={<RoomDetailPage />} />
                   <Route path="/rooms/:roomId/ideas/new" element={<CreateIdeaPage />} />
                   <Route path="/ideas/:id" element={<IdeaDetailPage />} />
+                  <Route path="/settings" element={<UserSettingsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </MainLayout>
