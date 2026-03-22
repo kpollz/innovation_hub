@@ -155,7 +155,7 @@ export const AdminUsersPage: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-end gap-3">
+          <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-[200px]">
               <Input
                 placeholder="Search by name, username, or email..."
@@ -166,14 +166,14 @@ export const AdminUsersPage: React.FC = () => {
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-              className="rounded-lg border-gray-300 text-sm"
+              className="rounded-lg border border-gray-300 px-4 py-2.5 text-base text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm transition-colors"
             >
               <option value="">All Roles</option>
               <option value="admin">Admin</option>
               <option value="member">Member</option>
             </select>
-            <Button type="submit" size="sm">
-              <Search className="h-4 w-4 mr-1" />
+            <Button type="submit" className="px-5 py-2.5">
+              <Search className="h-4 w-4 mr-1.5" />
               Search
             </Button>
           </form>

@@ -19,8 +19,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={classNames(
-            'block w-full rounded-lg shadow-sm transition-colors',
-            'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
+            'block w-full rounded-lg border shadow-sm transition-colors',
+            'px-4 py-2.5 text-base text-gray-900 placeholder-gray-400',
+            'border-gray-300 focus:border-primary-500 focus:ring-primary-500 focus:outline-none',
             error && 'border-danger-500 focus:border-danger-500 focus:ring-danger-500',
             'disabled:bg-gray-100 disabled:cursor-not-allowed',
             className
