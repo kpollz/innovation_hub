@@ -28,6 +28,23 @@ class UpdateUserDTO(BaseModel):
     is_active: Optional[bool] = None
 
 
+class AdminUpdateUserDTO(BaseModel):
+    """Input for admin updating a user."""
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = Field(None, max_length=100)
+    team: Optional[str] = Field(None, max_length=50)
+    role: Optional[str] = Field(None, pattern=r'^(member|admin)$')
+    is_active: Optional[bool] = None
+
+
+class UserStatsDTO(BaseModel):
+    """Output for user statistics."""
+    problems_count: int = 0
+    ideas_count: int = 0
+    comments_count: int = 0
+    rooms_count: int = 0
+
+
 class UserListFiltersDTO(BaseModel):
     """Filters for listing users."""
     role: Optional[UserRole] = None

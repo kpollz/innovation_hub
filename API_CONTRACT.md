@@ -186,12 +186,59 @@ Authorization: Bearer <access_token>
 
 ### 2.3 GET `/users` — Danh sách users 🔒
 - **Status**: 200 OK
-- **Query**: `?page=1&limit=20&team=&role=`
+- **Query**: `?page=1&limit=20&team=&role=&search=&is_active=`
 - **Response:** `{ items: UserObject[], total, page, limit }`
 
 ### 2.4 GET `/users/{user_id}` — Chi tiết user 🔒
 - **Status**: 200 OK
 - **Response:** UserObject
+
+### 2.5 PATCH `/users/{user_id}` — Admin cập nhật user 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 200 OK
+
+**Request Body (tất cả tùy chọn):**
+```json
+{
+  "email": "string (email)",
+  "full_name": "string",
+  "team": "string",
+  "role": "member | admin",
+  "is_active": "boolean"
+}
+```
+
+**Response:** UserObject
+
+### 2.6 DELETE `/users/{user_id}` — Admin xóa user 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 204 No Content
+- **Error**: 400 Bad Request nếu xóa chính mình
+
+### 2.7 POST `/users/{user_id}/reset-password` — Admin reset mật khẩu 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 200 OK
+- **Logic**: Tạo mật khẩu ngẫu nhiên 12 ký tự, trả về cho admin để gửi cho user
+
+**Response:**
+```json
+{
+  "new_password": "string (12 ký tự ngẫu nhiên)"
+}
+```
+
+### 2.8 GET `/users/{user_id}/stats` — Thống kê user 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{
+  "problems_count": 0,
+  "ideas_count": 0,
+  "comments_count": 0,
+  "rooms_count": 0
+}
+```
 
 ---
 
@@ -637,6 +684,10 @@ Authorization: Bearer <access_token>
 | DELETE /comments/{id} | Chỉ comment mình | ✅ Tất cả |
 | GET /dashboard/* | ✅ | ✅ |
 | GET /users | ✅ | ✅ |
+| PATCH /users/{id} | ❌ | ✅ |
+| DELETE /users/{id} | ❌ | ✅ |
+| POST /users/{id}/reset-password | ❌ | ✅ |
+| GET /users/{id}/stats | ✅ | ✅ |
 
 ---
 

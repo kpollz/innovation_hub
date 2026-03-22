@@ -5,6 +5,7 @@ import {
   AlertCircle,
   Lightbulb,
   LayoutDashboard,
+  Users,
   X
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,6 +20,7 @@ const navItems = [
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/admin/users', label: 'User Management', icon: Users },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -92,7 +94,9 @@ export const Sidebar: React.FC = () => {
                 </p>
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname.startsWith(item.path);
+                  const isActive = item.path === '/admin'
+                    ? location.pathname === '/admin'
+                    : location.pathname.startsWith(item.path);
                   
                   return (
                     <NavLink
