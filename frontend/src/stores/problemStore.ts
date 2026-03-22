@@ -86,11 +86,8 @@ export const useProblemStore = create<ProblemState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const problem = await problemsApi.create(data);
-      set((state) => ({
-        problems: [problem, ...state.problems],
-        totalProblems: state.totalProblems + 1,
-        isLoading: false
-      }));
+      // Re-fetch page 1 so the new problem appears at the top
+      await get().fetchProblems({ ...get().filters, page: 1 });
       return problem;
     } catch (error) {
       set({
