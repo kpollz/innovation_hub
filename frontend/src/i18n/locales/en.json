@@ -87,17 +87,17 @@
     "total_ideas": "Total Ideas",
     "total_problems": "Total Problems",
     "active_rooms": "Active Rooms",
-    "total_users": "Total Users",
-    "this_week": "+{{count}} this week",
     "interaction_rate": "Interaction Rate",
     "resolved_problems": "Resolved Problems",
-    "new_this_week": "New This Week",
     "problems_by_status": "Problems by Status",
     "ideas_by_status": "Ideas by Status",
     "top_contributors": "Top Contributors",
     "ideas": "ideas",
     "problems": "problems",
-    "votes": "votes"
+    "votes": "votes",
+    "date_from": "From",
+    "date_to": "To",
+    "clear_filter": "Clear date filter"
   },
   "problems": {
     "title": "Problem Feed",

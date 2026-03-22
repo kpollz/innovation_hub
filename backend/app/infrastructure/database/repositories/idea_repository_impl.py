@@ -70,6 +70,10 @@ class SQLIdeaRepository(IdeaRepository):
                 query = query.where(IdeaModel.author_id == str(filters["author_id"]))
             if filters.get("status"):
                 query = query.where(IdeaModel.status == filters["status"])
+            if filters.get("created_after"):
+                query = query.where(IdeaModel.created_at >= filters["created_after"])
+            if filters.get("created_before"):
+                query = query.where(IdeaModel.created_at < filters["created_before"])
             if filters.get("search"):
                 search = f"%{filters['search']}%"
                 query = query.where(

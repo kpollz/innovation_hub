@@ -226,9 +226,7 @@ export interface DashboardStats {
   total_ideas: number;
   total_comments: number;
   total_rooms: number;
-  total_users: number;
   interaction_rate: number;
-  new_this_week: number;
   resolved_problems: number;
   problems_by_status: Record<string, number>;
   ideas_by_status: Record<string, number>;

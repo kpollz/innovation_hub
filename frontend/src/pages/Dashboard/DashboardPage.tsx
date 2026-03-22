@@ -1,39 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Lightbulb,
   MessageCircle,
   AlertCircle,
-  TrendingUp,
-  Users,
   Rocket,
-  Activity
+  Activity,
+  X
 } from 'lucide-react';
 import { dashboardApi } from '@/api/dashboard';
+import type { DateRangeParams } from '@/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
+import { DatePicker } from '@/components/ui/DatePicker';
 import type { DashboardStats, TopContributor } from '@/types';
 
 const StatCard: React.FC<{
   title: string;
   value: number | string;
   icon: React.ElementType;
-  trend?: string;
   color: string;
-}> = ({ title, value, icon: Icon, trend, color }) => (
+}> = ({ title, value, icon: Icon, color }) => (
   <Card>
     <CardContent className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-          {trend && (
-            <p className="text-sm text-success-600 mt-1 flex items-center gap-1">
-              <TrendingUp className="h-3.5 w-3.5" />
-              {trend}
-            </p>
-          )}
         </div>
         <div className={`p-4 rounded-xl ${color}`}>
           <Icon className="h-6 w-6 text-white" />
@@ -48,49 +42,89 @@ export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [contributors, setContributors] = useState<TopContributor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const range: DateRangeParams = {};
+      if (dateFrom) range.date_from = dateFrom;
+      if (dateTo) range.date_to = dateTo;
+
+      const [statsData, contributorsData] = await Promise.all([
+        dashboardApi.getStats(Object.keys(range).length ? range : undefined),
+        dashboardApi.getTopContributors(5, Object.keys(range).length ? range : undefined),
+      ]);
+      setStats(statsData);
+      setContributors(contributorsData);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dateFrom, dateTo]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsData, contributorsData] = await Promise.all([
-          dashboardApi.getStats(),
-          dashboardApi.getTopContributors(5),
-        ]);
-        setStats(statsData);
-        setContributors(contributorsData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
-      </div>
-    );
-  }
+  const handleClearDates = () => {
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const hasDateFilter = dateFrom || dateTo;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-        <p className="text-gray-600 mt-1">{t('dashboard.welcome')}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('dashboard.welcome')}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <DatePicker
+            value={dateFrom}
+            onChange={setDateFrom}
+            max={dateTo || undefined}
+            placeholder={t('dashboard.date_from')}
+            className="w-[180px]"
+          />
+          <span className="text-gray-400">→</span>
+          <DatePicker
+            value={dateTo}
+            onChange={setDateTo}
+            min={dateFrom || undefined}
+            placeholder={t('dashboard.date_to')}
+            className="w-[180px]"
+            align="right"
+          />
+          {hasDateFilter && (
+            <button
+              onClick={handleClearDates}
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title={t('dashboard.clear_filter')}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        </div>
+      ) : (
+      <>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard
           title={t('dashboard.total_ideas')}
           value={stats?.total_ideas || 0}
           icon={Lightbulb}
           color="bg-primary-600"
-          trend={stats?.new_this_week ? t('dashboard.this_week', { count: stats.new_this_week }) : undefined}
         />
         <StatCard
           title={t('dashboard.total_problems')}
@@ -104,17 +138,11 @@ export const DashboardPage: React.FC = () => {
           icon={MessageCircle}
           color="bg-success-500"
         />
-        <StatCard
-          title={t('dashboard.total_users')}
-          value={stats?.total_users || 0}
-          icon={Users}
-          color="bg-purple-500"
-        />
       </div>
 
-      {/* Interaction Rate */}
+      {/* Interaction Rate + Resolved */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Card>
             <CardContent className="p-5 flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-xl">
@@ -136,17 +164,6 @@ export const DashboardPage: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">{t('dashboard.resolved_problems')}</p>
                 <p className="text-xl font-bold text-gray-900">{stats.resolved_problems || 0}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="p-3 bg-yellow-100 rounded-xl">
-                <TrendingUp className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">{t('dashboard.new_this_week')}</p>
-                <p className="text-xl font-bold text-gray-900">{stats.new_this_week || 0}</p>
               </div>
             </CardContent>
           </Card>
@@ -267,6 +284,8 @@ export const DashboardPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+      </>
       )}
     </div>
   );

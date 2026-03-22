@@ -25,7 +25,7 @@ class DatabaseConfig:
         if self._engine is None:
             self._engine = create_async_engine(
                 str(self.settings.database_url),
-                echo=self.settings.debug,
+                echo=False,
                 pool_size=self.settings.db_pool_size,
                 max_overflow=self.settings.db_max_overflow,
                 pool_pre_ping=self.settings.db_pool_pre_ping,

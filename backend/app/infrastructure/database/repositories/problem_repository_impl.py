@@ -74,6 +74,10 @@ class SQLProblemRepository(ProblemRepository):
                 query = query.where(ProblemModel.category == filters["category"])
             if filters.get("author_id"):
                 query = query.where(ProblemModel.author_id == str(filters["author_id"]))
+            if filters.get("created_after"):
+                query = query.where(ProblemModel.created_at >= filters["created_after"])
+            if filters.get("created_before"):
+                query = query.where(ProblemModel.created_at < filters["created_before"])
             if filters.get("search"):
                 search = f"%{filters['search']}%"
                 query = query.where(

@@ -1,5 +1,5 @@
 """Dashboard endpoints."""
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -23,14 +23,23 @@ from app.infrastructure.web.api import deps
 router = APIRouter()
 
 
+def _build_date_filter(date_from: Optional[date], date_to: Optional[date]) -> dict:
+    """Build filter dict from optional date_from/date_to."""
+    f: dict = {}
+    if date_from:
+        f["created_after"] = datetime.combine(date_from, datetime.min.time())
+    if date_to:
+        # date_to is inclusive, so filter < next day
+        f["created_before"] = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    return f
+
+
 class DashboardStats(BaseModel):
     total_problems: int
     total_ideas: int
     total_comments: int
-    total_users: int
     total_rooms: int
     interaction_rate: float
-    new_this_week: int
     resolved_problems: int
     problems_by_status: Dict[str, int]
     ideas_by_status: Dict[str, int]
@@ -45,65 +54,45 @@ class ContributorDTO(BaseModel):
 
 @router.get("/stats", response_model=DashboardStats)
 async def get_stats(
+    date_from: Optional[date] = Query(None, description="Start date (inclusive), e.g. 2026-01-01"),
+    date_to: Optional[date] = Query(None, description="End date (inclusive), e.g. 2026-03-31"),
     current_user: UserResponseDTO = Depends(get_current_active_user),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
-    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Get dashboard statistics. Available to all authenticated users."""
-    # Get totals using count queries (limit=1 just to get the total)
-    _, total_problems = await problem_repo.list({}, page=1, limit=1)
-    _, total_ideas = await idea_repo.list({}, page=1, limit=1)
-    _, total_comments = await comment_repo.list_by_target(
-        UUID("00000000-0000-0000-0000-000000000000"), "problem", page=1, limit=1
-    )
-    # For total comments, we need all comments. Use a broader approach:
-    # Count problems comments + idea comments
+    base_filter = _build_date_filter(date_from, date_to)
+
+    # Get all problems and ideas for the period
+    problems, total_problems = await problem_repo.list(base_filter, page=1, limit=10000)
+    ideas_all, total_ideas = await idea_repo.list(base_filter, page=1, limit=10000)
+    _, total_rooms = await room_repo.list(base_filter, page=1, limit=1)
+
+    # Count comments on problems and ideas in the period
     total_comments = 0
-    # Get all problems to count their comments
-    problems, _ = await problem_repo.list({}, page=1, limit=1000)
-    for p in problems:
-        _, count = await comment_repo.list_by_target(p.id, "problem", page=1, limit=1)
-        total_comments += count
-    ideas_all, _ = await idea_repo.list({}, page=1, limit=1000)
-    for i in ideas_all:
-        _, count = await comment_repo.list_by_target(i.id, "idea", page=1, limit=1)
-        total_comments += count
-
-    _, total_users = await user_repo.list({}, page=1, limit=1)
-    _, total_rooms = await room_repo.list({}, page=1, limit=1)
-
-    # Resolved problems (status = solved or closed)
-    _, resolved_solved = await problem_repo.list({"status": "solved"}, page=1, limit=1)
-    _, resolved_closed = await problem_repo.list({"status": "closed"}, page=1, limit=1)
-    resolved_problems = resolved_solved + resolved_closed
-
-    # New this week
-    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-    # Make one_week_ago naive if entity timestamps are naive
-    one_week_ago_naive = one_week_ago.replace(tzinfo=None)
-    new_this_week = sum(
-        1 for p in problems
-        if p.created_at and p.created_at.replace(tzinfo=None) >= one_week_ago_naive
-    )
-    new_this_week += sum(
-        1 for i in ideas_all
-        if i.created_at and i.created_at.replace(tzinfo=None) >= one_week_ago_naive
-    )
-
-    # Interaction rate: % of problems/ideas that have at least 1 comment
-    total_items = len(problems) + len(ideas_all)
     items_with_comments = 0
     for p in problems:
         _, count = await comment_repo.list_by_target(p.id, "problem", page=1, limit=1)
+        total_comments += count
         if count > 0:
             items_with_comments += 1
     for i in ideas_all:
         _, count = await comment_repo.list_by_target(i.id, "idea", page=1, limit=1)
+        total_comments += count
         if count > 0:
             items_with_comments += 1
+
+    # Resolved problems (status = solved or closed) within period
+    solved_filter = {**base_filter, "status": "solved"}
+    closed_filter = {**base_filter, "status": "closed"}
+    _, resolved_solved = await problem_repo.list(solved_filter, page=1, limit=1)
+    _, resolved_closed = await problem_repo.list(closed_filter, page=1, limit=1)
+    resolved_problems = resolved_solved + resolved_closed
+
+    # Interaction rate: % of problems/ideas that have at least 1 comment
+    total_items = len(problems) + len(ideas_all)
     interaction_rate = (items_with_comments / total_items * 100) if total_items > 0 else 0.0
 
     # Problems by status
@@ -124,10 +113,8 @@ async def get_stats(
         total_problems=len(problems),
         total_ideas=len(ideas_all),
         total_comments=total_comments,
-        total_users=total_users,
         total_rooms=total_rooms,
         interaction_rate=round(interaction_rate, 1),
-        new_this_week=new_this_week,
         resolved_problems=resolved_problems,
         problems_by_status=problems_by_status,
         ideas_by_status=ideas_by_status,
@@ -137,6 +124,8 @@ async def get_stats(
 @router.get("/top-contributors", response_model=List[ContributorDTO])
 async def get_top_contributors(
     limit: int = Query(10, ge=1, le=50),
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
     current_user: UserResponseDTO = Depends(get_current_active_user),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
@@ -144,19 +133,18 @@ async def get_top_contributors(
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Get top contributors ranked by activity."""
+    base_filter = _build_date_filter(date_from, date_to)
+
     users, _ = await user_repo.list({}, page=1, limit=100)
 
     contributors = []
     for user in users:
-        _, problems_count = await problem_repo.list(
-            {"author_id": user.id}, page=1, limit=1
-        )
-        _, ideas_count = await idea_repo.list(
-            {"author_id": user.id}, page=1, limit=1
-        )
+        user_filter = {**base_filter, "author_id": user.id}
+        _, problems_count = await problem_repo.list(user_filter, page=1, limit=1)
+        _, ideas_count = await idea_repo.list(user_filter, page=1, limit=1)
 
-        # Count votes received on this user's ideas
-        user_ideas, _ = await idea_repo.list({"author_id": user.id}, page=1, limit=100)
+        # Count votes received on this user's ideas (within period)
+        user_ideas, _ = await idea_repo.list(user_filter, page=1, limit=100)
         votes_received = 0
         for idea in user_ideas:
             votes_received += await vote_repo.get_vote_count(idea.id)

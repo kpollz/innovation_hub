@@ -621,6 +621,9 @@ Authorization: Bearer <access_token>
 
 ### 9.1 GET `/dashboard/stats` — Thống kê tổng quan 🔒
 - **Status**: 200 OK
+- **Query**: `?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD` (cả 2 đều tùy chọn)
+
+> **Logic**: Lọc theo khoảng thời gian tùy ý. `date_from` inclusive, `date_to` inclusive. Không truyền = xem tất cả.
 
 **Response:**
 ```json
@@ -628,10 +631,8 @@ Authorization: Bearer <access_token>
   "total_problems": 0,
   "total_ideas": 0,
   "total_comments": 0,
-  "total_users": 0,
   "total_rooms": 0,
   "interaction_rate": 0.0,
-  "new_this_week": 0,
   "resolved_problems": 0,
   "problems_by_status": {
     "open": 0,
@@ -643,16 +644,16 @@ Authorization: Bearer <access_token>
   "ideas_by_status": {
     "draft": 0,
     "refining": 0,
-    "ready": 0,
-    "selected": 0,
-    "rejected": 0
+    "reviewing": 0,
+    "submitted": 0,
+    "closed": 0
   }
 }
 ```
 
 ### 9.2 GET `/dashboard/top-contributors` — Bảng xếp hạng 🔒
 - **Status**: 200 OK
-- **Query**: `?limit=10`
+- **Query**: `?limit=10&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD`
 
 **Response:**
 ```json

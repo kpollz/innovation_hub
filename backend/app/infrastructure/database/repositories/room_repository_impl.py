@@ -66,6 +66,10 @@ class SQLRoomRepository(RoomRepository):
                 query = query.where(RoomModel.problem_id == str(filters["problem_id"]))
             if filters.get("created_by"):
                 query = query.where(RoomModel.created_by == str(filters["created_by"]))
+            if filters.get("created_after"):
+                query = query.where(RoomModel.created_at >= filters["created_after"])
+            if filters.get("created_before"):
+                query = query.where(RoomModel.created_at < filters["created_before"])
             if filters.get("search"):
                 search = f"%{filters['search']}%"
                 query = query.where(
