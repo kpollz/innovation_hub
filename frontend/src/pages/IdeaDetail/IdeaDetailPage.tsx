@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
 import type { Idea, Comment, ReactionType, IdeaStatus } from '@/types';
@@ -300,14 +301,18 @@ export const IdeaDetailPage: React.FC = () => {
 
         <CardContent className="pt-0">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">{idea.title}</h1>
-          <p className="text-gray-700 whitespace-pre-wrap">{idea.description}</p>
 
           {idea.summary && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm font-medium text-green-800 mb-1">Summary</p>
               <p className="text-green-700">{idea.summary}</p>
             </div>
           )}
+
+          <div
+            className="text-gray-700 rich-content"
+            dangerouslySetInnerHTML={{ __html: idea.description }}
+          />
 
           {/* Author Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
@@ -449,13 +454,11 @@ export const IdeaDetailPage: React.FC = () => {
             minLength={3}
             maxLength={255}
           />
-          <Textarea
-            label="Description (min 10 characters)"
+          <RichTextEditor
+            label="Description"
             value={editDescription}
-            onChange={(e) => setEditDescription(e.target.value)}
-            rows={5}
-            required
-            minLength={10}
+            onChange={setEditDescription}
+            minHeight="200px"
           />
           <Textarea
             label="Summary (optional)"
