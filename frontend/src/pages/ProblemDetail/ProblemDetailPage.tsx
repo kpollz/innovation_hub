@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
 import type { Comment, ReactionType, ProblemStatus, ProblemCategory } from '@/types';
@@ -324,9 +325,10 @@ export const ProblemDetailPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             {selectedProblem.title}
           </h1>
-          <p className="text-gray-700 whitespace-pre-wrap">
-            {selectedProblem.content}
-          </p>
+          <div
+            className="text-gray-700 rich-content"
+            dangerouslySetInnerHTML={{ __html: selectedProblem.content }}
+          />
 
           {/* Author Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
@@ -527,13 +529,11 @@ export const ProblemDetailPage: React.FC = () => {
             placeholder="Brief summary, max 500 chars"
             maxLength={500}
           />
-          <Textarea
-            label="Content (min 10 characters)"
+          <RichTextEditor
+            label="Content"
             value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            rows={5}
-            required
-            minLength={10}
+            onChange={setEditContent}
+            minHeight="200px"
           />
           <Select
             label="Category"

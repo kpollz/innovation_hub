@@ -5,8 +5,8 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import type { ProblemCategory } from '@/types';
 
@@ -33,7 +33,8 @@ export const CreateProblemPage: React.FC = () => {
     if (!category) {
       newErrors.category = 'Please select a category';
     }
-    if (!content.trim() || content.length < 20) {
+    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    if (!textContent || textContent.length < 20) {
       newErrors.content = 'Description must be at least 20 characters';
     }
 
@@ -113,18 +114,14 @@ export const CreateProblemPage: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <Textarea
-                placeholder="Describe the problem in detail..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={10}
-                error={errors.content}
-              />
-            </div>
+            <RichTextEditor
+              label="Description *"
+              value={content}
+              onChange={setContent}
+              placeholder="Describe the problem in detail..."
+              error={errors.content}
+              minHeight="250px"
+            />
           </CardContent>
         </Card>
 

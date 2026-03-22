@@ -41,3 +41,36 @@
     @apply hover:shadow-md transition-shadow;
   }
 }
+
+/* TipTap Editor */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+/* Rich content display */
+.rich-content h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+.rich-content h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+.rich-content h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+.rich-content p { margin-bottom: 0.5rem; }
+.rich-content ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.rich-content ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.rich-content blockquote { border-left: 3px solid #d1d5db; padding-left: 1rem; color: #6b7280; margin-bottom: 0.5rem; }
+.rich-content code { background: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875rem; }
+.rich-content a { color: #2563eb; text-decoration: underline; }
+.rich-content hr { border-top: 1px solid #e5e7eb; margin: 1rem 0; }
+.rich-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 0.5rem 0; }

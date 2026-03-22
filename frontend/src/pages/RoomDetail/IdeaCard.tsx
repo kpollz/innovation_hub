@@ -90,7 +90,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
   return (
     <>
-      <Card className={classNames(idea.is_pinned && 'border-warning-300 ring-1 ring-warning-200')}>
+      <Card className={classNames('overflow-visible', idea.is_pinned && 'border-warning-300 ring-1 ring-warning-200')}>
         <CardContent className={classNames('p-4', detailed && 'p-6')}>
           {/* Header: Status */}
           <div className="flex items-center justify-between mb-3">
@@ -101,7 +101,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
                 {statusConfig?.label}
               </span>
+            </div>
 
+            <div className="flex items-center gap-2">
               {canModify && (
                 <div className="relative">
                   <button

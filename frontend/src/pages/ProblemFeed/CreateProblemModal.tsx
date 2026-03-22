@@ -6,16 +6,18 @@ import { useProblemStore } from '@/stores/problemStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import type { ProblemCategory } from '@/types';
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
 const createProblemSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   summary: z.string().max(200, 'Summary must be at most 200 characters').optional().or(z.literal('')),
-  content: z.string().min(20, 'Description must be at least 20 characters'),
+  content: z.string().refine((val) => stripHtml(val).length >= 20, 'Description must be at least 20 characters'),
   category: z.string().min(1, 'Please select a category'),
 });
 
@@ -31,9 +33,12 @@ export const CreateProblemModal: React.FC = () => {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<CreateProblemForm>({
     resolver: zodResolver(createProblemSchema),
+    defaultValues: { content: '' },
   });
 
   const onSubmit = async (data: CreateProblemForm) => {
@@ -99,12 +104,13 @@ export const CreateProblemModal: React.FC = () => {
           error={errors.category?.message}
         />
 
-        <Textarea
+        <RichTextEditor
           label="Description"
+          value={watch('content')}
+          onChange={(html) => setValue('content', html, { shouldValidate: true })}
           placeholder="Describe the problem in detail..."
-          rows={5}
-          {...register('content')}
           error={errors.content?.message}
+          minHeight="200px"
         />
       </form>
     </Modal>

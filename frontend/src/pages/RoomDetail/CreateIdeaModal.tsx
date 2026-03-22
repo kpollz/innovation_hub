@@ -8,10 +8,13 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
 const createIdeaSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().refine((val) => stripHtml(val).length >= 10, 'Description must be at least 10 characters'),
   summary: z.string().optional(),
 });
 
@@ -31,9 +34,12 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateIdeaForm>({
     resolver: zodResolver(createIdeaSchema),
+    defaultValues: { description: '' },
   });
 
   const onSubmit = async (data: CreateIdeaForm) => {
@@ -86,17 +92,18 @@ export const CreateIdeaModal: React.FC<CreateIdeaModalProps> = ({ roomId, onSucc
           error={errors.title?.message}
         />
 
-        <Textarea
+        <RichTextEditor
           label="Description"
+          value={watch('description')}
+          onChange={(html) => setValue('description', html, { shouldValidate: true })}
           placeholder="Describe your solution in detail..."
-          rows={4}
-          {...register('description')}
           error={errors.description?.message}
+          minHeight="150px"
         />
 
         <Textarea
-          label="Expected Outcome (optional)"
-          placeholder="What benefits will this idea bring?"
+          label="Summary (optional)"
+          placeholder="Brief summary of your idea (shown in listings)"
           rows={3}
           {...register('summary')}
           error={errors.summary?.message}
