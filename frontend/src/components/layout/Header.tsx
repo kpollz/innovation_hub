@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Bell, LogOut, User, Lightbulb } from 'lucide-react';
+import { Menu, Bell, LogOut, Lightbulb } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -48,9 +49,7 @@ export const Header: React.FC = () => {
               <p className="text-xs text-gray-500">{user?.team}</p>
             </div>
             
-            <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center">
-              <User className="h-5 w-5 text-primary-600" />
-            </div>
+            <Avatar src={user?.avatar_url} name={user?.full_name} size="sm" />
 
             <Button
               variant="ghost"
