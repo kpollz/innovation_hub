@@ -16,12 +16,14 @@ from app.application.services.response_enrichment import enrich_idea, enrich_ide
 from app.application.use_cases.idea.create_idea import CreateIdeaUseCase
 from app.application.use_cases.idea.update_idea import UpdateIdeaUseCase
 from app.application.use_cases.idea.vote_idea import VoteIdeaUseCase
+from app.application.services.notification_service import NotificationService
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
 from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 from app.core.exceptions import NotFoundException, ForbiddenException
@@ -117,12 +119,30 @@ async def update_idea(
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Update an idea."""
+    # Get old status before update
+    old_idea = await idea_repo.get_by_id(idea_id)
+    old_status = old_idea.status if old_idea else None
+
     use_case = UpdateIdeaUseCase(idea_repo)
     idea = await use_case.execute(
         idea_id, data, current_user.id, current_user.role == "admin"
     )
+
+    # Notify on status change
+    if data.status and old_status and str(data.status) != str(old_status):
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=idea_id,
+            target_type="idea",
+            target_title=idea.title,
+            notification_type="status_changed",
+            owner_id=idea.author_id,
+        )
+
     return await enrich_idea(
         idea, user_repo, reaction_repo, comment_repo, vote_repo, current_user.id
     )
@@ -151,11 +171,29 @@ async def vote_idea(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Vote on an idea (1-5 stars). Creates or updates existing vote."""
     data = CreateVoteDTO(idea_id=idea_id, stars=stars)
     use_case = VoteIdeaUseCase(vote_repo, idea_repo)
-    return await use_case.execute(data, current_user.id)
+    result = await use_case.execute(data, current_user.id)
+
+    # Notify
+    idea = await idea_repo.get_by_id(idea_id)
+    if idea:
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=idea_id,
+            target_type="idea",
+            target_title=idea.title,
+            notification_type="vote_added",
+            owner_id=idea.author_id,
+        )
+
+    return result
 
 
 @router.delete("/{idea_id}/votes", status_code=status.HTTP_204_NO_CONTENT)

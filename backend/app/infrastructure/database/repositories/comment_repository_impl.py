@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.comment import Comment
@@ -134,9 +134,20 @@ class SQLCommentRepository(CommentRepository):
             )
         )
         models = result.scalars().all()
-        
+
         for model in models:
             await self.session.delete(model)
-        
+
         await self.session.flush()
         return True
+
+    async def list_distinct_authors_by_target(
+        self, target_id: UUID, target_type: str
+    ) -> List[UUID]:
+        result = await self.session.execute(
+            select(distinct(CommentModel.author_id)).where(
+                (CommentModel.target_id == str(target_id))
+                & (CommentModel.target_type == target_type)
+            )
+        )
+        return [UUID(row) for row in result.scalars().all()]

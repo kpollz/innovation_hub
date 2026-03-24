@@ -334,5 +334,15 @@
     "reset_error": "Failed to reset password",
     "load_error": "Failed to load users",
     "no_users": "No users found"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "view_more": "View more",
+    "no_notifications": "No notifications yet",
+    "comment_added": "{{actor}} commented on \"{{title}}\"",
+    "reaction_added": "{{actor}} reacted to \"{{title}}\"",
+    "vote_added": "{{actor}} voted on \"{{title}}\"",
+    "status_changed": "{{actor}} changed status of \"{{title}}\""
   }
 }

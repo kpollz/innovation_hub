@@ -62,3 +62,8 @@ class VoteRepository(ABC):
     async def delete_by_idea(self, idea_id: UUID) -> bool:
         """Delete all votes for an idea."""
         pass
+
+    @abstractmethod
+    async def list_distinct_users_by_idea(self, idea_id: UUID) -> List[UUID]:
+        """Get distinct user IDs who voted on an idea."""
+        pass

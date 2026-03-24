@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.vote import Vote
@@ -128,9 +128,17 @@ class SQLVoteRepository(VoteRepository):
             select(VoteModel).where(VoteModel.idea_id == str(idea_id))
         )
         models = result.scalars().all()
-        
+
         for model in models:
             await self.session.delete(model)
-        
+
         await self.session.flush()
         return True
+
+    async def list_distinct_users_by_idea(self, idea_id: UUID) -> List[UUID]:
+        result = await self.session.execute(
+            select(distinct(VoteModel.user_id)).where(
+                VoteModel.idea_id == str(idea_id)
+            )
+        )
+        return [UUID(row) for row in result.scalars().all()]

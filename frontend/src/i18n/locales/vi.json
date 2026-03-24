@@ -334,5 +334,15 @@
     "reset_error": "Không thể đặt lại mật khẩu",
     "load_error": "Không thể tải danh sách người dùng",
     "no_users": "Không tìm thấy người dùng"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "mark_all_read": "Đánh dấu tất cả đã đọc",
+    "view_more": "Xem thêm",
+    "no_notifications": "Chưa có thông báo nào",
+    "comment_added": "{{actor}} đã bình luận \"{{title}}\"",
+    "reaction_added": "{{actor}} đã phản hồi \"{{title}}\"",
+    "vote_added": "{{actor}} đã bỏ phiếu cho \"{{title}}\"",
+    "status_changed": "{{actor}} đã đổi trạng thái \"{{title}}\""
   }
 }

@@ -14,7 +14,12 @@ from app.application.use_cases.comment.add_comment import AddCommentUseCase
 from app.application.use_cases.comment.delete_comment import DeleteCommentUseCase
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
 from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
+from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
+from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
+from app.application.services.notification_service import NotificationService
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
@@ -43,23 +48,48 @@ async def create_comment(
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
+    reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Create a new comment."""
     use_case = AddCommentUseCase(comment_repo)
     comment = await use_case.execute(data, current_user.id)
 
     # Auto-transition: open → discussing when non-author comments on a problem
+    target_title = ""
+    owner_id = None
     if data.target_type == "problem":
         from app.domain.value_objects.status import ProblemStatus
 
         problem = await problem_repo.get_by_id(data.target_id)
-        if (
-            problem
-            and problem.status == ProblemStatus.OPEN
-            and problem.author_id != current_user.id
-        ):
-            problem.transition_to(ProblemStatus.DISCUSSING)
-            await problem_repo.update(problem)
+        if problem:
+            target_title = problem.title
+            owner_id = problem.author_id
+            if (
+                problem.status == ProblemStatus.OPEN
+                and problem.author_id != current_user.id
+            ):
+                problem.transition_to(ProblemStatus.DISCUSSING)
+                await problem_repo.update(problem)
+    elif data.target_type == "idea":
+        idea = await idea_repo.get_by_id(data.target_id)
+        if idea:
+            target_title = idea.title
+            owner_id = idea.author_id
+
+    # Create notification
+    if owner_id:
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=data.target_id,
+            target_type=data.target_type,
+            target_title=target_title,
+            notification_type="comment_added",
+            owner_id=owner_id,
+        )
 
     return await enrich_comment(comment, user_repo)
 

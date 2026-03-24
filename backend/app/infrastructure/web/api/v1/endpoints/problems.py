@@ -18,12 +18,15 @@ from app.application.use_cases.problem.create_problem import CreateProblemUseCas
 from app.application.use_cases.problem.update_problem import UpdateProblemUseCase
 from app.application.use_cases.problem.delete_problem import DeleteProblemUseCase
 from app.application.use_cases.room.create_room import CreateRoomUseCase
+from app.application.services.notification_service import NotificationService
 from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
 from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
@@ -122,12 +125,31 @@ async def update_problem(
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
+    vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Update a problem."""
+    # Get old status before update
+    old_problem = await problem_repo.get_by_id(problem_id)
+    old_status = old_problem.status if old_problem else None
+
     use_case = UpdateProblemUseCase(problem_repo)
     problem = await use_case.execute(
         problem_id, data, current_user.id, current_user.role == "admin"
     )
+
+    # Notify on status change
+    if data.status and old_status and str(data.status) != str(old_status):
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=problem_id,
+            target_type="problem",
+            target_title=problem.title,
+            notification_type="status_changed",
+            owner_id=problem.author_id,
+        )
+
     return await enrich_problem(
         problem, user_repo, reaction_repo, comment_repo, current_user.id, room_repo
     )

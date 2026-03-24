@@ -679,7 +679,78 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 10. PHÂN QUYỀN TỔNG HỢP
+## 10. NOTIFICATIONS (`/notifications`)
+
+### 10.1 GET `/notifications` — Danh sách thông báo 🔒
+- **Status**: 200 OK
+- **Query**: `?page=1&limit=5&unread_only=false`
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "user_id": "uuid",
+      "actor_id": "uuid",
+      "actor": {
+        "id": "uuid",
+        "username": "string",
+        "full_name": "string | null",
+        "avatar_url": "string | null"
+      },
+      "type": "comment_added | reaction_added | vote_added | status_changed",
+      "target_id": "uuid",
+      "target_type": "problem | idea",
+      "target_title": "string",
+      "is_read": false,
+      "created_at": "datetime"
+    }
+  ],
+  "total": 0,
+  "page": 1,
+  "limit": 5,
+  "unread_count": 0
+}
+```
+
+### 10.2 GET `/notifications/unread-count` — Số thông báo chưa đọc 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{ "count": 0 }
+```
+
+### 10.3 PATCH `/notifications/{id}/read` — Đánh dấu đã đọc 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{ "success": true }
+```
+
+### 10.4 PATCH `/notifications/read-all` — Đánh dấu tất cả đã đọc 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{ "updated": 0 }
+```
+
+**Notification triggers:**
+| Hành động | Type | Target |
+|-----------|------|--------|
+| Comment mới | comment_added | problem/idea |
+| Reaction mới | reaction_added | problem/idea |
+| Vote mới | vote_added | idea |
+| Đổi trạng thái | status_changed | problem/idea |
+
+Recipients: Owner của target + tất cả users đã tương tác (comment/reaction/vote), trừ actor.
+
+---
+
+## 11. PHÂN QUYỀN TỔNG HỢP
 
 | Endpoint | Member | Admin |
 |----------|--------|-------|
@@ -699,6 +770,9 @@ Authorization: Bearer <access_token>
 | PATCH /comments/{id} | Chỉ comment mình | ✅ Tất cả |
 | DELETE /comments/{id} | Chỉ comment mình | ✅ Tất cả |
 | GET /dashboard/* | ✅ | ✅ |
+| GET /notifications | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| PATCH /notifications/{id}/read | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| PATCH /notifications/read-all | ✅ | ✅ |
 | GET /users | ✅ | ✅ |
 | PATCH /users/{id} | ❌ | ✅ |
 | DELETE /users/{id} | ❌ | ✅ |

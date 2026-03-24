@@ -54,3 +54,10 @@ class CommentRepository(ABC):
     async def delete_by_target(self, target_id: UUID, target_type: str) -> bool:
         """Delete all comments for a target."""
         pass
+
+    @abstractmethod
+    async def list_distinct_authors_by_target(
+        self, target_id: UUID, target_type: str
+    ) -> List[UUID]:
+        """Get distinct author IDs who commented on a target."""
+        pass

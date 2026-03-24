@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Bell, LogOut, Lightbulb } from 'lucide-react';
+import { Menu, LogOut, Lightbulb } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -22,7 +23,7 @@ export const Header: React.FC = () => {
           >
             <Menu className="h-5 w-5 text-gray-600" />
           </Button>
-          
+
           <Link to="/" className="flex items-center gap-2">
             <div className="bg-primary-600 p-1.5 rounded-lg">
               <Lightbulb className="h-5 w-5 text-white" />
@@ -34,21 +35,14 @@ export const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 hover:bg-gray-100 relative"
-          >
-            <Bell className="h-5 w-5 text-gray-600" />
-            <span className="absolute top-1 right-1 h-2 w-2 bg-danger-500 rounded-full" />
-          </Button>
+          <NotificationDropdown />
 
           <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
             <div className="hidden md:block text-right">
               <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
               <p className="text-xs text-gray-500">{user?.team}</p>
             </div>
-            
+
             <Avatar src={user?.avatar_url} name={user?.full_name} size="sm" />
 
             <Button

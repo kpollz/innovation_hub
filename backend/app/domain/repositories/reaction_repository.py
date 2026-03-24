@@ -73,3 +73,10 @@ class ReactionRepository(ABC):
     async def delete_by_target(self, target_id: UUID, target_type: str) -> bool:
         """Delete all reactions for a target."""
         pass
+
+    @abstractmethod
+    async def list_distinct_users_by_target(
+        self, target_id: UUID, target_type: str
+    ) -> List[UUID]:
+        """Get distinct user IDs who reacted to a target."""
+        pass

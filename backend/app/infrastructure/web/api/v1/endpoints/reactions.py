@@ -6,7 +6,13 @@ from pydantic import BaseModel
 
 from app.domain.entities.reaction import Reaction, ReactionType
 from app.application.dto.reaction_dto import ReactionResponseDTO
+from app.application.services.notification_service import NotificationService
 from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
+from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
+from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
+from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
@@ -30,6 +36,10 @@ async def toggle_problem_reaction(
     data: ReactionRequest,
     current_user: UserResponseDTO = Depends(get_current_active_user),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
+    vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Add or toggle a reaction on a problem.
 
@@ -59,6 +69,20 @@ async def toggle_problem_reaction(
         user_id=current_user.id,
     )
     created = await reaction_repo.create(reaction)
+
+    # Notify
+    problem = await problem_repo.get_by_id(problem_id)
+    if problem:
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=problem_id,
+            target_type="problem",
+            target_title=problem.title,
+            notification_type="reaction_added",
+            owner_id=problem.author_id,
+        )
+
     return ReactionResponseDTO.model_validate(created)
 
 
@@ -96,6 +120,10 @@ async def toggle_idea_reaction(
     data: ReactionRequest,
     current_user: UserResponseDTO = Depends(get_current_active_user),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
+    idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
+    vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Add or toggle a reaction on an idea."""
     existing = await reaction_repo.get_by_user_and_target(
@@ -117,6 +145,20 @@ async def toggle_idea_reaction(
         user_id=current_user.id,
     )
     created = await reaction_repo.create(reaction)
+
+    # Notify
+    idea = await idea_repo.get_by_id(idea_id)
+    if idea:
+        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        await svc.notify(
+            actor_id=current_user.id,
+            target_id=idea_id,
+            target_type="idea",
+            target_title=idea.title,
+            notification_type="reaction_added",
+            owner_id=idea.author_id,
+        )
+
     return ReactionResponseDTO.model_validate(created)
 
 

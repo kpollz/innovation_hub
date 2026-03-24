@@ -239,6 +239,37 @@ export interface TopContributor {
   votes_received: number;
 }
 
+// Notification Types
+export type NotificationType = 'comment_added' | 'reaction_added' | 'vote_added' | 'status_changed';
+
+export interface NotificationActor {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  actor_id: string;
+  actor: NotificationActor | null;
+  type: NotificationType;
+  target_id: string;
+  target_type: 'problem' | 'idea';
+  target_title: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  items: Notification[];
+  total: number;
+  page: number;
+  limit: number;
+  unread_count: number;
+}
+
 // Filter Types
 export interface ProblemFilters {
   search?: string;
