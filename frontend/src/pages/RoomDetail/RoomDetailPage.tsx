@@ -167,14 +167,23 @@ export const RoomDetailPage: React.FC = () => {
       return;
     }
 
+    // Optimistic update — move idea to new column immediately
+    const previousStatus = idea.status;
+    setIdeas((prev) =>
+      prev.map((i) => (i.id === draggedIdeaId ? { ...i, status: newStatus } : i))
+    );
+    setDraggedIdeaId(null);
+
     try {
       await ideasApi.update(draggedIdeaId, { status: newStatus });
       showToast({ type: 'success', message: t('rooms.status_updated') });
-      fetchRoomData();
+      await fetchRoomData();
     } catch {
+      // Rollback on failure
+      setIdeas((prev) =>
+        prev.map((i) => (i.id === draggedIdeaId ? { ...i, status: previousStatus } : i))
+      );
       showToast({ type: 'error', message: t('ideas.status_error') });
-    } finally {
-      setDraggedIdeaId(null);
     }
   };
 
