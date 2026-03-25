@@ -76,6 +76,16 @@ async def get_unread_count(
     return {"count": count}
 
 
+@router.patch("/read-all")
+async def mark_all_read(
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
+):
+    """Mark all notifications as read for the current user."""
+    updated = await notification_repo.mark_all_read(current_user.id)
+    return {"updated": updated}
+
+
 @router.patch("/{notification_id}/read")
 async def mark_notification_read(
     notification_id: UUID,
@@ -90,13 +100,3 @@ async def mark_notification_read(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your notification")
     await notification_repo.mark_read(notification_id)
     return {"success": True}
-
-
-@router.patch("/read-all")
-async def mark_all_read(
-    current_user: UserResponseDTO = Depends(get_current_active_user),
-    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
-):
-    """Mark all notifications as read for the current user."""
-    updated = await notification_repo.mark_all_read(current_user.id)
-    return {"updated": updated}

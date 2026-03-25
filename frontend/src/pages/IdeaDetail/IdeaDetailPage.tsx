@@ -371,6 +371,7 @@ export const IdeaDetailPage: React.FC = () => {
                 )}
               >
                 <ThumbsUp className="h-4 w-4" />
+                <span>{idea.likes_count || 0}</span>
               </button>
               <button
                 onClick={() => handleReaction('insight')}
@@ -380,6 +381,7 @@ export const IdeaDetailPage: React.FC = () => {
                 )}
               >
                 <Lightbulb className="h-4 w-4" />
+                <span>{idea.insights_count || 0}</span>
               </button>
               <button
                 onClick={() => handleReaction('dislike')}
@@ -389,6 +391,7 @@ export const IdeaDetailPage: React.FC = () => {
                 )}
               >
                 <ThumbsDown className="h-4 w-4" />
+                <span>{idea.dislikes_count || 0}</span>
               </button>
             </div>
           </div>

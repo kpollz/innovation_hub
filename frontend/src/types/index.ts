@@ -174,6 +174,9 @@ export interface Idea {
   updated_at: string | null;
   vote_avg: number;
   vote_count: number;
+  likes_count: number;
+  dislikes_count: number;
+  insights_count: number;
   comments_count: number;
   user_reaction: string | null;
   user_vote: UserVote | null;

@@ -67,6 +67,9 @@ class IdeaResponseDTO(BaseModel):
     updated_at: Optional[datetime] = None
     vote_avg: float = 0.0
     vote_count: int = 0
+    likes_count: int = 0
+    dislikes_count: int = 0
+    insights_count: int = 0
     comments_count: int = 0
     user_reaction: Optional[str] = None
     user_vote: Optional[UserVoteDTO] = None

@@ -158,9 +158,11 @@ async def enrich_idea(
     _, comment_total = await comment_repo.list_by_target(idea.id, "idea", page=1, limit=1)
     dto.comments_count = comment_total
 
-    # Reaction counts (ideas also have reactions)
+    # Reaction counts
     counts = await reaction_repo.get_counts_by_target(idea.id, "idea")
-    # Store as user_reaction only (ideas use votes primarily, but reactions exist)
+    dto.likes_count = counts.get(ReactionType.LIKE, 0)
+    dto.dislikes_count = counts.get(ReactionType.DISLIKE, 0)
+    dto.insights_count = counts.get(ReactionType.INSIGHT, 0)
 
     # Current user's reaction
     if current_user_id:
@@ -212,6 +214,12 @@ async def enrich_ideas(
         # Comment count
         _, comment_total = await comment_repo.list_by_target(idea.id, "idea", page=1, limit=1)
         dto.comments_count = comment_total
+
+        # Reaction counts
+        counts = await reaction_repo.get_counts_by_target(idea.id, "idea")
+        dto.likes_count = counts.get(ReactionType.LIKE, 0)
+        dto.dislikes_count = counts.get(ReactionType.DISLIKE, 0)
+        dto.insights_count = counts.get(ReactionType.INSIGHT, 0)
 
         # Current user state
         if current_user_id:

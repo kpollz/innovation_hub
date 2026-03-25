@@ -59,18 +59,19 @@ async def toggle_problem_reaction(
         # Change type
         existing.change_type(data.type)
         updated = await reaction_repo.update(existing)
-        return ReactionResponseDTO.model_validate(updated)
+        result = ReactionResponseDTO.model_validate(updated)
+    else:
+        # Create new
+        reaction = Reaction(
+            target_id=problem_id,
+            target_type="problem",
+            type=data.type,
+            user_id=current_user.id,
+        )
+        created = await reaction_repo.create(reaction)
+        result = ReactionResponseDTO.model_validate(created)
 
-    # Create new
-    reaction = Reaction(
-        target_id=problem_id,
-        target_type="problem",
-        type=data.type,
-        user_id=current_user.id,
-    )
-    created = await reaction_repo.create(reaction)
-
-    # Notify
+    # Notify (for both new and changed reactions)
     problem = await problem_repo.get_by_id(problem_id)
     if problem:
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
@@ -83,7 +84,7 @@ async def toggle_problem_reaction(
             owner_id=problem.author_id,
         )
 
-    return ReactionResponseDTO.model_validate(created)
+    return result
 
 
 @problem_reactions_router.delete(
@@ -136,17 +137,18 @@ async def toggle_idea_reaction(
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
         existing.change_type(data.type)
         updated = await reaction_repo.update(existing)
-        return ReactionResponseDTO.model_validate(updated)
+        result = ReactionResponseDTO.model_validate(updated)
+    else:
+        reaction = Reaction(
+            target_id=idea_id,
+            target_type="idea",
+            type=data.type,
+            user_id=current_user.id,
+        )
+        created = await reaction_repo.create(reaction)
+        result = ReactionResponseDTO.model_validate(created)
 
-    reaction = Reaction(
-        target_id=idea_id,
-        target_type="idea",
-        type=data.type,
-        user_id=current_user.id,
-    )
-    created = await reaction_repo.create(reaction)
-
-    # Notify
+    # Notify (for both new and changed reactions)
     idea = await idea_repo.get_by_id(idea_id)
     if idea:
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
@@ -159,7 +161,7 @@ async def toggle_idea_reaction(
             owner_id=idea.author_id,
         )
 
-    return ReactionResponseDTO.model_validate(created)
+    return result
 
 
 @idea_reactions_router.delete(

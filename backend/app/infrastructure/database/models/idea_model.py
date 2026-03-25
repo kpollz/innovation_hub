@@ -41,10 +41,10 @@ class IdeaModel(BaseModel):
     comments: Mapped[List["CommentModel"]] = relationship(
         "CommentModel",
         back_populates="idea",
-        cascade="all, delete-orphan",
         foreign_keys="CommentModel.target_id",
         primaryjoin="and_(IdeaModel.id==CommentModel.target_id, "
-                    "CommentModel.target_type=='idea')"
+                    "CommentModel.target_type=='idea')",
+        viewonly=True
     )
     votes: Mapped[List["VoteModel"]] = relationship(
         "VoteModel",

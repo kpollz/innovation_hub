@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import {
   Star,
   MessageCircle,
+  ThumbsUp,
+  Lightbulb,
   MoreVertical,
   Pin,
   Trash2
@@ -185,6 +187,14 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 <span>{idea.vote_avg?.toFixed(1) || '0.0'}</span>
                 <span className="text-xs">({idea.vote_count || 0})</span>
               </button>
+              <span className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4" />
+                {idea.likes_count || 0}
+              </span>
+              <span className="flex items-center gap-1">
+                <Lightbulb className="h-4 w-4" />
+                {idea.insights_count || 0}
+              </span>
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-4 w-4" />
                 {idea.comments_count || 0}

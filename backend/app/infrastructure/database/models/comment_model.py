@@ -39,14 +39,16 @@ class CommentModel(BaseModel):
         back_populates="comments",
         foreign_keys="CommentModel.target_id",
         primaryjoin="and_(CommentModel.target_id==ProblemModel.id, "
-                    "CommentModel.target_type=='problem')"
+                    "CommentModel.target_type=='problem')",
+        viewonly=True
     )
     idea: Mapped[Optional["IdeaModel"]] = relationship(
         "IdeaModel",
         back_populates="comments",
         foreign_keys="CommentModel.target_id",
         primaryjoin="and_(CommentModel.target_id==IdeaModel.id, "
-                    "CommentModel.target_type=='idea')"
+                    "CommentModel.target_type=='idea')",
+        viewonly=True
     )
     parent: Mapped[Optional["CommentModel"]] = relationship(
         "CommentModel",

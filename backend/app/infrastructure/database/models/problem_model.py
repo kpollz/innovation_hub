@@ -39,8 +39,8 @@ class ProblemModel(BaseModel):
     comments: Mapped[List["CommentModel"]] = relationship(
         "CommentModel",
         back_populates="problem",
-        cascade="all, delete-orphan",
         foreign_keys="CommentModel.target_id",
         primaryjoin="and_(ProblemModel.id==CommentModel.target_id, "
-                    "CommentModel.target_type=='problem')"
+                    "CommentModel.target_type=='problem')",
+        viewonly=True
     )
