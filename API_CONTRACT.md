@@ -703,6 +703,7 @@ Authorization: Bearer <access_token>
       "target_id": "uuid",
       "target_type": "problem | idea",
       "target_title": "string",
+      "action_detail": "string | null  ← Chi tiết hành động (nội dung comment, loại reaction, số sao vote, status change)",
       "is_read": false,
       "created_at": "datetime"
     }
@@ -713,6 +714,15 @@ Authorization: Bearer <access_token>
   "unread_count": 0
 }
 ```
+
+### action_detail theo từng loại notification
+
+| Type | action_detail | Ví dụ | Giới hạn |
+|------|--------------|-------|----------|
+| `comment_added` | Nội dung comment (truncate) | "Mình nghĩ nên dùng form online..." | Tối đa 100 ký tự |
+| `reaction_added` | Loại reaction | "like", "dislike", "insight" | - |
+| `vote_added` | Số sao (1-5) | "5" | - |
+| `status_changed` | Status cũ → mới | "open → brainstorming" | - |
 
 ### 10.2 GET `/notifications/unread-count` — Số thông báo chưa đọc 🔒
 - **Status**: 200 OK

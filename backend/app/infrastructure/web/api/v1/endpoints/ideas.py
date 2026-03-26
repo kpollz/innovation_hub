@@ -61,12 +61,10 @@ async def list_ideas(
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
-    """List ideas with enriched data."""
+    """List ideas with filtering and enrichment."""
     current_user_id = await _get_optional_user_id(request)
     ideas, total = await idea_repo.list(filters.model_dump(exclude_none=True), page, limit)
-    items = await enrich_ideas(
-        ideas, user_repo, reaction_repo, comment_repo, vote_repo, current_user_id
-    )
+    items = await enrich_ideas(ideas, user_repo, reaction_repo, comment_repo, vote_repo, current_user_id)
     return IdeaListResponseDTO(items=items, total=total, page=page, limit=limit)
 
 
@@ -81,7 +79,7 @@ async def create_idea(
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
-    """Create a new idea."""
+    """Create a new idea in a room."""
     use_case = CreateIdeaUseCase(idea_repo, room_repo)
     idea = await use_case.execute(data, current_user.id)
     return await enrich_idea(
@@ -134,6 +132,7 @@ async def update_idea(
     # Notify on status change
     if data.status and old_status and str(data.status) != str(old_status):
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        action_detail = f"{old_status.value} → {data.status.value}"
         await svc.notify(
             actor_id=current_user.id,
             target_id=idea_id,
@@ -141,6 +140,7 @@ async def update_idea(
             target_title=idea.title,
             notification_type="status_changed",
             owner_id=idea.author_id,
+            action_detail=action_detail,
         )
 
     return await enrich_idea(
@@ -180,7 +180,7 @@ async def vote_idea(
     use_case = VoteIdeaUseCase(vote_repo, idea_repo)
     result = await use_case.execute(data, current_user.id)
 
-    # Notify
+    # Notify with stars detail
     idea = await idea_repo.get_by_id(idea_id)
     if idea:
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
@@ -191,6 +191,7 @@ async def vote_idea(
             target_title=idea.title,
             notification_type="vote_added",
             owner_id=idea.author_id,
+            action_detail=str(stars),  # "1", "2", "3", "4", or "5"
         )
 
     return result

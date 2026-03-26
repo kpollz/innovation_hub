@@ -340,9 +340,11 @@
     "mark_all_read": "Mark all as read",
     "view_more": "View more",
     "no_notifications": "No notifications yet",
-    "comment_added": "{{actor}} commented on \"{{title}}\"",
-    "reaction_added": "{{actor}} reacted to \"{{title}}\"",
-    "vote_added": "{{actor}} voted on \"{{title}}\"",
-    "status_changed": "{{actor}} changed status of \"{{title}}\""
+    "target_problem": "problem",
+    "target_idea": "idea",
+    "comment_added": "{{actor}} commented on {{target_type}} \"{{title}}\": \"{{detail}}\"",
+    "reaction_added": "{{actor}} reacted {{emoji}} on {{target_type}} \"{{title}}\"",
+    "vote_added": "{{actor}} voted {{stars}} stars on {{target_type}} \"{{title}}\"",
+    "status_changed": "{{actor}} changed {{target_type}} \"{{title}}\" from {{old_status}} to {{new_status}}"
   }
 }

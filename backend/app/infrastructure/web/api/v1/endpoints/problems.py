@@ -141,6 +141,7 @@ async def update_problem(
     # Notify on status change
     if data.status and old_status and str(data.status) != str(old_status):
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        action_detail = f"{old_status.value} → {data.status.value}"
         await svc.notify(
             actor_id=current_user.id,
             target_id=problem_id,
@@ -148,6 +149,7 @@ async def update_problem(
             target_title=problem.title,
             notification_type="status_changed",
             owner_id=problem.author_id,
+            action_detail=action_detail,
         )
 
     return await enrich_problem(

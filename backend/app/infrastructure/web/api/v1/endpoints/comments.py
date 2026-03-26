@@ -4,26 +4,58 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.dto.comment_dto import (
+    CommentListResponseDTO,
+    CommentResponseDTO,
     CreateCommentDTO,
     UpdateCommentDTO,
-    CommentResponseDTO,
-    CommentListResponseDTO,
 )
-from app.application.services.response_enrichment import enrich_comment, enrich_comments
+from app.application.services.notification_service import NotificationService
 from app.application.use_cases.comment.add_comment import AddCommentUseCase
 from app.application.use_cases.comment.delete_comment import DeleteCommentUseCase
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
-from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
-from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
-from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.notification_repository_impl import (
+    SQLNotificationRepository,
+)
+from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
 from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
+from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
-from app.application.services.notification_service import NotificationService
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
 router = APIRouter()
+
+
+async def enrich_comment(comment, user_repo: SQLUserRepository) -> CommentResponseDTO:
+    """Enrich a comment entity with author info."""
+    author = await user_repo.get_by_id(comment.author_id)
+    return CommentResponseDTO(
+        id=comment.id,
+        target_id=comment.target_id,
+        target_type=comment.target_type,
+        content=comment.content,
+        author_id=comment.author_id,
+        author={
+            "id": str(author.id),
+            "username": author.username,
+            "full_name": author.full_name,
+            "avatar_url": author.avatar_url,
+        } if author else None,
+        parent_id=comment.parent_id,
+        created_at=comment.created_at,
+        updated_at=comment.updated_at,
+    )
+
+
+async def enrich_comments(
+    comments: list, user_repo: SQLUserRepository
+) -> list[CommentResponseDTO]:
+    """Enrich multiple comments with author info."""
+    enriched = []
+    for comment in comments:
+        enriched.append(await enrich_comment(comment, user_repo))
+    return enriched
 
 
 @router.get("", response_model=CommentListResponseDTO)
@@ -35,7 +67,7 @@ async def list_comments(
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
 ):
-    """List comments for a target with author info."""
+    """List comments for a target (problem or idea)."""
     comments, total = await comment_repo.list_by_target(target_id, target_type, page, limit)
     items = await enrich_comments(comments, user_repo)
     return CommentListResponseDTO(items=items, total=total, page=page, limit=limit)
@@ -79,9 +111,10 @@ async def create_comment(
             target_title = idea.title
             owner_id = idea.author_id
 
-    # Create notification
+    # Create notification with truncated comment content
     if owner_id:
         svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        action_detail = svc.truncate_comment(data.content)
         await svc.notify(
             actor_id=current_user.id,
             target_id=data.target_id,
@@ -89,6 +122,7 @@ async def create_comment(
             target_title=target_title,
             notification_type="comment_added",
             owner_id=owner_id,
+            action_detail=action_detail,
         )
 
     return await enrich_comment(comment, user_repo)

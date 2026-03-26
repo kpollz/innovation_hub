@@ -340,9 +340,11 @@
     "mark_all_read": "Đánh dấu tất cả đã đọc",
     "view_more": "Xem thêm",
     "no_notifications": "Chưa có thông báo nào",
-    "comment_added": "{{actor}} đã bình luận \"{{title}}\"",
-    "reaction_added": "{{actor}} đã phản hồi \"{{title}}\"",
-    "vote_added": "{{actor}} đã bỏ phiếu cho \"{{title}}\"",
-    "status_changed": "{{actor}} đã đổi trạng thái \"{{title}}\""
+    "target_problem": "vấn đề",
+    "target_idea": "ý tưởng",
+    "comment_added": "{{actor}} đã bình luận trên {{target_type}} \"{{title}}\": \"{{detail}}\"",
+    "reaction_added": "{{actor}} đã thả {{emoji}} trên {{target_type}} \"{{title}}\"",
+    "vote_added": "{{actor}} đã vote {{stars}} sao cho {{target_type}} \"{{title}}\"",
+    "status_changed": "{{actor}} đã chuyển {{target_type}} \"{{title}}\" từ {{old_status}} sang {{new_status}}"
   }
 }

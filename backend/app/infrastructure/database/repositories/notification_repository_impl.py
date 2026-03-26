@@ -26,6 +26,7 @@ class SQLNotificationRepository(NotificationRepository):
             target_id=UUID(model.target_id),
             target_type=model.target_type,
             target_title=model.target_title,
+            action_detail=model.action_detail,
             is_read=model.is_read,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -41,6 +42,7 @@ class SQLNotificationRepository(NotificationRepository):
             target_id=str(entity.target_id),
             target_type=entity.target_type,
             target_title=entity.target_title,
+            action_detail=entity.action_detail,
             is_read=entity.is_read,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
@@ -98,29 +100,28 @@ class SQLNotificationRepository(NotificationRepository):
 
     async def mark_read(self, notification_id: UUID) -> bool:
         model = await self.session.get(NotificationModel, str(notification_id))
-        if not model:
-            return False
-        model.is_read = True
-        await self.session.flush()
-        return True
+        if model:
+            model.is_read = True
+            await self.session.flush()
+            return True
+        return False
 
     async def mark_all_read(self, user_id: UUID) -> int:
         result = await self.session.execute(
             update(NotificationModel)
-            .where(
-                (NotificationModel.user_id == str(user_id))
-                & (NotificationModel.is_read == False)
-            )
+            .where(NotificationModel.user_id == str(user_id))
+            .where(NotificationModel.is_read == False)
             .values(is_read=True)
+            .returning(NotificationModel.id)
         )
         await self.session.flush()
-        return result.rowcount
+        return len(result.all())
 
     async def count_unread(self, user_id: UUID) -> int:
         result = await self.session.execute(
-            select(func.count()).where(
-                (NotificationModel.user_id == str(user_id))
-                & (NotificationModel.is_read == False)
-            )
+            select(func.count())
+            .select_from(NotificationModel)
+            .where(NotificationModel.user_id == str(user_id))
+            .where(NotificationModel.is_read == False)
         )
         return result.scalar() or 0

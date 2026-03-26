@@ -82,6 +82,7 @@ async def toggle_problem_reaction(
             target_title=problem.title,
             notification_type="reaction_added",
             owner_id=problem.author_id,
+            action_detail=data.type.value,  # "like", "dislike", or "insight"
         )
 
     return result
@@ -159,6 +160,7 @@ async def toggle_idea_reaction(
             target_title=idea.title,
             notification_type="reaction_added",
             owner_id=idea.author_id,
+            action_detail=data.type.value,  # "like", "dislike", or "insight"
         )
 
     return result

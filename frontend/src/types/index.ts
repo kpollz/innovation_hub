@@ -261,6 +261,7 @@ export interface Notification {
   target_id: string;
   target_type: 'problem' | 'idea';
   target_title: string;
+  action_detail: string | null;
   is_read: boolean;
   created_at: string;
 }

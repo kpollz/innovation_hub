@@ -33,6 +33,7 @@ class NotificationModel(BaseModel):
     target_id: Mapped[str] = mapped_column(PGUUID(as_uuid=False), nullable=False)
     target_type: Mapped[str] = mapped_column(String(20), nullable=False)
     target_title: Mapped[str] = mapped_column(String(300), nullable=False)
+    action_detail: Mapped[str | None] = mapped_column(String(100), nullable=True)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships

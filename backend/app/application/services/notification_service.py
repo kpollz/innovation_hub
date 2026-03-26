@@ -1,6 +1,6 @@
 """Notification service - creates notifications as side effects of user actions."""
 import logging
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.notification import Notification
@@ -60,6 +60,7 @@ class NotificationService:
         target_title: str,
         notification_type: str,
         owner_id: UUID,
+        action_detail: Optional[str] = None,
     ) -> None:
         """Create notifications for the owner and all interactors of a target.
 
@@ -70,6 +71,7 @@ class NotificationService:
             target_title: Title for display.
             notification_type: comment_added, reaction_added, vote_added, status_changed.
             owner_id: The author_id of the target problem/idea.
+            action_detail: Optional detail about the action (comment content, reaction type, etc.)
         """
         try:
             recipients: set[UUID] = set()
@@ -95,6 +97,7 @@ class NotificationService:
                     target_id=target_id,
                     target_type=target_type,
                     target_title=target_title,
+                    action_detail=action_detail,
                 )
                 for user_id in recipients
             ]
@@ -109,3 +112,18 @@ class NotificationService:
             )
         except Exception:
             logger.exception("Failed to create notifications")
+
+    @staticmethod
+    def truncate_comment(content: str, max_length: int = 100) -> str:
+        """Truncate comment content for notification display.
+
+        Args:
+            content: The full comment content.
+            max_length: Maximum length before truncation (default: 100).
+
+        Returns:
+            Truncated content with '...' if exceeded max_length.
+        """
+        if len(content) <= max_length:
+            return content
+        return content[:max_length - 3].rstrip() + "..."

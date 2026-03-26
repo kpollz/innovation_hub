@@ -14,10 +14,55 @@ const NotificationItem: React.FC<{
 
   const actorName = notification.actor?.full_name || notification.actor?.username || '?';
   const messageKey = `notifications.${notification.type}`;
-  const message = t(messageKey, {
-    actor: actorName,
-    title: notification.target_title,
-  });
+
+  // Build translation params based on notification type
+  const getTranslationParams = () => {
+    const targetTypeLabel = notification.target_type === 'problem'
+      ? t('notifications.target_problem')
+      : t('notifications.target_idea');
+    const baseParams = {
+      actor: actorName,
+      title: notification.target_title,
+      target_type: targetTypeLabel,
+    };
+
+    switch (notification.type) {
+      case 'comment_added':
+        return {
+          ...baseParams,
+          detail: notification.action_detail || '',
+        };
+      case 'reaction_added': {
+        const reactionEmojiMap: Record<string, string> = {
+          like: '👍',
+          dislike: '👎',
+          insight: '💡',
+        };
+        return {
+          ...baseParams,
+          emoji: reactionEmojiMap[notification.action_detail || ''] || '👍',
+        };
+      }
+      case 'vote_added':
+        return {
+          ...baseParams,
+          stars: notification.action_detail || '?',
+        };
+      case 'status_changed': {
+        // action_detail format: "old_status → new_status"
+        const [oldStatus, newStatus] = (notification.action_detail || '').split(' → ');
+        return {
+          ...baseParams,
+          old_status: oldStatus || '?',
+          new_status: newStatus || '?',
+        };
+      }
+      default:
+        return baseParams;
+    }
+  };
+
+  const message = t(messageKey, getTranslationParams());
 
   const timeAgo = getTimeAgo(notification.created_at);
 

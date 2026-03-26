@@ -28,6 +28,7 @@ async def _enrich_notification(notification, user_repo: SQLUserRepository) -> No
         target_id=notification.target_id,
         target_type=notification.target_type,
         target_title=notification.target_title,
+        action_detail=notification.action_detail,
         is_read=notification.is_read,
         created_at=notification.created_at,
     )
