@@ -181,6 +181,7 @@
     "ideas_count": "{{count}} ideas",
     "back_to_rooms": "Back to Idea Lab",
     "not_found": "Room not found",
+    "created_time": "Created {{time}}",
     "linked_problem": "Linked Problem",
     "view_linked": "View linked problem",
     "add_idea": "Add Idea",
