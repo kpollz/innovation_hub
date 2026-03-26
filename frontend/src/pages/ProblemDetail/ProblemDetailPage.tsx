@@ -77,14 +77,16 @@ export const ProblemDetailPage: React.FC = () => {
   };
 
   const handleReaction = async (type: ReactionType) => {
-    if (!id) return;
+    if (!id || !selectedProblem) return;
     try {
-      if (selectedProblem?.user_reaction === type) {
+      if (selectedProblem.user_reaction === type) {
         await problemsApi.removeReaction(id);
       } else {
         await problemsApi.addReaction(id, type);
       }
-      fetchProblem(id);
+      // Silent refresh — update state directly without triggering isLoading spinner
+      const updated = await problemsApi.getById(id);
+      useProblemStore.setState({ selectedProblem: updated });
     } catch {
       showToast({ type: 'error', message: t('problems.reaction_error') });
     }
