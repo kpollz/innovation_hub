@@ -284,8 +284,9 @@ Authorization: Bearer <access_token>
 
 ### 3.1 GET `/problems` — Danh sách vấn đề 🔒
 - **Status**: 200 OK
-- **Query**: `?status=&category=&author_id=&search=&sort=newest&page=1&limit=20`
+- **Query**: `?status=&category=&author_id=&search=&sort=newest&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&page=1&limit=20`
 - **Sort options**: `newest`, `oldest`, `most_liked`, `most_commented`
+- **Date filter**: `date_from` inclusive, `date_to` inclusive. Không truyền = không lọc theo thời gian.
 - **Response:** `{ items: ProblemObject[], total, page, limit }`
 
 ### 3.2 POST `/problems` — Tạo vấn đề mới 🔒
@@ -395,7 +396,8 @@ Authorization: Bearer <access_token>
 
 ### 5.1 GET `/rooms` — Danh sách phòng brainstorming 🔒
 - **Status**: 200 OK
-- **Query**: `?status=&problem_id=&search=&page=1&limit=20`
+- **Query**: `?status=&problem_id=&search=&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&page=1&limit=20`
+- **Date filter**: `date_from` inclusive, `date_to` inclusive. Không truyền = không lọc theo thời gian.
 - **Response:** `{ items: RoomObject[], total, page, limit }`
 
 ### 5.2 POST `/rooms` — Tạo phòng mới (standalone) 🔒

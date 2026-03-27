@@ -18,6 +18,8 @@ export const problemsApi = {
     if (filters.category) params.append('category', filters.category);
     if (filters.author_id) params.append('author_id', filters.author_id);
     if (filters.sort) params.append('sort', filters.sort);
+    if (filters.date_from) params.append('date_from', filters.date_from);
+    if (filters.date_to) params.append('date_to', filters.date_to);
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
 

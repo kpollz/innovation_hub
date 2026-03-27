@@ -1,7 +1,9 @@
 """Room endpoints."""
+from datetime import date, datetime, timedelta
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.application.dto.room_dto import (
     CreateRoomDTO,
@@ -27,14 +29,19 @@ async def list_rooms(
     filters: RoomListFiltersDTO = Depends(),
     page: int = 1,
     limit: int = 20,
+    date_from: Optional[date] = Query(None, description="Start date (inclusive), e.g. 2026-01-01"),
+    date_to: Optional[date] = Query(None, description="End date (inclusive), e.g. 2026-03-31"),
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
 ):
     """List rooms with enriched data."""
-    rooms, total = await room_repo.list(
-        filters.model_dump(exclude_none=True), page, limit
-    )
+    filter_dict = filters.model_dump(exclude_none=True)
+    if date_from:
+        filter_dict["created_after"] = datetime.combine(date_from, datetime.min.time())
+    if date_to:
+        filter_dict["created_before"] = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    rooms, total = await room_repo.list(filter_dict, page, limit)
     items = await enrich_rooms(rooms, user_repo, idea_repo)
     return RoomListResponseDTO(items=items, total=total, page=page, limit=limit)
 

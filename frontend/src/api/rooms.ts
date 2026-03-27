@@ -9,6 +9,8 @@ interface RoomFilters {
   status?: string;
   problem_id?: string;
   search?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   limit?: number;
 }
@@ -20,6 +22,8 @@ export const roomsApi = {
     if (filters.status) params.append('status', filters.status);
     if (filters.problem_id) params.append('problem_id', filters.problem_id);
     if (filters.search) params.append('search', filters.search);
+    if (filters.date_from) params.append('date_from', filters.date_from);
+    if (filters.date_to) params.append('date_to', filters.date_to);
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
 

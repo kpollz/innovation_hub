@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, LayoutGrid, List, Lightbulb } from 'lucide-react';
+import { Plus, LayoutGrid, List, Lightbulb, Filter } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { CreateRoomModal } from './CreateRoomModal';
 import { Avatar } from '@/components/ui/Avatar';
 import type { Room } from '@/types';
@@ -65,20 +66,39 @@ export const IdeaLabPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const { showModal } = useUIStore();
 
   useEffect(() => {
     fetchRooms();
   }, []);
 
-  const fetchRooms = async () => {
+  const fetchRooms = async (from?: string, to?: string) => {
+    setIsLoading(true);
     try {
-      const response = await roomsApi.list();
+      const filters: Record<string, string> = {};
+      const df = from ?? dateFrom;
+      const dt = to ?? dateTo;
+      if (df) filters.date_from = df;
+      if (dt) filters.date_to = dt;
+      const response = await roomsApi.list(filters);
       setRooms(response.items);
     } catch (error) {
       console.error('Failed to fetch rooms:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDateChange = (key: 'from' | 'to', value: string) => {
+    if (key === 'from') {
+      setDateFrom(value);
+      fetchRooms(value, dateTo);
+    } else {
+      setDateTo(value);
+      fetchRooms(dateFrom, value);
     }
   };
 
@@ -122,11 +142,42 @@ export const IdeaLabPage: React.FC = () => {
               <LayoutGrid className="h-4 w-4" />
             </button>
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setShowFilters(!showFilters)}
+            leftIcon={<Filter className="h-4 w-4" />}
+          >
+            {t('problems.filters')}
+          </Button>
           <Button onClick={openCreateModal} leftIcon={<Plus className="h-4 w-4" />}>
             {t('rooms.create_room')}
           </Button>
         </div>
       </div>
+
+      {/* Date Filters */}
+      {showFilters && (
+        <div className="bg-white p-4 rounded-xl border border-gray-200">
+          <div className="flex items-end gap-3">
+            <DatePicker
+              value={dateFrom}
+              onChange={(val) => handleDateChange('from', val)}
+              max={dateTo || undefined}
+              placeholder={t('common.date_from')}
+              className="w-[180px]"
+            />
+            <span className="text-gray-400 pb-2">→</span>
+            <DatePicker
+              value={dateTo}
+              onChange={(val) => handleDateChange('to', val)}
+              min={dateFrom || undefined}
+              placeholder={t('common.date_to')}
+              className="w-[180px]"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Active Rooms */}
       <div>

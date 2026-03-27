@@ -1,8 +1,9 @@
 """Problem endpoints."""
+from datetime import date, datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from app.application.dto.problem_dto import (
@@ -57,6 +58,8 @@ async def list_problems(
     filters: ProblemListFiltersDTO = Depends(),
     page: int = 1,
     limit: int = 20,
+    date_from: Optional[date] = Query(None, description="Start date (inclusive), e.g. 2026-01-01"),
+    date_to: Optional[date] = Query(None, description="End date (inclusive), e.g. 2026-03-31"),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
@@ -65,9 +68,12 @@ async def list_problems(
 ):
     """List problems with pagination, filters, and enriched data."""
     current_user_id = await _get_optional_user_id(request)
-    problems, total = await problem_repo.list(
-        filters.model_dump(exclude_none=True), page, limit
-    )
+    filter_dict = filters.model_dump(exclude_none=True)
+    if date_from:
+        filter_dict["created_after"] = datetime.combine(date_from, datetime.min.time())
+    if date_to:
+        filter_dict["created_before"] = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    problems, total = await problem_repo.list(filter_dict, page, limit)
     items = await enrich_problems(
         problems, user_repo, reaction_repo, comment_repo, current_user_id, room_repo
     )

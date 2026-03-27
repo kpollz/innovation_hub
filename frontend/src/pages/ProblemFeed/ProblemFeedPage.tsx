@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { ProblemCard } from '@/components/common/ProblemCard';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 
@@ -114,7 +115,7 @@ export const ProblemFeedPage: React.FC = () => {
         </form>
 
         {showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-200">
             <Select
               label={t('problems.category')}
               value={filters.category || ''}
@@ -133,6 +134,26 @@ export const ProblemFeedPage: React.FC = () => {
               onChange={(e) => handleFilterChange('sort', e.target.value)}
               options={sortOptions}
             />
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.date_range')}</label>
+              <div className="flex items-center gap-2">
+                <DatePicker
+                  value={filters.date_from || ''}
+                  onChange={(val) => handleFilterChange('date_from', val)}
+                  max={filters.date_to || undefined}
+                  placeholder={t('common.date_from')}
+                  className="flex-1"
+                />
+                <span className="text-gray-400 shrink-0">→</span>
+                <DatePicker
+                  value={filters.date_to || ''}
+                  onChange={(val) => handleFilterChange('date_to', val)}
+                  min={filters.date_from || undefined}
+                  placeholder={t('common.date_to')}
+                  className="flex-1"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

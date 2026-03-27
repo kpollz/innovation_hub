@@ -281,6 +281,8 @@ export interface ProblemFilters {
   category?: ProblemCategory;
   author_id?: string;
   sort?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   limit?: number;
 }
