@@ -425,11 +425,17 @@ export const IdeaDetailPage: React.FC = () => {
             ) : (
               comments.map((comment) => {
                 const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
+                const isOwnComment = user?.id === comment.author_id;
                 return (
-                  <div key={comment.id} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
+                  <div
+                    key={comment.id}
+                    className={`flex gap-3 p-4 rounded-lg ${
+                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-gray-50'
+                    }`}
+                  >
                     <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
+                      <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
                         <span className="font-medium text-gray-900">{commentAuthorName}</span>
                         <span className="text-xs text-gray-500">{timeAgo(comment.created_at)}</span>
                       </div>
