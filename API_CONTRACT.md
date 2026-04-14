@@ -268,10 +268,12 @@ Authorization: Bearer <access_token>
   "content": "string",
   "category": "process | technical | people | tools | patent",
   "status": "open | discussing | brainstorming | solved | closed",
+  "visibility": "public | private  ← NEW: default public",
   "author_id": "uuid",
   "author": { → UserObject },
   "room_id": "uuid | null  ← enriched: ID của room đầu tiên (backwards compat)",
   "rooms": "[{id, name, status}]  ← enriched: danh sách tất cả rooms liên kết với problem",
+  "shared_user_ids": "[uuid]  ← NEW: danh sách user được share (empty = public)",
   "created_at": "datetime",
   "updated_at": "datetime | null",
   "likes_count": 0,
@@ -287,6 +289,9 @@ Authorization: Bearer <access_token>
 - **Query**: `?status=&category=&author_id=&search=&sort=newest&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&page=1&limit=20`
 - **Sort options**: `newest`, `oldest`, `most_liked`, `most_commented`
 - **Date filter**: `date_from` inclusive, `date_to` inclusive. Không truyền = không lọc theo thời gian.
+- **Privacy filter**: Chỉ trả về problems mà user có quyền xem:
+  - `visibility = public` → tất cả users đều thấy
+  - `visibility = private` → chỉ author, users trong `shared_user_ids`, và Admin thấy
 - **Response:** `{ items: ProblemObject[], total, page, limit }`
 
 ### 3.2 POST `/problems` — Tạo vấn đề mới 🔒
@@ -298,14 +303,22 @@ Authorization: Bearer <access_token>
   "title": "string (5-255 ký tự, bắt buộc)",
   "summary": "string (tối đa 500 ký tự, tùy chọn)",
   "content": "string (tối thiểu 10 ký tự, bắt buộc)",
-  "category": "process | technical | people | tools | patent (bắt buộc)"
+  "category": "process | technical | people | tools | patent (bắt buộc)",
+  "visibility": "public | private (tùy chọn, mặc định: public)  ← NEW",
+  "shared_user_ids": ["uuid"] (tùy chọn, mặc định: [])  ← NEW: danh sách user được share"
 }
 ```
+
+> **Logic Privacy**: 
+> - `visibility` không truyền → mặc định `public`
+> - `shared_user_ids` rỗng hoặc không truyền + `visibility = public` → tất cả đều thấy
+> - `shared_user_ids` có giá trị → tự động set `visibility = private`
 
 **Response:** ProblemObject
 
 ### 3.3 GET `/problems/{problem_id}` — Chi tiết vấn đề 🔒
 - **Status**: 200 OK
+- **Privacy**: Nếu `visibility = private`, chỉ author, users trong `shared_user_ids`, và Admin được xem. Khác → 403.
 - **Response:** ProblemObject
 
 ### 3.4 PATCH `/problems/{problem_id}` — Cập nhật vấn đề 🔒
@@ -319,7 +332,9 @@ Authorization: Bearer <access_token>
   "summary": "string (tối đa 500 ký tự)",
   "content": "string (tối thiểu 10 ký tự)",
   "category": "process | technical | people | tools | patent",
-  "status": "open | discussing | brainstorming | solved | closed"
+  "status": "open | discussing | brainstorming | solved | closed",
+  "visibility": "public | private  ← NEW",
+  "shared_user_ids": ["uuid"]  ← NEW: thay thế toàn bộ danh sách share"
 }
 ```
 
@@ -327,6 +342,7 @@ Authorization: Bearer <access_token>
 > - `discussing` và `brainstorming` được hệ thống tự chuyển (không cần gửi qua PATCH)
 > - Qua PATCH chỉ nên chuyển: `solved`, `closed`
 > - Admin có thể thay đổi status. Member chỉ có thể thay đổi status bài của mình.
+> - **Privacy**: Chỉ author hoặc Admin mới thay đổi visibility/shared_user_ids.
 
 **Response:** ProblemObject
 
@@ -387,6 +403,8 @@ Authorization: Bearer <access_token>
   "created_by": "uuid",
   "creator": { → UserObject },
   "status": "active | archived",
+  "visibility": "public | private (default: public)",
+  "shared_user_ids": "[uuid] (danh sách user được chia sẻ khi private)",
   "created_at": "datetime",
   "updated_at": "datetime | null",
   "idea_count": 0,
@@ -394,10 +412,12 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 5.1 GET `/rooms` — Danh sách phòng brainstorming 🔒
+### 5.1 GET `/rooms` — Danh sách phòng brainstorming
 - **Status**: 200 OK
+- **Auth**: Tùy chọn (Bearer token). Nếu không có token, chỉ hiện phòng public.
 - **Query**: `?status=&problem_id=&search=&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&page=1&limit=20`
 - **Date filter**: `date_from` inclusive, `date_to` inclusive. Không truyền = không lọc theo thời gian.
+- **Privacy**: Kế thừa từ Problem nếu room có `problem_id`. Standalone rooms dùng quyền riêng. Admin thấy tất cả.
 - **Response:** `{ items: RoomObject[], total, page, limit }`
 
 ### 5.2 POST `/rooms` — Tạo phòng mới (standalone) 🔒
@@ -408,28 +428,36 @@ Authorization: Bearer <access_token>
 {
   "name": "string (3-255 ký tự, bắt buộc)",
   "description": "string (tùy chọn)",
-  "problem_id": "uuid (tùy chọn - liên kết với vấn đề)"
+  "problem_id": "uuid (tùy chọn - liên kết với vấn đề)",
+  "visibility": "public | private (default: public)",
+  "shared_user_ids": ["uuid"] (tùy chọn - danh sách user được chia sẻ)
 }
 ```
 
 > **Logic khi có problem_id**: Tự động chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room.
+> **Logic privacy**: Nếu `shared_user_ids` có giá trị và `visibility` là `public`, tự động chuyển thành `private`.
 
 **Response:** RoomObject
 
-### 5.3 GET `/rooms/{room_id}` — Chi tiết phòng 🔒
+### 5.3 GET `/rooms/{room_id}` — Chi tiết phòng
 - **Status**: 200 OK
+- **Auth**: Tùy chọn (Bearer token). Nếu không có token, chỉ xem được phòng public.
+- **Privacy**: Trả về 403 nếu phòng private và user không phải creator, không trong shared_user_ids, và không phải admin.
 - **Response:** RoomObject
 
 ### 5.4 PATCH `/rooms/{room_id}` — Cập nhật phòng 🔒
 - **Quyền**: Người tạo hoặc Admin
 - **Status**: 200 OK
+- **Privacy**: Trả về 403 nếu phòng private và user không có quyền truy cập.
 
 **Request Body (tất cả tùy chọn):**
 ```json
 {
   "name": "string",
   "description": "string",
-  "status": "active | archived"
+  "status": "active | archived",
+  "visibility": "public | private",
+  "shared_user_ids": ["uuid"]
 }
 ```
 
@@ -438,18 +466,22 @@ Authorization: Bearer <access_token>
 ### 5.5 DELETE `/rooms/{room_id}` — Xóa phòng 🔒
 - **Quyền**: Người tạo hoặc Admin
 - **Status**: 204 No Content
+- **Privacy**: Trả về 403 nếu phòng private và user không có quyền truy cập.
 - **Error**: 404 Not Found, 403 Forbidden
 
 ### 5.6 POST `/problems/{problem_id}/rooms` — Tạo phòng từ vấn đề (1-click) 🔒
 - **Status**: 201 Created
 - **Error**: 400 Bad Request nếu problem đã ở trạng thái `solved` hoặc `closed`
+- **Privacy**: Trả về 403 nếu problem private và user không có quyền truy cập.
 - **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room.
 
 **Request Body:**
 ```json
 {
   "name": "string (3-255 ký tự, bắt buộc)",
-  "description": "string (tùy chọn)"
+  "description": "string (tùy chọn)",
+  "visibility": "public | private (default: public)",
+  "shared_user_ids": ["uuid"] (tùy chọn)
 }
 ```
 
@@ -485,10 +517,12 @@ Authorization: Bearer <access_token>
 - **Status**: 200 OK
 - **Query**: `?room_id=&author_id=&status=&search=&sort=newest&page=1&limit=20`
 - **Sort options**: `newest`, `top_voted`, `most_commented`
+- **Privacy**: Ideas kế thừa quyền truy cập của Room. Nếu room là private, chỉ hiện ideas cho creator, shared users, và admin.
 - **Response:** `{ items: IdeaObject[], total, page, limit }`
 
 ### 6.2 POST `/ideas` — Tạo ý tưởng mới 🔒
 - **Status**: 201 Created
+- **Privacy**: Trả về 403 nếu room là private và user không có quyền truy cập.
 
 **Request Body:**
 ```json
@@ -873,6 +907,59 @@ active → archived
 | Room create `{linked_problem_id}` | `{problem_id}` | Đổi field name |
 | Room response `facilitator` | `creator` | Đổi field name |
 | Vote score 1-10 | stars 1-5 | Đổi range + field name |
+
+---
+
+## 13. PRIVACY RULES (Quy tắc quyền riêng tư)
+
+### Nguyên tắc cascade: Problem → Room → Idea
+
+```
+Problem (visibility: public/private, shared_user_ids)
+  └── Room (kế thừa từ Problem nếu có liên kết)
+       └── Idea (kế thừa từ Room → Problem)
+```
+
+### Quy tắc chi tiết
+
+| Tạo tác | Quyền riêng tư | Mô tả |
+|---------|----------------|-------|
+| **Problem** | `visibility` + `shared_user_ids` riêng | Nguồn gốc của quyền. Có thể là public hoặc private. |
+| **Room (liên kết Problem)** | **Kế thừa từ Problem** | Nếu room có `problem_id`, quyền xem được quyết định bởi Problem. Room không có quyền riêng. |
+| **Room (độc lập)** | `visibility` + `shared_user_ids` riêng | Room không liên kết problem nào thì dùng quyền riêng. |
+| **Idea** | **Kế thừa từ Room → Problem** | Ý tưởng luôn kế thừa quyền từ room chứa nó. |
+
+### Logic kiểm tra quyền
+
+**Problem:**
+- `public` → tất cả users đều thấy
+- `private` → chỉ author, users trong `shared_user_ids`, và Admin thấy
+
+**Room (có `problem_id`):**
+- Kiểm tra quyền của Problem liên kết
+- Nếu Problem `public` → room và ideas đều public
+- Nếu Problem `private` → chỉ users được share trong Problem mới thấy room và ideas
+
+**Room (không có `problem_id` - standalone):**
+- Dùng `visibility` và `shared_user_ids` riêng của room
+- Logic giống Problem: `public` = tất cả, `private` = author + shared + admin
+
+**Idea:**
+- Luôn kế thừa từ Room chứa nó
+- Không có bảng quyền riêng
+
+### Auto-set private
+- Khi `shared_user_ids` có giá trị và `visibility` là `public`, hệ thống tự động chuyển thành `private`
+- Áp dụng cho cả Problem và standalone Room
+
+### Admin bypass
+- Admin (`role = "admin"`) luôn thấy tất cả nội dung bất kể visibility
+
+### API Error responses
+| Mã lỗi | Khi nào | Mô tả |
+|--------|---------|-------|
+| 403 | User không có quyền xem private content | `"You do not have permission to view this problem/room"` |
+| 404 | Resource không tồn tại | `"Problem/Room not found"` |
 
 ---
 

@@ -2,6 +2,7 @@ import apiClient from './client';
 import type {
   Room,
   CreateRoom,
+  UpdateRoom,
   PaginatedResponse,
 } from '@/types';
 
@@ -41,7 +42,7 @@ export const roomsApi = {
     return response.data;
   },
 
-  update: async (id: string, data: { name?: string; description?: string; status?: string }): Promise<Room> => {
+  update: async (id: string, data: UpdateRoom): Promise<Room> => {
     const response = await apiClient.patch<Room>(`/rooms/${id}`, data);
     return response.data;
   },

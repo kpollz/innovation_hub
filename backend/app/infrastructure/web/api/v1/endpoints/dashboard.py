@@ -64,11 +64,14 @@ async def get_stats(
 ):
     """Get dashboard statistics. Available to all authenticated users."""
     base_filter = _build_date_filter(date_from, date_to)
+    is_admin = current_user.role == "admin"
+    # Add privacy context so stats reflect visible items only
+    privacy_filter = {**base_filter, "current_user_id": current_user.id, "is_admin": is_admin}
 
-    # Get all problems and ideas for the period
-    problems, total_problems = await problem_repo.list(base_filter, page=1, limit=10000)
-    ideas_all, total_ideas = await idea_repo.list(base_filter, page=1, limit=10000)
-    _, total_rooms = await room_repo.list(base_filter, page=1, limit=1)
+    # Get problems and ideas the user can see
+    problems, total_problems = await problem_repo.list(privacy_filter, page=1, limit=10000)
+    ideas_all, total_ideas = await idea_repo.list(privacy_filter, page=1, limit=10000)
+    _, total_rooms = await room_repo.list(privacy_filter, page=1, limit=1)
 
     # Count comments on problems and ideas in the period
     total_comments = 0
@@ -85,8 +88,8 @@ async def get_stats(
             items_with_comments += 1
 
     # Resolved problems (status = solved or closed) within period
-    solved_filter = {**base_filter, "status": "solved"}
-    closed_filter = {**base_filter, "status": "closed"}
+    solved_filter = {**privacy_filter, "status": "solved"}
+    closed_filter = {**privacy_filter, "status": "closed"}
     _, resolved_solved = await problem_repo.list(solved_filter, page=1, limit=1)
     _, resolved_closed = await problem_repo.list(closed_filter, page=1, limit=1)
     resolved_problems = resolved_solved + resolved_closed
@@ -134,12 +137,13 @@ async def get_top_contributors(
 ):
     """Get top contributors ranked by activity."""
     base_filter = _build_date_filter(date_from, date_to)
+    is_admin = current_user.role == "admin"
 
     users, _ = await user_repo.list({}, page=1, limit=100)
 
     contributors = []
     for user in users:
-        user_filter = {**base_filter, "author_id": user.id}
+        user_filter = {**base_filter, "author_id": user.id, "current_user_id": current_user.id, "is_admin": is_admin}
         _, problems_count = await problem_repo.list(user_filter, page=1, limit=1)
         _, ideas_count = await idea_repo.list(user_filter, page=1, limit=1)
 
@@ -179,7 +183,9 @@ async def get_recent_problems(
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Get most recent problems with enriched data."""
-    problems, _ = await problem_repo.list({}, page=1, limit=limit)
+    is_admin = current_user.role == "admin"
+    filter_dict = {"current_user_id": current_user.id, "is_admin": is_admin}
+    problems, _ = await problem_repo.list(filter_dict, page=1, limit=limit)
     return await enrich_problems(
         problems, user_repo, reaction_repo, comment_repo, current_user.id, room_repo
     )
@@ -196,7 +202,9 @@ async def get_recent_ideas(
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
 ):
     """Get most recent ideas with enriched data."""
-    ideas, _ = await idea_repo.list({}, page=1, limit=limit)
+    is_admin = current_user.role == "admin"
+    filter_dict = {"current_user_id": current_user.id, "is_admin": is_admin}
+    ideas, _ = await idea_repo.list(filter_dict, page=1, limit=limit)
     return await enrich_ideas(
         ideas, user_repo, reaction_repo, comment_repo, vote_repo, current_user.id
     )

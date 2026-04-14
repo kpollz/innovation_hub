@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProblemStore } from '@/stores/problemStore';
@@ -9,7 +9,8 @@ import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
-import type { ProblemCategory } from '@/types';
+import { usersApi } from '@/api/users';
+import type { ProblemCategory, ProblemVisibility } from '@/types';
 
 export const CreateProblemPage: React.FC = () => {
   const { t } = useTranslation();
@@ -21,7 +22,41 @@ export const CreateProblemPage: React.FC = () => {
   const [summary, setSummary] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
+  const [visibility, setVisibility] = useState<ProblemVisibility>('public');
+  const [sharedUserIds, setSharedUserIds] = useState<string[]>([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleUserSearch = useCallback(async (query: string) => {
+    setUserSearch(query);
+    if (query.length < 2) {
+      setUserSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const result = await usersApi.list({ search: query, limit: 10 });
+      setUserSearchResults(result.items.map(u => ({ id: u.id, full_name: u.full_name || '', email: u.email || '' })));
+    } catch {
+      setUserSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const addSharedUser = (userId: string) => {
+    if (!sharedUserIds.includes(userId)) {
+      setSharedUserIds([...sharedUserIds, userId]);
+    }
+    setUserSearch('');
+    setUserSearchResults([]);
+  };
+
+  const removeSharedUser = (userId: string) => {
+    setSharedUserIds(sharedUserIds.filter(id => id !== userId));
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -54,6 +89,8 @@ export const CreateProblemPage: React.FC = () => {
         summary: summary || undefined,
         content,
         category: category as ProblemCategory,
+        visibility,
+        shared_user_ids: visibility === 'private' ? sharedUserIds : undefined,
       });
       showToast({ type: 'success', message: t('problems.created_success') });
       navigate('/problems');
@@ -124,6 +161,110 @@ export const CreateProblemPage: React.FC = () => {
               error={errors.content}
               minHeight="250px"
             />
+
+            {/* Privacy / Visibility Section */}
+            <div className="border-t border-gray-200 pt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                {t('problems.visibility_label')}
+              </label>
+              <div className="flex gap-4 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibility('public')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    visibility === 'public'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>{t('problems.visibility_public')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibility('private')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    visibility === 'private'
+                      ? 'border-amber-500 bg-amber-50 text-amber-700'
+                      : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <span>🔒</span>
+                  <span>{t('problems.visibility_private')}</span>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {visibility === 'public'
+                  ? t('problems.visibility_public_desc')
+                  : t('problems.visibility_private_desc')}
+              </p>
+
+              {/* Shared users section - only visible when private */}
+              {visibility === 'private' && (
+                <div className="mt-4 space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('problems.share_with_label')}
+                  </label>
+
+                  {/* Selected shared users as chips */}
+                  {sharedUserIds.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {sharedUserIds.map((userId) => {
+                        const user = userSearchResults.find(u => u.id === userId);
+                        return (
+                          <span
+                            key={userId}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                          >
+                            {user?.full_name || userId.slice(0, 8)}
+                            <button
+                              type="button"
+                              onClick={() => removeSharedUser(userId)}
+                              className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* User search input */}
+                  <div className="relative">
+                    <Input
+                      placeholder={t('problems.search_users_placeholder')}
+                      value={userSearch}
+                      onChange={(e) => handleUserSearch(e.target.value)}
+                    />
+                    {isSearching && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+                      </div>
+                    )}
+
+                    {/* Search results dropdown */}
+                    {userSearchResults.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {userSearchResults
+                          .filter(u => !sharedUserIds.includes(u.id))
+                          .map((user) => (
+                            <button
+                              key={user.id}
+                              type="button"
+                              onClick={() => addSharedUser(user.id)}
+                              className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                            >
+                              <span className="font-medium">{user.full_name}</span>
+                              <span className="text-gray-500 ml-2">{user.email}</span>
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 

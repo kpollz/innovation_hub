@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, LayoutGrid, List, Lightbulb, Filter } from 'lucide-react';
+import { Plus, LayoutGrid, List, Lightbulb, Filter, Lock } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -24,9 +24,16 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
       <Card hoverable className="h-full">
         <CardContent className="p-5">
           <div className="flex items-start justify-between mb-3">
-            <Badge variant={room.status === 'active' ? 'success' : 'default'}>
-              {room.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={room.status === 'active' ? 'success' : 'default'}>
+                {room.status}
+              </Badge>
+              {room.visibility === 'private' && (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400" title="Private">
+                  <Lock className="h-3 w-3" />
+                </span>
+              )}
+            </div>
             {room.problem_id && (
               <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
                 Linked

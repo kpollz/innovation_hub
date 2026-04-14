@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,8 @@ import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
-import type { ProblemCategory } from '@/types';
+import { usersApi } from '@/api/users';
+import type { ProblemCategory, ProblemVisibility, User } from '@/types';
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
@@ -30,6 +31,35 @@ export const CreateProblemModal: React.FC = () => {
   const { modal, closeModal, showToast } = useUIStore();
 
   const isOpen = modal?.type === 'createProblem';
+
+  // Privacy state
+  const [visibility, setVisibility] = useState<ProblemVisibility>('public');
+  const [sharedUserIds, setSharedUserIds] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      usersApi.list({ limit: 100 }).then((res) => setAllUsers(res.items)).catch(() => {});
+    }
+  }, [isOpen]);
+
+  const filteredUsers = allUsers.filter(
+    (u) =>
+      !sharedUserIds.includes(u.id) &&
+      (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+        (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
+  );
+
+  const addSharedUser = (userId: string) => {
+    setSharedUserIds((prev) => [...prev, userId]);
+    setUserSearch('');
+  };
+
+  const removeSharedUser = (userId: string) => {
+    setSharedUserIds((prev) => prev.filter((id) => id !== userId));
+  };
 
   const {
     register,
@@ -50,9 +80,14 @@ export const CreateProblemModal: React.FC = () => {
         summary: data.summary || undefined,
         content: data.content,
         category: data.category as ProblemCategory,
+        visibility,
+        shared_user_ids: sharedUserIds.length > 0 ? sharedUserIds : undefined,
       });
       showToast({ type: 'success', message: t('problems.created_success') });
       reset();
+      setVisibility('public');
+      setSharedUserIds([]);
+      setUserSearch('');
       closeModal();
     } catch {
       showToast({ type: 'error', message: t('problems.create_error') });
@@ -114,6 +149,99 @@ export const CreateProblemModal: React.FC = () => {
           error={errors.content?.message}
           minHeight="200px"
         />
+
+        {/* Privacy / Visibility */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {t('problems.visibility_label', 'Visibility')}
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="visibility"
+                value="public"
+                checked={visibility === 'public'}
+                onChange={() => { setVisibility('public'); setSharedUserIds([]); }}
+                className="text-blue-600"
+              />
+              <span className="text-sm">{t('problems.visibility_public', '🌐 Public')}</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="visibility"
+                value="private"
+                checked={visibility === 'private'}
+                onChange={() => setVisibility('private')}
+                className="text-blue-600"
+              />
+              <span className="text-sm">{t('problems.visibility_private', '🔒 Private')}</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Shared Users (only when private) */}
+        {visibility === 'private' && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t('problems.share_with_label', 'Share with specific users')}
+            </label>
+
+            {/* Selected users chips */}
+            {sharedUserIds.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {sharedUserIds.map((uid) => {
+                  const user = allUsers.find((u) => u.id === uid);
+                  return (
+                    <span
+                      key={uid}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs"
+                    >
+                      {user?.full_name || user?.username || uid}
+                      <button
+                        type="button"
+                        onClick={() => removeSharedUser(uid)}
+                        className="ml-1 text-blue-600 dark:text-blue-300 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Search and add users */}
+            <div className="relative">
+              <Input
+                placeholder={t('problems.search_users_placeholder', 'Search users to share with...')}
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                onFocus={() => setShowUserDropdown(true)}
+                onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
+              />
+              {showUserDropdown && filteredUsers.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                  {filteredUsers.slice(0, 10).map((user) => (
+                    <button
+                      key={user.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { addSharedUser(user.id); setShowUserDropdown(false); }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
+                    >
+                      <span className="font-medium">{user.username}</span>
+                      {user.full_name && (
+                        <span className="text-gray-500">({user.full_name})</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </form>
     </Modal>
   );

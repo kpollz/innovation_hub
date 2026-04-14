@@ -52,6 +52,25 @@ async def _get_optional_user_id(request: Request) -> Optional[UUID]:
         return None
 
 
+async def _get_optional_user_info(request: Request) -> tuple[Optional[UUID], bool]:
+    """Extract user ID and is_admin from token if present."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None, False
+    token = auth_header.replace("Bearer ", "")
+    try:
+        from app.application.services.jwt_service import JWTService
+        jwt_service = JWTService()
+        payload = jwt_service.verify_token(token)
+        if payload.get("type") != "access":
+            return None, False
+        user_id = payload.get("sub")
+        role = payload.get("role", "member")
+        return (UUID(user_id) if user_id else None), role == "admin"
+    except Exception:
+        return None, False
+
+
 @router.get("", response_model=ProblemListResponseDTO)
 async def list_problems(
     request: Request,
@@ -67,12 +86,16 @@ async def list_problems(
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """List problems with pagination, filters, and enriched data."""
-    current_user_id = await _get_optional_user_id(request)
+    current_user_id, is_admin = await _get_optional_user_info(request)
     filter_dict = filters.model_dump(exclude_none=True)
     if date_from:
         filter_dict["created_after"] = datetime.combine(date_from, datetime.min.time())
     if date_to:
         filter_dict["created_before"] = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    # Add privacy filter info
+    if current_user_id:
+        filter_dict["current_user_id"] = current_user_id
+        filter_dict["is_admin"] = is_admin
     problems, total = await problem_repo.list(filter_dict, page, limit)
     items = await enrich_problems(
         problems, user_repo, reaction_repo, comment_repo, current_user_id, room_repo
@@ -109,12 +132,18 @@ async def get_problem(
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
 ):
     """Get a problem by ID with enriched data."""
-    current_user_id = await _get_optional_user_id(request)
+    current_user_id, is_admin = await _get_optional_user_info(request)
     problem = await problem_repo.get_by_id(problem_id)
     if not problem:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Problem not found",
+        )
+    # Privacy check: only author, shared users, and admins can see private problems
+    if not problem.is_visible_to(current_user_id or UUID(int=0), is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view this problem",
         )
     return await enrich_problem(
         problem, user_repo, reaction_repo, comment_repo, current_user_id, room_repo
@@ -187,6 +216,8 @@ async def delete_problem(
 class CreateRoomFromProblemRequest(BaseModel):
     name: str = Field(..., min_length=3, max_length=255)
     description: Optional[str] = None
+    visibility: Optional[str] = "public"
+    shared_user_ids: Optional[list[UUID]] = None
 
 
 @router.post(
@@ -211,6 +242,12 @@ async def create_room_from_problem(
     if not problem:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found"
+        )
+    # Privacy check: only author, shared users, and admins can create room from private problem
+    if not problem.is_visible_to(current_user.id, current_user.role == "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to create a room for this problem",
         )
 
     # Block room creation for terminal statuses
@@ -242,6 +279,8 @@ async def create_room_from_problem(
         name=data.name,
         description=data.description,
         problem_id=problem_id,
+        visibility=data.visibility,
+        shared_user_ids=data.shared_user_ids,
     )
     use_case = CreateRoomUseCase(room_repo)
     room = await use_case.execute(room_dto, current_user.id)

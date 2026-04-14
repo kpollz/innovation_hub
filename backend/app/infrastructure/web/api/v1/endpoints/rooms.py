@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.application.dto.room_dto import (
     CreateRoomDTO,
@@ -24,8 +24,28 @@ from app.infrastructure.web.api import deps
 router = APIRouter()
 
 
+async def _get_optional_user_info(request: Request) -> tuple[Optional[UUID], bool]:
+    """Extract user ID and is_admin from token if present."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None, False
+    token = auth_header.replace("Bearer ", "")
+    try:
+        from app.application.services.jwt_service import JWTService
+        jwt_service = JWTService()
+        payload = jwt_service.verify_token(token)
+        if payload.get("type") != "access":
+            return None, False
+        user_id = payload.get("sub")
+        role = payload.get("role", "member")
+        return (UUID(user_id) if user_id else None), role == "admin"
+    except Exception:
+        return None, False
+
+
 @router.get("", response_model=RoomListResponseDTO)
 async def list_rooms(
+    request: Request,
     filters: RoomListFiltersDTO = Depends(),
     page: int = 1,
     limit: int = 20,
@@ -36,11 +56,16 @@ async def list_rooms(
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
 ):
     """List rooms with enriched data."""
+    current_user_id, is_admin = await _get_optional_user_info(request)
     filter_dict = filters.model_dump(exclude_none=True)
     if date_from:
         filter_dict["created_after"] = datetime.combine(date_from, datetime.min.time())
     if date_to:
         filter_dict["created_before"] = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    # Add privacy filter info
+    if current_user_id:
+        filter_dict["current_user_id"] = current_user_id
+        filter_dict["is_admin"] = is_admin
     rooms, total = await room_repo.list(filter_dict, page, limit)
     items = await enrich_rooms(rooms, user_repo, idea_repo)
     return RoomListResponseDTO(items=items, total=total, page=page, limit=limit)
@@ -94,14 +119,24 @@ async def create_room(
 @router.get("/{room_id}", response_model=RoomResponseDTO)
 async def get_room(
     room_id: UUID,
+    request: Request,
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
 ):
     """Get a room by ID with enriched data."""
+    current_user_id, is_admin = await _get_optional_user_info(request)
     room = await room_repo.get_by_id(room_id)
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
+    # Load linked problem for privacy cascade
+    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
+    if not room.is_visible_to(current_user_id or UUID(int=0), is_admin, problem):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view this room",
+        )
     return await enrich_room(room, user_repo, idea_repo)
 
 
@@ -113,19 +148,37 @@ async def update_room(
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
 ):
     """Update a room (creator or admin only)."""
     room = await room_repo.get_by_id(room_id)
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
 
-    if room.created_by != current_user.id and current_user.role != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    # Privacy check: must be visible to user (cascade from problem if linked)
+    is_admin = current_user.role == "admin"
+    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
+    if not room.is_visible_to(current_user.id, is_admin, problem):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view this room",
+        )
+
+    # Only creator or admin can edit
+    if room.created_by != current_user.id and not is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit")
 
     if data.name is not None:
         room.name = data.name
     if data.description is not None:
         room.description = data.description
+    if data.visibility is not None:
+        room.visibility = data.visibility
+    if data.shared_user_ids is not None:
+        room.shared_user_ids = [uid for uid in data.shared_user_ids]
+        # Auto-set private if sharing with specific users
+        if data.shared_user_ids and room.visibility == "public":
+            room.visibility = "private"
     if data.status is not None:
         from app.domain.value_objects.status import RoomStatus
         if data.status == RoomStatus.ARCHIVED:
@@ -142,13 +195,23 @@ async def delete_room(
     room_id: UUID,
     current_user: UserResponseDTO = Depends(get_current_active_user),
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
 ):
     """Delete a room (creator or admin only)."""
     room = await room_repo.get_by_id(room_id)
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
 
-    if room.created_by != current_user.id and current_user.role != "admin":
+    # Privacy check: cascade from problem if linked
+    is_admin = current_user.role == "admin"
+    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
+    if not room.is_visible_to(current_user.id, is_admin, problem):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view this room",
+        )
+
+    if room.created_by != current_user.id and not is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
     await room_repo.delete(room_id)

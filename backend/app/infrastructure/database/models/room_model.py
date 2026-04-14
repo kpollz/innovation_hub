@@ -1,7 +1,7 @@
 """Room SQLAlchemy model."""
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import Column, ForeignKey, String, Table, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,12 +12,20 @@ if TYPE_CHECKING:
     from app.infrastructure.database.models.problem_model import ProblemModel
     from app.infrastructure.database.models.idea_model import IdeaModel
 
+# Association table for room shared users (many-to-many)
+room_shared_users = Table(
+    "room_shared_users",
+    BaseModel.metadata,
+    Column("room_id", PGUUID(as_uuid=False), ForeignKey("rooms.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", PGUUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+)
+
 
 class RoomModel(BaseModel):
     """Room ORM model."""
 
     __tablename__ = "rooms"
-    
+
     problem_id: Mapped[Optional[str]] = mapped_column(
         PGUUID(as_uuid=False),
         ForeignKey("problems.id", ondelete="SET NULL"),
@@ -31,7 +39,8 @@ class RoomModel(BaseModel):
         nullable=False
     )
     status: Mapped[str] = mapped_column(String(30), default="active")
-    
+    visibility: Mapped[str] = mapped_column(String(20), default="public", nullable=False)
+
     # Relationships
     problem: Mapped[Optional["ProblemModel"]] = relationship(
         "ProblemModel",
@@ -42,4 +51,10 @@ class RoomModel(BaseModel):
         "IdeaModel",
         back_populates="room",
         cascade="all, delete-orphan"
+    )
+    shared_users: Mapped[List["UserModel"]] = relationship(
+        "UserModel",
+        secondary=room_shared_users,
+        back_populates="shared_rooms",
+        lazy="selectin",
     )

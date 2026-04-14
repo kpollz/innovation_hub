@@ -27,6 +27,12 @@
     "linked": "Linked",
     "pinned": "Pinned"
   },
+  "errors": {
+    "forbidden_title": "Access Denied",
+    "forbidden_desc": "You don't have permission to view this content.",
+    "not_found_title": "Not Found",
+    "not_found_desc": "The content you're looking for doesn't exist or has been removed."
+  },
   "auth": {
     "sign_in": "Sign in",
     "sign_in_title": "Sign in to your account",
@@ -163,7 +169,15 @@
     "room_created": "Brainstorming room created!",
     "room_create_error": "Failed to create brainstorming room",
     "room": "room",
-    "rooms": "rooms"
+    "rooms": "rooms",
+    "visibility_label": "Visibility",
+    "visibility_public": "🌐 Public",
+    "visibility_private": "🔒 Private",
+    "share_with_label": "Share with specific users",
+    "search_users_placeholder": "Search users to share with...",
+    "private_badge": "Private",
+    "visibility_public_desc": "Everyone can see this problem",
+    "visibility_private_desc": "Only you, shared users, and admins can see this problem"
   },
   "comments": {
     "title": "Comments ({{count}})",
@@ -212,7 +226,15 @@
     "create_room_title": "Create Brainstorming Room",
     "drag_error_own": "You can only change the status of your own ideas",
     "drag_error_terminal": "Cannot move ideas out of \"{{status}}\" status",
-    "status_updated": "Status updated!"
+    "status_updated": "Status updated!",
+    "visibility_label": "Visibility",
+    "visibility_public": "🌐 Public",
+    "visibility_private": "🔒 Private",
+    "visibility_public_desc": "Everyone can see this room",
+    "visibility_private_desc": "Only you, shared users, and admins can see this room",
+    "share_with_label": "Share with specific users",
+    "search_users_placeholder": "Search users to share with...",
+    "private_badge": "Private"
   },
   "ideas": {
     "create_title": "Create New Idea",
@@ -338,6 +360,14 @@
     "reset_error": "Failed to reset password",
     "load_error": "Failed to load users",
     "no_users": "No users found"
+  },
+  "errors": {
+    "forbidden_title": "Access Denied",
+    "forbidden_desc": "You don't have permission to view this content. It may be private and shared with specific users only.",
+    "not_found_title": "Not Found",
+    "not_found_desc": "The content you're looking for doesn't exist or has been removed.",
+    "back_to_problems": "Back to Problem Feed",
+    "back_to_rooms": "Back to Idea Lab"
   },
   "notifications": {
     "title": "Notifications",

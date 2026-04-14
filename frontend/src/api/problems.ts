@@ -57,7 +57,7 @@ export const problemsApi = {
     await apiClient.delete(`/problems/${problemId}/reactions`);
   },
 
-  createRoom: async (problemId: string, data: { name: string; description?: string }): Promise<unknown> => {
+  createRoom: async (problemId: string, data: { name: string; description?: string; visibility?: string; shared_user_ids?: string[] }): Promise<unknown> => {
     const response = await apiClient.post(`/problems/${problemId}/rooms`, data);
     return response.data;
   },

@@ -14,6 +14,8 @@ class CreateRoomDTO(BaseModel):
     name: str = Field(..., min_length=3, max_length=255)
     description: Optional[str] = None
     problem_id: Optional[UUID] = None
+    visibility: Optional[str] = "public"
+    shared_user_ids: Optional[List[UUID]] = None
 
 
 class UpdateRoomDTO(BaseModel):
@@ -21,6 +23,8 @@ class UpdateRoomDTO(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=255)
     description: Optional[str] = None
     status: Optional[RoomStatus] = None
+    visibility: Optional[str] = None
+    shared_user_ids: Optional[List[UUID]] = None
 
 
 class RoomListFiltersDTO(BaseModel):
@@ -53,6 +57,8 @@ class RoomResponseDTO(BaseModel):
     created_by: UUID
     creator: Optional[RoomCreatorDTO] = None
     status: RoomStatus
+    visibility: str = "public"
+    shared_user_ids: Optional[List[UUID]] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     idea_count: int = 0

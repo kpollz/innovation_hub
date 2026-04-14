@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, X, ShieldAlert } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
+import { usersApi } from '@/api/users';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { IdeaCard } from './IdeaCard';
-import type { Room, Idea, IdeaStatus } from '@/types';
-import { IDEA_STATUSES } from '@/utils/constants';
 import { Avatar } from '@/components/ui/Avatar';
+import { IdeaCard } from './IdeaCard';
+import type { Room, Idea, IdeaStatus, ProblemVisibility, User } from '@/types';
+import { IDEA_STATUSES } from '@/utils/constants';
 import { classNames, timeAgo } from '@/utils/helpers';
 
 type ViewMode = 'board' | 'list';
@@ -33,6 +34,7 @@ export const RoomDetailPage: React.FC = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [accessError, setAccessError] = useState<'forbidden' | 'not_found' | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const { showToast } = useUIStore();
 
@@ -46,7 +48,14 @@ export const RoomDetailPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editVisibility, setEditVisibility] = useState<ProblemVisibility>('public');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Share users state for edit modal
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [editSharedUserIds, setEditSharedUserIds] = useState<string[]>([]);
+  const [editUserSearch, setEditUserSearch] = useState('');
+  const [showEditUserDropdown, setShowEditUserDropdown] = useState(false);
 
   const canModify = user && room && (
     user.id === room.created_by || user.role === 'admin'
@@ -54,6 +63,7 @@ export const RoomDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (id) {
+      setAccessError(null);
       fetchRoomData();
     }
   }, [id]);
@@ -67,8 +77,12 @@ export const RoomDetailPage: React.FC = () => {
       ]);
       setRoom(roomData);
       setIdeas(ideasResponse.items);
-    } catch (error) {
-      console.error('Failed to fetch room data:', error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        setAccessError('forbidden');
+      } else {
+        setAccessError('not_found');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -82,9 +96,24 @@ export const RoomDetailPage: React.FC = () => {
     if (!room) return;
     setEditName(room.name);
     setEditDescription(room.description || '');
+    setEditVisibility(room.visibility || 'public');
+    setEditSharedUserIds(room.shared_user_ids || []);
+    setEditUserSearch('');
+    setShowEditUserDropdown(false);
     setIsEditModalOpen(true);
     setShowActions(false);
+    usersApi.list({ limit: 100, is_active: true }).then((res) => setAllUsers(res.items)).catch(() => {});
   };
+
+  const toggleEditUser = (userId: string) => {
+    setEditSharedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const filteredEditUsers = allUsers.filter(
+    (u) => u.id !== user?.id && (u.username.toLowerCase().includes(editUserSearch.toLowerCase()) || (u.full_name || '').toLowerCase().includes(editUserSearch.toLowerCase()))
+  );
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +123,8 @@ export const RoomDetailPage: React.FC = () => {
       const updated = await roomsApi.update(id, {
         name: editName.trim(),
         description: editDescription.trim() || undefined,
+        visibility: editVisibility,
+        shared_user_ids: editVisibility === 'private' ? editSharedUserIds : undefined,
       });
       setRoom(updated);
       showToast({ type: 'success', message: t('rooms.updated') });
@@ -201,11 +232,17 @@ export const RoomDetailPage: React.FC = () => {
     );
   }
 
-  if (!room) {
+  if (accessError || !room) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">{t('rooms.not_found')}</p>
-        <Link to="/rooms" className="text-primary-600 hover:text-primary-700 mt-2 inline-block">
+        <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-gray-400'}`} />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">
+          {accessError === 'forbidden' ? t('errors.forbidden_title') : t('errors.not_found_title')}
+        </h2>
+        <p className="text-gray-500 mb-4">
+          {accessError === 'forbidden' ? t('errors.forbidden_desc') : t('errors.not_found_desc')}
+        </p>
+        <Link to="/rooms" className="text-primary-600 hover:text-primary-700">
           {t('rooms.back_to_rooms')}
         </Link>
       </div>
@@ -232,6 +269,9 @@ export const RoomDetailPage: React.FC = () => {
               <Badge variant={room.status === 'active' ? 'success' : 'default'}>
                 {room.status}
               </Badge>
+              {room.visibility === 'private' && (
+                <Badge variant="warning">{t('rooms.private_badge')}</Badge>
+              )}
             </div>
             {room.description && (
               <p className="text-gray-600">{room.description}</p>
@@ -442,6 +482,98 @@ export const RoomDetailPage: React.FC = () => {
               rows={3}
             />
           </div>
+
+          {/* Visibility Toggle */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('rooms.visibility_label')}
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setEditVisibility('public')}
+                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                  editVisibility === 'public'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                {t('rooms.visibility_public')}
+                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_public_desc')}</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditVisibility('private')}
+                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                  editVisibility === 'private'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                {t('rooms.visibility_private')}
+                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_private_desc')}</p>
+              </button>
+            </div>
+
+            {/* Share with users - shown when private */}
+            {editVisibility === 'private' && (
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('rooms.share_with_label')}
+                </label>
+                {editSharedUserIds.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {editSharedUserIds.map((uid) => {
+                      const u = allUsers.find((x) => x.id === uid);
+                      if (!u) return null;
+                      return (
+                        <span key={uid} className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-sm">
+                          <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
+                          {u.full_name || u.username}
+                          <button type="button" onClick={() => toggleEditUser(uid)} className="hover:text-primary-900">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editUserSearch}
+                    onChange={(e) => { setEditUserSearch(e.target.value); setShowEditUserDropdown(true); }}
+                    onFocus={() => setShowEditUserDropdown(true)}
+                    placeholder={t('rooms.search_users_placeholder')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  />
+                  {showEditUserDropdown && filteredEditUsers.length > 0 && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowEditUserDropdown(false)} />
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {filteredEditUsers.map((u) => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => { toggleEditUser(u.id); setEditUserSearch(''); }}
+                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                              editSharedUserIds.includes(u.id) ? 'bg-primary-50' : ''
+                            }`}
+                          >
+                            <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
+                            <span className="font-medium">{u.full_name || u.username}</span>
+                            {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                            {editSharedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end gap-3">
             <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
               {t('common.cancel')}

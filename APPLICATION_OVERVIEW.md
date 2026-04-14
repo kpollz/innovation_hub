@@ -46,6 +46,7 @@
 | **Trạng thái Vấn đề** | *Mở → Đang thảo luận → Chuyển sang Brainstorming → Đã có giải pháp → Đóng*<br>**Tự động chuyển:** Mở→Đang thảo luận (khi có comment từ người khác), Mở/Đang thảo luận→Brainstorming (khi tạo phòng brainstorm).<br>**Thủ công:** Đã có giải pháp, Đóng (do tác giả hoặc Admin chuyển). |
 | **Tương tác Cơ bản** | - **Comment** threaded (trả lời lồng nhau)<br>- **Reaction** đơn giản: 👍 👎 💡 (Ý hay)<br>- **@mention** để tag đồng nghiệp vào thảo luận |
 | **Tìm kiếm/Lọc** | Tìm theo từ khóa, Lọc theo Category, Sắp xếp theo: Mới nhất / Nhiều bình luận nhất / Reaction |
+| **Quyền riêng tư** | - **Public** (mặc định): Tất cả mọi người đều thấy<br>- **Private**: Chỉ tác giả, người được chia sẻ (`shared_user_ids`), và Admin mới thấy<br>- Khi thêm người được chia sẻ, tự động chuyển sang Private<br>- **Cascade**: Room và Idea liên kết tự động kế thừa quyền từ Problem |
 
 ---
 
@@ -55,12 +56,23 @@
 
 #### Cơ chế Liên kết (Core Logic):
 ```
-[Vấn đề trong Feed] --(1 click)--> [Tạo Brainstorm Room] 
+[Vấn đề trong Feed] --(1 click)--> [Tạo Brainstorm Room]
                                       ↓
                               [Không gian Ý tưởng riêng]
                                       ↓
                               [Liên kết ngược về Vấn đề gốc]
 ```
+
+#### Quyền riêng tư (Privacy Cascade):
+```
+Problem (public/private + shared_user_ids)
+  ├── Room liên kết → KẾ THỪA quyền từ Problem
+  │    └── Idea → KẾ THỪA quyền từ Room → Problem
+  └── Room độc lập → Dùng quyền riêng (visibility + shared_user_ids)
+```
+- **Problem Public** → Tất cả Room và Idea liên kết đều Public
+- **Problem Private** → Tất cả Room và Idea liên kết chỉ visible cho users được share trong Problem
+- **Room độc lập** (không liên kết Problem) → Có thể set quyền riêng
 
 | Tính năng | Chi tiết |
 |:----------|:---------|

@@ -54,4 +54,11 @@ class UpdateProblemUseCase:
                 )
             problem.transition_to(dto.status)
 
+        # Handle privacy updates (only author or admin can change)
+        if dto.visibility is not None or dto.shared_user_ids is not None:
+            problem.update_privacy(
+                visibility=dto.visibility,
+                shared_user_ids=dto.shared_user_ids,
+            )
+
         return await self.problem_repo.update(problem)

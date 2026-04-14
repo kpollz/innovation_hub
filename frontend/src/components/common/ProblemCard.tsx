@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ThumbsUp, Lightbulb, BrainCircuit } from 'lucide-react';
+import { MessageCircle, ThumbsUp, Lightbulb, BrainCircuit, Lock } from 'lucide-react';
 import type { Problem } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
@@ -30,6 +30,11 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
               {status && (
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${status.color}`}>
                   {status.label}
+                </span>
+              )}
+              {problem.visibility === 'private' && (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400" title="Private">
+                  <Lock className="h-3 w-3" />
                 </span>
               )}
             </div>

@@ -61,3 +61,15 @@ class UserModel(BaseModel):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    shared_problems: Mapped[List["ProblemModel"]] = relationship(
+        "ProblemModel",
+        secondary="problem_shared_users",
+        back_populates="shared_users",
+        viewonly=True,
+    )
+    shared_rooms: Mapped[List["RoomModel"]] = relationship(
+        "RoomModel",
+        secondary="room_shared_users",
+        back_populates="shared_users",
+        viewonly=True,
+    )

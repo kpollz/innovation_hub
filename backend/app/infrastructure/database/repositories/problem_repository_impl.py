@@ -2,16 +2,17 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select, desc, asc
+from sqlalchemy import func, select, desc, asc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.problem import Problem
 from app.domain.repositories.problem_repository import ProblemRepository
 from app.domain.value_objects.category import ProblemCategory
+from app.domain.value_objects.visibility import Visibility
 from app.infrastructure.database.models.reaction_model import ReactionModel
 from app.infrastructure.database.models.comment_model import CommentModel
 from app.domain.value_objects.status import ProblemStatus
-from app.infrastructure.database.models.problem_model import ProblemModel
+from app.infrastructure.database.models.problem_model import ProblemModel, problem_shared_users
 
 
 class SQLProblemRepository(ProblemRepository):
@@ -22,8 +23,8 @@ class SQLProblemRepository(ProblemRepository):
     
     def _to_entity(self, model: ProblemModel) -> Problem:
         """Map ORM model to domain entity."""
-        # room_id is accessed via relationship (Room has problem_id, not Problem has room_id)
-        # Set to None here - can be loaded separately if needed
+        # Extract shared user IDs from the relationship
+        shared_ids = [UUID(u.id) for u in model.shared_users] if model.shared_users else []
         return Problem(
             id=UUID(model.id),
             title=model.title,
@@ -32,6 +33,8 @@ class SQLProblemRepository(ProblemRepository):
             category=ProblemCategory(model.category),
             author_id=UUID(model.author_id),
             status=ProblemStatus(model.status),
+            visibility=Visibility(model.visibility),
+            shared_user_ids=shared_ids,
             created_at=model.created_at,
             updated_at=model.updated_at,
             room_id=None  # Problem doesn't have room_id column; Room has problem_id
@@ -46,6 +49,7 @@ class SQLProblemRepository(ProblemRepository):
             content=entity.content,
             category=entity.category.value,
             status=entity.status.value,
+            visibility=entity.visibility.value,
             author_id=str(entity.author_id),
             created_at=entity.created_at,
             updated_at=entity.updated_at
@@ -83,6 +87,22 @@ class SQLProblemRepository(ProblemRepository):
                 query = query.where(
                     (ProblemModel.title.ilike(search)) |
                     (ProblemModel.content.ilike(search))
+                )
+            # Privacy filter: only show problems the user can see
+            current_user_id = filters.get("current_user_id")
+            is_admin = filters.get("is_admin", False)
+            if current_user_id and not is_admin:
+                # Public problems OR (private AND (author OR shared with user))
+                shared_subquery = (
+                    select(problem_shared_users.c.problem_id)
+                    .where(problem_shared_users.c.user_id == str(current_user_id))
+                )
+                query = query.where(
+                    or_(
+                        ProblemModel.visibility == Visibility.PUBLIC.value,
+                        ProblemModel.author_id == str(current_user_id),
+                        ProblemModel.id.in_(shared_subquery),
+                    )
                 )
         
         # Count total
@@ -145,6 +165,16 @@ class SQLProblemRepository(ProblemRepository):
         model = self._to_model(problem)
         self.session.add(model)
         await self.session.flush()
+        # Save shared users to association table
+        if problem.shared_user_ids:
+            from sqlalchemy import insert
+            await self.session.execute(
+                insert(problem_shared_users).values([
+                    {"problem_id": str(problem.id), "user_id": str(uid)}
+                    for uid in problem.shared_user_ids
+                ])
+            )
+            await self.session.flush()
         await self.session.refresh(model)
         return self._to_entity(model)
     
@@ -158,7 +188,25 @@ class SQLProblemRepository(ProblemRepository):
         model.content = problem.content
         model.category = problem.category.value
         model.status = problem.status.value
+        model.visibility = problem.visibility.value
         model.updated_at = problem.updated_at
+        
+        # Update shared users
+        # First clear existing shared users
+        await self.session.execute(
+            problem_shared_users.delete().where(
+                problem_shared_users.c.problem_id == str(problem.id)
+            )
+        )
+        # Then add new shared users
+        if problem.shared_user_ids:
+            from sqlalchemy import insert
+            await self.session.execute(
+                insert(problem_shared_users).values([
+                    {"problem_id": str(problem.id), "user_id": str(uid)}
+                    for uid in problem.shared_user_ids
+                ])
+            )
         
         await self.session.flush()
         await self.session.refresh(model)

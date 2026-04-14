@@ -41,6 +41,7 @@ export interface PaginatedResponse<T> {
 // Problem Types
 export type ProblemStatus = 'open' | 'discussing' | 'brainstorming' | 'solved' | 'closed';
 export type ProblemCategory = 'process' | 'technical' | 'people' | 'tools' | 'patent';
+export type ProblemVisibility = 'public' | 'private';
 
 export interface ProblemAuthor {
   id: string;
@@ -62,6 +63,8 @@ export interface Problem {
   content: string;
   status: ProblemStatus;
   category: ProblemCategory;
+  visibility: ProblemVisibility;
+  shared_user_ids: string[];
   author_id: string;
   author: ProblemAuthor | null;
   room_id: string | null;
@@ -80,6 +83,8 @@ export interface CreateProblem {
   summary?: string;
   content: string;
   category: ProblemCategory;
+  visibility?: ProblemVisibility;
+  shared_user_ids?: string[];
 }
 
 export interface UpdateProblem {
@@ -88,6 +93,8 @@ export interface UpdateProblem {
   content?: string;
   status?: ProblemStatus;
   category?: ProblemCategory;
+  visibility?: ProblemVisibility;
+  shared_user_ids?: string[];
 }
 
 // Comment Types
@@ -132,6 +139,8 @@ export interface Room {
   name: string;
   description: string | null;
   status: RoomStatus;
+  visibility: ProblemVisibility;
+  shared_user_ids: string[];
   problem_id: string | null;
   created_by: string;
   creator: RoomCreator | null;
@@ -144,6 +153,16 @@ export interface CreateRoom {
   name: string;
   description?: string;
   problem_id?: string;
+  visibility?: ProblemVisibility;
+  shared_user_ids?: string[];
+}
+
+export interface UpdateRoom {
+  name?: string;
+  description?: string;
+  status?: RoomStatus;
+  visibility?: ProblemVisibility;
+  shared_user_ids?: string[];
 }
 
 // Idea Types

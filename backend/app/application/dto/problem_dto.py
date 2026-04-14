@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.value_objects.category import ProblemCategory
 from app.domain.value_objects.status import ProblemStatus
+from app.domain.value_objects.visibility import Visibility
 
 
 # Input DTOs
@@ -16,6 +17,8 @@ class CreateProblemDTO(BaseModel):
     summary: Optional[str] = Field(None, max_length=500)
     content: str = Field(..., min_length=10)
     category: ProblemCategory
+    visibility: Visibility = Field(default=Visibility.PUBLIC)
+    shared_user_ids: Optional[List[UUID]] = Field(default=None)
 
 
 class UpdateProblemDTO(BaseModel):
@@ -25,6 +28,8 @@ class UpdateProblemDTO(BaseModel):
     content: Optional[str] = Field(None, min_length=10)
     category: Optional[ProblemCategory] = None
     status: Optional[ProblemStatus] = None
+    visibility: Optional[Visibility] = None
+    shared_user_ids: Optional[List[UUID]] = None
 
 
 class ProblemListFiltersDTO(BaseModel):
@@ -65,6 +70,8 @@ class ProblemResponseDTO(BaseModel):
     content: str
     category: ProblemCategory
     status: ProblemStatus
+    visibility: Visibility = Visibility.PUBLIC
+    shared_user_ids: List[UUID] = []
     author_id: UUID
     author: Optional[ProblemAuthorDTO] = None
     room_id: Optional[UUID] = None  # deprecated: first room id for backwards compat

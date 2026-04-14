@@ -163,7 +163,15 @@
     "room_created": "Đã tạo phòng brainstorm!",
     "room_create_error": "Không thể tạo phòng brainstorm",
     "room": "phòng",
-    "rooms": "phòng"
+    "rooms": "phòng",
+    "visibility_label": "Quyền xem",
+    "visibility_public": "🌐 Công khai",
+    "visibility_private": "🔒 Riêng tư",
+    "share_with_label": "Chia sẻ với người dùng cụ thể",
+    "search_users_placeholder": "Tìm người dùng để chia sẻ...",
+    "private_badge": "Riêng tư",
+    "visibility_public_desc": "Mọi người đều có thể xem vấn đề này",
+    "visibility_private_desc": "Chỉ bạn, người được chia sẻ và quản trị viên mới xem được"
   },
   "comments": {
     "title": "Bình luận ({{count}})",
@@ -212,7 +220,15 @@
     "create_room_title": "Tạo Phòng Brainstorm",
     "drag_error_own": "Bạn chỉ có thể thay đổi trạng thái ý tưởng của mình",
     "drag_error_terminal": "Không thể di chuyển ý tưởng ra khỏi trạng thái \"{{status}}\"",
-    "status_updated": "Đã cập nhật trạng thái!"
+    "status_updated": "Đã cập nhật trạng thái!",
+    "visibility_label": "Quyền xem",
+    "visibility_public": "🌐 Công khai",
+    "visibility_private": "🔒 Riêng tư",
+    "visibility_public_desc": "Mọi người đều có thể xem phòng này",
+    "visibility_private_desc": "Chỉ bạn, người được chia sẻ và quản trị viên mới xem được",
+    "share_with_label": "Chia sẻ với người dùng cụ thể",
+    "search_users_placeholder": "Tìm người dùng để chia sẻ...",
+    "private_badge": "Riêng tư"
   },
   "ideas": {
     "create_title": "Tạo Ý Tưởng Mới",
@@ -338,6 +354,14 @@
     "reset_error": "Không thể đặt lại mật khẩu",
     "load_error": "Không thể tải danh sách người dùng",
     "no_users": "Không tìm thấy người dùng"
+  },
+  "errors": {
+    "forbidden_title": "Không có quyền truy cập",
+    "forbidden_desc": "Bạn không có quyền xem nội dung này. Có thể nội dung đang ở chế độ riêng tư và chỉ chia sẻ với một số người dùng nhất định.",
+    "not_found_title": "Không tìm thấy",
+    "not_found_desc": "Nội dung bạn đang tìm không tồn tại hoặc đã bị xóa.",
+    "back_to_problems": "Quay lại Problem Feed",
+    "back_to_rooms": "Quay lại Idea Lab"
   },
   "notifications": {
     "title": "Thông báo",

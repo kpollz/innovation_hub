@@ -14,10 +14,18 @@ class CreateRoomUseCase:
 
     async def execute(self, dto: CreateRoomDTO, created_by: UUID) -> Room:
         """Create a new room and return the domain entity."""
+        shared_user_ids = [uid for uid in dto.shared_user_ids] if dto.shared_user_ids else []
+        # If shared_user_ids provided, auto-set visibility to private
+        visibility = dto.visibility or "public"
+        if shared_user_ids and visibility == "public":
+            visibility = "private"
+
         room = Room(
             name=dto.name,
             description=dto.description,
             problem_id=dto.problem_id,
             created_by=created_by,
+            visibility=visibility,
+            shared_user_ids=shared_user_ids,
         )
         return await self.room_repo.create(room)

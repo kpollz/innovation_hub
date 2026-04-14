@@ -54,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({
         />
         <div
           className={classNames(
-            'relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all',
+            'relative transform rounded-lg bg-white text-left shadow-xl transition-all',
             'w-full',
             sizes[size]
           )}

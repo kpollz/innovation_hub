@@ -1,11 +1,12 @@
 """Problem entity - Pure business logic, no infrastructure dependencies."""
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 from app.domain.value_objects.category import ProblemCategory
 from app.domain.value_objects.status import ProblemStatus
+from app.domain.value_objects.visibility import Visibility
 
 
 @dataclass
@@ -18,6 +19,8 @@ class Problem:
     id: UUID = field(default_factory=uuid4)
     summary: Optional[str] = None
     status: ProblemStatus = field(default=ProblemStatus.OPEN)
+    visibility: Visibility = field(default=Visibility.PUBLIC)
+    shared_user_ids: List[UUID] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
     room_id: Optional[UUID] = None
@@ -60,3 +63,31 @@ class Problem:
         if category is not None:
             self.category = category
         self.updated_at = datetime.utcnow()
+
+    def update_privacy(
+        self,
+        visibility: Optional[Visibility] = None,
+        shared_user_ids: Optional[List[UUID]] = None,
+    ) -> None:
+        """Update problem privacy settings."""
+        if shared_user_ids is not None:
+            self.shared_user_ids = shared_user_ids
+            # If sharing with specific users, automatically make private
+            if shared_user_ids and visibility is None:
+                self.visibility = Visibility.PRIVATE
+        if visibility is not None:
+            self.visibility = visibility
+        self.updated_at = datetime.utcnow()
+
+    def is_visible_to(self, user_id: UUID, is_admin: bool = False) -> bool:
+        """Check if a user can view this problem."""
+        if self.visibility == Visibility.PUBLIC:
+            return True
+        # Private: author, shared users, and admins can see
+        if is_admin:
+            return True
+        if self.author_id == user_id:
+            return True
+        if user_id in self.shared_user_ids:
+            return True
+        return False
