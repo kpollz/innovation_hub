@@ -50,6 +50,7 @@ class UpdateEventUseCase:
 
         if update_kwargs:
             event.update(**update_kwargs)
+            # Auto-enforce XOR: clear non-relevant field based on introduction_type
             event.validate_introduction()
 
         return await self.event_repo.update(event)

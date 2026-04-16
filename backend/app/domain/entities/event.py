@@ -78,8 +78,10 @@ class Event:
         self.updated_at = datetime.utcnow()
 
     def validate_introduction(self) -> None:
-        """Validate XOR logic for introduction type."""
-        if self.introduction_type == "embed" and not self.embed_url:
-            raise ValueError("embed_url is required when introduction_type is 'embed'")
-        if self.introduction_type == "embed" and self.description:
-            raise ValueError("description must be empty when introduction_type is 'embed'")
+        """Validate and auto-enforce XOR logic for introduction type."""
+        if self.introduction_type == "embed":
+            if not self.embed_url:
+                raise ValueError("embed_url is required when introduction_type is 'embed'")
+            self.description = None  # auto-clear when embed mode
+        elif self.introduction_type == "editor":
+            self.embed_url = None  # auto-clear when editor mode

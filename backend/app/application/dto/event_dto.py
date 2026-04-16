@@ -1,11 +1,16 @@
 """Event DTOs for crossing layer boundaries."""
+import re
 from datetime import date, datetime
 from typing import Optional
+from urllib.parse import urlparse
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.domain.value_objects.status import EventStatus
+
+# URL pattern: must start with http:// or https://
+URL_PATTERN = re.compile(r"^https?://\S+$")
 
 
 # Input DTOs
@@ -18,6 +23,19 @@ class CreateEventDTO(BaseModel):
     status: EventStatus = Field(default=EventStatus.DRAFT)
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+
+    @model_validator(mode="after")
+    def validate_introduction_mode(self) -> "CreateEventDTO":
+        """XOR validation + URL validation + auto-clear non-relevant field."""
+        if self.introduction_type == "embed":
+            if not self.embed_url:
+                raise ValueError("embed_url is required when introduction_type is 'embed'")
+            if not URL_PATTERN.match(self.embed_url):
+                raise ValueError("embed_url must be a valid URL starting with http:// or https://")
+            self.description = None  # auto-clear
+        elif self.introduction_type == "editor":
+            self.embed_url = None  # auto-clear
+        return self
 
 
 class UpdateEventDTO(BaseModel):
