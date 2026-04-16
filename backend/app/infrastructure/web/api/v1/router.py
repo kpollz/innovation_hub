@@ -11,6 +11,7 @@ from app.infrastructure.web.api.v1.endpoints import (
     dashboard,
     uploads,
     notifications,
+    events,
 )
 from app.infrastructure.web.api.v1.endpoints.reactions import (
     problem_reactions_router,
@@ -28,6 +29,7 @@ api_router.include_router(comments.router, prefix="/comments", tags=["comments"]
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(uploads.router, prefix="/uploads", tags=["uploads"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+api_router.include_router(events.router, prefix="/events", tags=["events"])
 
 # Reaction sub-routes (nested under problems and ideas)
 api_router.include_router(problem_reactions_router, prefix="/problems", tags=["reactions"])

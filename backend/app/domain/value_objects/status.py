@@ -55,3 +55,21 @@ class RoomStatus(str, Enum):
     """Status for brainstorming rooms."""
     ACTIVE = "active"
     ARCHIVED = "archived"
+
+
+class EventStatus(str, Enum):
+    """Status workflow for events:
+    draft → active → closed
+    """
+    DRAFT = "draft"
+    ACTIVE = "active"
+    CLOSED = "closed"
+
+    @classmethod
+    def valid_transitions(cls) -> Dict["EventStatus", List["EventStatus"]]:
+        """Define valid status transitions."""
+        return {
+            cls.DRAFT: [cls.ACTIVE],
+            cls.ACTIVE: [cls.CLOSED],
+            cls.CLOSED: [],
+        }

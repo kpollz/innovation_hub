@@ -12,6 +12,7 @@ from app.infrastructure.database.repositories.comment_repository_impl import SQL
 from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
 from app.infrastructure.database.repositories.reaction_repository_impl import SQLReactionRepository
 from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.security.password import PasswordHasher
 
 
@@ -59,6 +60,10 @@ def get_reaction_repo(session: AsyncSession = Depends(get_db_session)) -> SQLRea
 
 def get_notification_repo(session: AsyncSession = Depends(get_db_session)) -> SQLNotificationRepository:
     return SQLNotificationRepository(session)
+
+
+def get_event_repo(session: AsyncSession = Depends(get_db_session)) -> SQLEventRepository:
+    return SQLEventRepository(session)
 
 
 def get_password_hasher() -> PasswordHasher:

@@ -15,6 +15,8 @@ from app.application.dto.problem_dto import ProblemResponseDTO, ProblemAuthorDTO
 from app.application.dto.idea_dto import IdeaResponseDTO, IdeaAuthorDTO, UserVoteDTO
 from app.application.dto.room_dto import RoomResponseDTO, RoomCreatorDTO
 from app.application.dto.comment_dto import CommentResponseDTO, CommentAuthorDTO
+from app.application.dto.event_dto import EventResponseDTO, EventCreatorDTO
+from app.domain.entities.event import Event
 
 
 def _make_author_dto(user) -> dict:
@@ -283,6 +285,56 @@ async def enrich_rooms(
 
         _, idea_total = await idea_repo.list({"room_id": room.id}, page=1, limit=1)
         dto.idea_count = idea_total
+
+        results.append(dto)
+
+    return results
+
+
+async def enrich_event(
+    event: Event,
+    user_repo,
+    event_repo,
+) -> EventResponseDTO:
+    """Enrich a single event with creator and counts."""
+    dto = EventResponseDTO.model_validate(event)
+
+    creator = await user_repo.get_by_id(event.created_by)
+    if creator:
+        dto.creator = EventCreatorDTO(**_make_author_dto(creator))
+
+    dto.team_count = await event_repo.get_team_count(event.id)
+    dto.idea_count = await event_repo.get_idea_count(event.id)
+
+    return dto
+
+
+async def enrich_events(
+    events: List[Event],
+    user_repo,
+    event_repo,
+) -> List[EventResponseDTO]:
+    """Enrich a list of events (batch)."""
+    if not events:
+        return []
+
+    creator_ids = list({e.created_by for e in events})
+    creators: Dict[UUID, object] = {}
+    for cid in creator_ids:
+        user = await user_repo.get_by_id(cid)
+        if user:
+            creators[cid] = user
+
+    results = []
+    for event in events:
+        dto = EventResponseDTO.model_validate(event)
+
+        creator = creators.get(event.created_by)
+        if creator:
+            dto.creator = EventCreatorDTO(**_make_author_dto(creator))
+
+        dto.team_count = await event_repo.get_team_count(event.id)
+        dto.idea_count = await event_repo.get_idea_count(event.id)
 
         results.append(dto)
 

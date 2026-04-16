@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.infrastructure.database.models.comment_model import CommentModel
     from app.infrastructure.database.models.reaction_model import ReactionModel
     from app.infrastructure.database.models.vote_model import VoteModel
+    from app.infrastructure.database.models.event_model import EventModel
 
 
 class UserModel(BaseModel):
@@ -72,4 +73,9 @@ class UserModel(BaseModel):
         secondary="room_shared_users",
         back_populates="shared_users",
         viewonly=True,
+    )
+    events: Mapped[List["EventModel"]] = relationship(
+        "EventModel",
+        back_populates="creator",
+        cascade="all, delete-orphan",
     )

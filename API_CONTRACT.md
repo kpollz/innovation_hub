@@ -966,4 +966,702 @@ Problem (visibility: public/private, shared_user_ids)  ← Độc lập
 
 ---
 
+## 14. EVENTS (`/events`) — Quản lý Sự kiện Đổi mới Sáng tạo
+
+> **Context**: Module Event cho phép Admin tổ chức các cuộc thi/chương trình đổi mới sáng tạo nội bộ (ví dụ: "Agentic AI in Mobile"). Event hoạt động như một lớp overlay trên nền tảng hiện tại, tận dụng Problems/Rooms/Ideas có sẵn và bổ sung structured workflow cho competition.
+
+### EventObject
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "description": "JSON (TipTap content) | null",
+  "introduction_type": "editor | embed",
+  "embed_url": "string (URL) | null",
+  "status": "draft | active | closed",
+  "start_date": "date | null",
+  "end_date": "date | null",
+  "created_by": "uuid",
+  "creator": { → UserObject },
+  "team_count": 0,
+  "idea_count": 0,
+  "created_at": "datetime",
+  "updated_at": "datetime | null",
+  "closed_at": "datetime | null"
+}
+```
+
+> **Note**:
+> - `description`: TipTap JSON content, dùng khi `introduction_type = "editor"`
+> - `embed_url`: URL của trang web ngoài, dùng khi `introduction_type = "embed"`
+> - XOR logic: Chỉ được cung cấp 1 trong 2 (`description` hoặc `embed_url`). Nếu `embed` thì `description` phải null/empty, và ngược lại.
+> - `status` workflow: `draft` → `active` → `closed`. Chỉ Admin mới tạo và quản lý Event.
+> - Khi `closed`: Tất cả write APIs (submit idea, score, join team) trả về 403.
+
+### 14.1 POST `/events` — Tạo sự kiện 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 201 Created
+
+**Request Body:**
+```json
+{
+  "title": "string (3-255 ký tự, bắt buộc)",
+  "description": "JSON (TipTap content, tùy chọn — dùng khi introduction_type = editor)",
+  "embed_url": "string (URL hợp lệ, tùy chọn — dùng khi introduction_type = embed)",
+  "introduction_type": "editor | embed (mặc định: editor)",
+  "status": "draft | active (mặc định: draft)",
+  "start_date": "date (tùy chọn)",
+  "end_date": "date (tùy chọn)"
+}
+```
+
+> **Validation**: Nếu `introduction_type = "embed"` thì `embed_url` bắt buộc. Nếu `editor` thì `description` có thể null/empty.
+
+**Response:** EventObject
+
+### 14.2 GET `/events` — Danh sách sự kiện 🔒
+- **Status**: 200 OK
+- **Query**: `?status=draft|active|closed&page=1&limit=20`
+- **Response:** `{ items: EventObject[], total, page, limit }`
+
+### 14.3 GET `/events/{event_id}` — Chi tiết sự kiện 🔒
+- **Status**: 200 OK
+- **Response:** EventObject
+
+### 14.4 PATCH `/events/{event_id}` — Cập nhật sự kiện 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 200 OK
+- **Condition**: Chỉ cập nhật khi `status != closed`
+
+**Request Body (tất cả tùy chọn):**
+```json
+{
+  "title": "string (3-255 ký tự)",
+  "description": "JSON (TipTap content)",
+  "embed_url": "string (URL)",
+  "introduction_type": "editor | embed",
+  "status": "draft | active",
+  "start_date": "date",
+  "end_date": "date"
+}
+```
+
+**Response:** EventObject
+
+### 14.5 PATCH `/events/{event_id}/close` — Đóng sự kiện 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 200 OK
+- **Logic**: Chuyển status sang `closed`, set `closed_at = now()`. Từ thời điểm này, tất cả write APIs cho event này trả về 403.
+
+**Response:** EventObject
+
+---
+
+## 15. EVENT TEAMS (`/events/{event_id}/teams`) — Quản lý Đội
+
+### EventTeamObject
+```json
+{
+  "id": "uuid",
+  "event_id": "uuid",
+  "name": "string",
+  "slogan": "string | null",
+  "leader_id": "uuid",
+  "leader": { → UserObject },
+  "assigned_to_team_id": "uuid | null",
+  "assigned_to_team": { "id": "uuid", "name": "string" } | null,
+  "member_count": 0,
+  "idea_count": 0,
+  "created_at": "datetime"
+}
+```
+
+> **Note**: `assigned_to_team_id` là team mà team này được giao chấm điểm. Ví dụ: Team A có `assigned_to_team_id = Team B` nghĩa là Team A chấm Team B.
+
+### EventTeamMemberObject
+```json
+{
+  "id": "uuid",
+  "team_id": "uuid",
+  "user_id": "uuid",
+  "user": { → UserObject },
+  "status": "pending | active",
+  "joined_at": "datetime"
+}
+```
+
+### Database Schema
+```sql
+event_teams: id, event_id, name, slogan, leader_id, assigned_to_team_id (nullable), created_at
+event_team_members: id, team_id, user_id, status (pending|active), joined_at
+-- Constraint: UNIQUE(user_id, event_id) — 1 user chỉ thuộc 1 team/event
+```
+
+### 15.1 POST `/events/{event_id}/teams` — Tạo đội 🔒
+- **Status**: 201 Created
+- **Condition**: Event phải `active`. User chưa thuộc team nào trong event này.
+- **Logic**: Creator tự động trở thành Team Lead (`leader_id`). Tự động thêm vào `event_team_members` với `status = active`.
+
+**Request Body:**
+```json
+{
+  "name": "string (2-100 ký tự, bắt buộc)",
+  "slogan": "string (tối đa 255 ký tự, tùy chọn)"
+}
+```
+
+**Response:** EventTeamObject
+
+### 15.2 GET `/events/{event_id}/teams` — Danh sách đội 🔒
+- **Status**: 200 OK
+- **Response:** `{ items: EventTeamObject[], total, page, limit }`
+
+### 15.3 POST `/events/{event_id}/teams/{team_id}/join` — Xin tham gia đội 🔒
+- **Status**: 201 Created
+- **Condition**: Event phải `active`. User chưa thuộc team nào trong event này.
+- **Logic**: Tạo record trong `event_team_members` với `status = pending`. Team Lead nhận notification.
+
+**Response:** EventTeamMemberObject
+
+### 15.4 PATCH `/events/{event_id}/teams/{team_id}/members/{user_id}` — Duyệt/Từ chối 🔒
+- **Quyền**: Team Lead
+- **Status**: 200 OK
+
+**Request Body:**
+```json
+{
+  "status": "active | rejected (bắt buộc)"
+}
+```
+
+**Response:** EventTeamMemberObject
+
+### 15.5 DELETE `/events/{event_id}/teams/{team_id}` — Giải tán đội 🔒 (Team Lead only)
+- **Quyền**: Team Lead (leader của team)
+- **Status**: 204 No Content
+- **Condition**: Event phải khác `closed`
+- **Logic**: Cascade xóa tất cả members. Ideas đã submit vẫn giữ (không xóa).
+- **Review assignment cleanup**: Nếu team này có `assigned_to_team_id` hoặc có team khác trỏ đến team này → clear các `assigned_to_team_id` liên quan, tạo notification cho Admin về việc assignment bị đứt cần gán lại.
+- **Error**: 403 nếu không phải Team Lead hoặc event đã closed.
+
+### 15.6 DELETE `/events/{event_id}/teams/{team_id}/members/me` — Rời đội 🔒
+- **Quyền**: Member (không phải Team Lead)
+- **Status**: 204 No Content
+- **Condition**: Event phải `active`. Không cho phép nếu user là Team Lead (phải chuyển quyền hoặc giải tán).
+- **Error**: 403 nếu user là Team Lead.
+
+### 15.7 PATCH `/events/{event_id}/teams/{team_id}/transfer-lead` — Chuyển quyền Team Lead 🔒
+- **Quyền**: Team Lead hiện tại
+- **Status**: 200 OK
+- **Condition**: Event phải `active`. `new_leader_id` phải là active member của cùng team.
+
+**Request Body:**
+```json
+{
+  "new_leader_id": "uuid (bắt buộc — phải là active member của team)"
+}
+```
+
+> **Logic**: Current leader trở thành regular member. New leader được set làm `leader_id`. Nếu current leader muốn rời team sau khi chuyển, gọi tiếp 15.6.
+
+**Response:** EventTeamObject
+
+### 15.8 PATCH `/events/{event_id}/teams/{team_id}/assign-review` — Gán đội chấm điểm 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 200 OK
+
+**Request Body:**
+```json
+{
+  "target_team_id": "uuid (bắt buộc — team sẽ được team này chấm)"
+}
+```
+
+> **Validation**: `target_team_id` phải thuộc cùng event, không được trùng với `team_id` (không tự chấm mình).
+> **Ví dụ circular pattern 4 đội**: Team A→B, B→C, C→D, D→A (Admin gán thủ công từng pair).
+
+**Response:** EventTeamObject
+
+### 15.9 GET `/events/{event_id}/assignments` — Xem bảng gán chấm 🔒
+- **Quyền**: Tất cả users
+- **Status**: 200 OK
+
+**Response:**
+```json
+{
+  "assignments": [
+    {
+      "team": { "id": "uuid", "name": "string" },
+      "reviews": { "id": "uuid", "name": "string" }
+    }
+  ]
+}
+```
+
+---
+
+## 16. EVENT IDEAS (`/events/{event_id}/ideas`) — Ý tưởng trong Sự kiện
+
+### EventIdeaObject
+```json
+{
+  "id": "uuid",
+  "event_id": "uuid",
+  "team_id": "uuid",
+  "team": { "id": "uuid", "name": "string", "slogan": "string | null" },
+  "title": "string",
+  "user_problem": "JSON (TipTap) | null",
+  "user_scenarios": "JSON (TipTap) | null",
+  "user_expectation": "JSON (TipTap) | null",
+  "research": "JSON (TipTap) | null",
+  "solution": "JSON (TipTap)",
+  "source_type": "manual | linked",
+  "source_problem_id": "uuid | null",
+  "source_room_id": "uuid | null",
+  "source_idea_id": "uuid | null",
+  "author_id": "uuid",
+  "author": { → UserObject },
+  "total_score": 0.0,
+  "score_count": 0,
+  "can_score": false,
+  "created_at": "datetime",
+  "updated_at": "datetime | null"
+}
+```
+
+> **Note**:
+> - `source_type = "manual"`: Tạo trực tiếp trong Event. Các field `source_*` đều null.
+> - `source_type = "linked"`: Copy từ Brainstorming Room. Lưu traceability qua `source_*` fields.
+> - **Decoupled**: Event Idea là bản copy độc lập. Thay đổi trong Room/Problem gốc KHÔNG ảnh hưởng Event Idea.
+> - `can_score`: `true` nếu user là Team Lead của team được gán chấm team sở hữu idea này.
+> - `total_score`: Tổng điểm (= sum(score × weight)). `null` nếu chưa được chấm.
+> - Nội dung các field TipTap (user_problem, user_scenarios, etc.) lưu dưới dạng JSON.
+
+### Database Schema
+```sql
+event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios (JSONB),
+  user_expectation (JSONB), research (JSONB), solution (JSONB, required),
+  source_type (manual|linked), source_problem_id (nullable), source_room_id (nullable),
+  source_idea_id (nullable), author_id, created_at, updated_at
+```
+
+### 16.1 POST `/events/{event_id}/ideas` — Tạo ý tưởng (Manual) 🔒
+- **Status**: 201 Created
+- **Condition**: Event phải `active`. User phải thuộc 1 team trong event (auto-fill `team_id`).
+
+**Request Body:**
+```json
+{
+  "title": "string (3-255 ký tự, bắt buộc)",
+  "user_problem": "JSON (TipTap, tùy chọn)",
+  "user_scenarios": "JSON (TipTap, tùy chọn)",
+  "user_expectation": "JSON (TipTap, tùy chọn)",
+  "research": "JSON (TipTap, tùy chọn)",
+  "solution": "JSON (TipTap, bắt buộc)",
+  "source_type": "manual (mặc định)"
+}
+```
+
+**Response:** EventIdeaObject
+
+### 16.2 POST `/events/{event_id}/ideas/from-room` — Tạo ý tưởng (từ Room) 🔒
+- **Status**: 201 Created
+- **Condition**: Event phải `active`. User phải thuộc 1 team trong event. User phải có quyền xem Room và Idea.
+
+**Request Body:**
+```json
+{
+  "room_id": "uuid (bắt buộc)",
+  "idea_id": "uuid (bắt buộc)"
+}
+```
+
+> **Copy Logic**:
+> - `idea.description` → `solution`
+> - `problem.content` (từ room's linked problem, nếu có) → `user_problem`
+> - `idea.summary` → `title` (nếu hợp lệ, ngược lại dùng `idea.title`)
+> - `source_type = "linked"`, lưu `source_room_id`, `source_idea_id`, `source_problem_id`
+> - Tạo bản ghi độc lập (decoupled). User có thể chỉnh sửa trước khi submit chính thức.
+
+**Response:** EventIdeaObject (cho phép FE redirect đến edit form)
+
+### 16.3 GET `/events/{event_id}/ideas` — Danh sách ý tưởng 🔒
+- **Status**: 200 OK
+- **Query**: `?team_id=&sort=score|newest&page=1&limit=20`
+- **Sort options**: `score` (total_score DESC, null last), `newest` (created_at DESC)
+- **Response:** `{ items: EventIdeaObject[], total, page, limit }`
+
+### 16.4 GET `/events/{event_id}/ideas/{idea_id}` — Chi tiết ý tưởng 🔒
+- **Status**: 200 OK
+- **Response:** EventIdeaObject (bao gồm `can_score` flag)
+
+### 16.5 PATCH `/events/{event_id}/ideas/{idea_id}` — Cập nhật ý tưởng 🔒
+- **Quyền**: Author hoặc Team Lead của team sở hữu idea
+- **Status**: 200 OK
+- **Condition**: Event phải `active`
+
+**Request Body (tất cả tùy chọn):**
+```json
+{
+  "title": "string (3-255 ký tự)",
+  "user_problem": "JSON (TipTap)",
+  "user_scenarios": "JSON (TipTap)",
+  "user_expectation": "JSON (TipTap)",
+  "research": "JSON (TipTap)",
+  "solution": "JSON (TipTap)"
+}
+```
+
+**Response:** EventIdeaObject
+
+---
+
+## 17. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm
+
+### EventScoringCriteriaObject
+```json
+{
+  "id": "uuid",
+  "event_id": "uuid",
+  "name": "string (e.g., 'Pain Depth', 'Novelty')",
+  "description": "string | null",
+  "weight": 1.0,
+  "max_score": 10,
+  "sort_order": 0,
+  "created_at": "datetime"
+}
+```
+
+### EventScoreObject
+```json
+{
+  "id": "uuid",
+  "event_idea_id": "uuid",
+  "scorer_team_id": "uuid",
+  "scorer_team": { "id": "uuid", "name": "string" },
+  "criteria_scores": { "criteria_id_1": 8, "criteria_id_2": 9 },
+  "total_score": 0.0,
+  "created_at": "datetime",
+  "updated_at": "datetime | null"
+}
+```
+
+> **Calculation**: `total_score = Σ(score_i × weight_i)` cho tất cả criteria.
+
+### Database Schema
+```sql
+event_scoring_criteria: id, event_id, name, description, weight (float, default 1.0),
+  max_score (int, default 10), sort_order (int), created_at
+event_scores: id, event_idea_id, scorer_team_id,
+  criteria_scores (JSONB: {criteria_id: score}), total_score (float, calculated),
+  created_at, updated_at
+-- Constraint: UNIQUE(event_idea_id, scorer_team_id) — 1 đội chỉ chấm 1 lần/idea
+```
+
+### 17.1 POST `/events/{event_id}/criteria` — Tạo tiêu chí chấm điểm 🔒 (Admin only)
+- **Quyền**: Admin
+- **Status**: 201 Created
+
+**Request Body:**
+```json
+{
+  "criteria": [
+    {
+      "name": "string (bắt buộc)",
+      "description": "string (tùy chọn)",
+      "weight": 1.0,
+      "max_score": 10,
+      "sort_order": 0
+    }
+  ]
+}
+```
+
+> **Logic**: Accept array để tạo nhiều criteria cùng lúc. Nếu không truyền → tạo 4 criteria mặc định (xem dưới).
+
+**Default Criteria (nếu không truyền):**
+| # | Name | Description | Weight | Max Score |
+|---|------|-------------|--------|-----------|
+| 1 | Pain Depth | How severe is the problem? | 1.0 | 10 |
+| 2 | Insight Clarity | How well is the problem understood? | 1.0 | 10 |
+| 3 | Novelty | How unexpected is the solution? | 1.0 | 10 |
+| 4 | Elegance | How simple/beautiful is the solution? | 1.0 | 10 |
+
+**Response:** `EventScoringCriteriaObject[]`
+
+### 17.2 GET `/events/{event_id}/criteria` — Xem tiêu chí 🔒
+- **Status**: 200 OK
+- **Response:** `EventScoringCriteriaObject[]` (sorted by `sort_order`)
+
+### 17.3 POST `/events/{event_id}/ideas/{idea_id}/scores` — Chấm điểm 🔒
+- **Quyền**: Team Lead của team được gán chấm team sở hữu idea (`can_score = true`)
+- **Status**: 201 Created
+- **Condition**: Event phải `active`
+
+**Request Body:**
+```json
+{
+  "criteria_scores": {
+    "criteria_id_1": 8,
+    "criteria_id_2": 9,
+    "criteria_id_3": 7,
+    "criteria_id_4": 10
+  }
+}
+```
+
+> **Validation**: Mỗi score phải ∈ [0, max_score] của criteria tương ứng. Phải có đủ scores cho tất cả criteria.
+
+**Response:** EventScoreObject
+
+### 17.4 PUT `/events/{event_id}/ideas/{idea_id}/scores` — Cập nhật điểm 🔒
+- **Quyền**: Team Lead đã chấm (cùng điều kiện 17.3)
+- **Status**: 200 OK
+- **Condition**: Event phải `active`
+- **Logic**: Replace toàn bộ `criteria_scores`. Recalculate `total_score`.
+
+**Request Body:** Giống 17.3
+
+**Response:** EventScoreObject
+
+### 17.5 GET `/events/{event_id}/ideas/{idea_id}/scores` — Xem điểm 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{
+  "idea_id": "uuid",
+  "scores": [EventScoreObject],
+  "summary": {
+    "total_avg": 0.0,
+    "criteria_avg": { "criteria_id": avg_score }
+  }
+}
+```
+
+---
+
+## 18. EVENT FAQ (`/events/{event_id}/faqs`) — Hỏi Đáp
+
+### FAQObject
+```json
+{
+  "id": "uuid",
+  "event_id": "uuid",
+  "question": "string",
+  "answer": "string",
+  "sort_order": 0,
+  "created_by": "uuid",
+  "created_at": "datetime",
+  "updated_at": "datetime | null"
+}
+```
+
+> **Note**: `sort_order` control thứ tự hiển thị. Auto-set = MAX(sort_order) + 1 khi tạo mới nếu không truyền.
+
+### 18.1 POST `/events/{event_id}/faqs` — Tạo FAQ 🔒
+- **Quyền**: Admin hoặc Team Lead trong event
+- **Status**: 201 Created
+
+**Request Body:**
+```json
+{
+  "question": "string (bắt buộc)",
+  "answer": "string (tùy chọn — có thể trả lời sau)",
+  "sort_order": 0
+}
+```
+
+**Response:** FAQObject
+
+### 18.2 GET `/events/{event_id}/faqs` — Danh sách FAQ
+- **Auth**: Không yêu cầu (public read)
+- **Status**: 200 OK
+- **Sort**: `sort_order` ASC, sau đó `created_at` ASC
+- **Response:** `FAQObject[]`
+
+### 18.3 PATCH `/events/{event_id}/faqs/{faq_id}` — Cập nhật FAQ 🔒
+- **Quyền**: Admin hoặc author
+- **Status**: 200 OK
+
+**Request Body:**
+```json
+{
+  "question": "string",
+  "answer": "string",
+  "sort_order": 0
+}
+```
+
+**Response:** FAQObject
+
+### 18.4 DELETE `/events/{event_id}/faqs/{faq_id}` — Xóa FAQ 🔒
+- **Quyền**: Admin hoặc author
+- **Status**: 204 No Content
+
+---
+
+## 19. EVENT DASHBOARD (`/events/{event_id}/dashboard`) — Thống kê Sự kiện
+
+### 19.1 GET `/events/{event_id}/dashboard/ideas` — Bảng xếp hạng ý tưởng 🔒
+- **Status**: 200 OK
+- **Query**: `?team_id= (tùy chọn — lọc theo team)`
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "title": "string",
+      "team": { "id": "uuid", "name": "string" },
+      "author": { → UserObject (tóm tắt) },
+      "total_score": 0.0,
+      "score_count": 0,
+      "criteria_breakdown": { "criteria_name": avg_score },
+      "created_at": "datetime"
+    }
+  ]
+}
+```
+
+> **Sort**: `total_score` DESC. Ideas chưa chấm (null) xếp cuối.
+
+### 19.2 GET `/events/{event_id}/dashboard/teams` — Bảng xếp hạng đội 🔒
+- **Status**: 200 OK
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "team": { "id": "uuid", "name": "string", "slogan": "string | null" },
+      "idea_count": 0,
+      "avg_score": 0.0,
+      "total_score": 0.0,
+      "members": [{ → UserObject (tóm tắt) }]
+    }
+  ]
+}
+```
+
+> **Sort**: `idea_count` DESC, sau đó `avg_score` DESC.
+
+---
+
+## 20. EVENT NOTIFICATIONS — Mở rộng hệ thống thông báo
+
+### Notification Types mới
+
+| Type | Trigger | Recipient |
+|------|---------|-----------|
+| `event_join_request` | User xin tham gia team | Team Lead của team |
+| `event_join_approved` | Team Lead duyệt yêu cầu | User được duyệt |
+| `event_join_rejected` | Team Lead từ chối yêu cầu | User bị từ chối |
+| `event_idea_submitted` | Idea mới được submit trong event | Admin (+ tùy chọn: Team Leads khác) |
+| `event_scored` | Team chấm điểm cho idea | Team Lead của team sở hữu idea |
+
+### Notification detail format
+
+| Type | action_detail | Ví dụ |
+|------|--------------|-------|
+| `event_join_request` | Team name | "Team Alpha" |
+| `event_join_approved` | Team name | "Team Alpha" |
+| `event_join_rejected` | Team name | "Team Alpha" |
+| `event_idea_submitted` | Idea title | "Auto-approval cho nghỉ <1 ngày" |
+| `event_scored` | Score summary | "35.5/40 từ Team Beta" |
+
+> Sử dụng cấu trúc `notifications` table hiện tại với `target_type = "event"`, `target_id = event_id`.
+
+---
+
+## 21. EVENT PERMISSIONS — Phân quyền Sự kiện
+
+### Event-level permissions
+
+| Endpoint | Member | Team Lead | Admin |
+|----------|--------|-----------|-------|
+| POST /events | ❌ | ❌ | ✅ |
+| GET /events | ✅ | ✅ | ✅ |
+| PATCH /events/{id} | ❌ | ❌ | ✅ |
+| PATCH /events/{id}/close | ❌ | ❌ | ✅ |
+| POST /events/{id}/teams | ✅ (chưa có team) | ✅ | ✅ |
+| POST /events/{id}/teams/{id}/join | ✅ (chưa có team) | ❌ (đã có) | ✅ |
+| PATCH .../members/{uid} | ❌ | ✅ (team mình lead) | ✅ |
+| DELETE .../teams/{id} | ❌ | ✅ (team mình lead) | ✅ |
+| DELETE .../members/me | ✅ (không phải lead) | ❌ | ❌ |
+| PATCH .../transfer-lead | ❌ | ✅ (current lead) | ✅ |
+| PATCH .../assign-review | ❌ | ❌ | ✅ |
+| GET .../assignments | ✅ | ✅ | ✅ |
+| POST .../ideas (manual) | ✅ (có team) | ✅ | ✅ |
+| POST .../ideas/from-room | ✅ (có team) | ✅ | ✅ |
+| PATCH .../ideas/{id} | Author only | ✅ (team idea) | ✅ |
+| POST .../criteria | ❌ | ❌ | ✅ |
+| GET .../criteria | ✅ | ✅ | ✅ |
+| POST .../scores | ❌ | ✅ (can_score=true) | ✅ |
+| PUT .../scores | ❌ | ✅ (can_score=true) | ✅ |
+| GET .../scores | ✅ | ✅ | ✅ |
+| POST .../faqs | ❌ | ✅ | ✅ |
+| GET .../faqs | ✅ (public) | ✅ | ✅ |
+| PATCH .../faqs/{id} | Author | Author | ✅ |
+| DELETE .../faqs/{id} | Author | Author | ✅ |
+| GET .../dashboard/* | ✅ | ✅ | ✅ |
+
+### Event Status Constraints
+
+| Status | Submit Idea | Join/Leave Team | Score | Edit Idea |
+|--------|------------|-----------------|-------|-----------|
+| `draft` | ❌ | ❌ | ❌ | ❌ |
+| `active` | ✅ | ✅ | ✅ | ✅ |
+| `closed` | ❌ | ❌ | ❌ | ❌ |
+
+### Team Lead role
+- Không phải role hệ thống (user.role). Là role nội bộ event: `event_teams.leader_id = user_id`.
+- User có thể là Member trong hệ thống nhưng là Team Lead trong 1 event.
+
+---
+
+## 22. EVENT IDEA STATUS WORKFLOW
+
+Event Ideas không có status workflow phức tạp như Room Ideas. Lifecycle đơn giản:
+
+```
+Created (submitted) → Scored → Event Closed
+```
+
+- Khi Event `active`: Ideas có thể được tạo, chỉnh sửa, chấm điểm
+- Khi Event `closed`: Tất cả trở thành read-only
+
+> **Lưu ý**: Event Ideas KHÔNG liên quan đến Room Idea status (draft/refining/reviewing/submitted). Đây là 2 hệ thống hoàn toàn độc lập.
+
+---
+
+## 23. INTEGRATION: Event ↔ Existing System
+
+### Luồng kết nối chính
+
+```
+Problem Feed          Idea Lab              Event
+───────────          ────────              ─────
+Problem ←──────── Room ←───── Idea ──────→ Event Idea
+    │                  │                      │
+    │    (1) Tạo Room  │   (2) Submit to      │
+    │    từ Problem    │       Event           │
+    │                  │                      │
+    └──────────────────┴──────────────────────┘
+    Mỗi module hoạt động độc lập.
+    "Submit to Event" là bridge 1 chiều (copy, không live link).
+```
+
+### Brainstorming Room → Event Idea (1 chiều)
+
+1. User click "Submit to Event" trên 1 Idea trong Room
+2. FE hiện dropdown chọn Event đang active
+3. FE gọi `POST /events/{event_id}/ideas/from-room`
+4. Backend copy: `problem.content → user_problem`, `idea.description → solution`, `idea.summary → title`
+5. FE redirect đến edit form cho user chỉnh sửa
+6. User chỉnh sửa và save → Idea chính thức tham gia Event
+
+> **Độc lập**: Sau khi copy, Event Idea hoàn toàn tách biệt. Thay đổi Room Idea KHÔNG ảnh hưởng Event Idea.
+
 *Tài liệu này là nguồn sự thật duy nhất. Mọi thay đổi API phải cập nhật ở đây trước.*

@@ -8,6 +8,7 @@ from .comment_model import CommentModel
 from .reaction_model import ReactionModel
 from .vote_model import VoteModel
 from .notification_model import NotificationModel
+from .event_model import EventModel
 
 __all__ = [
     "BaseModel",
@@ -19,4 +20,5 @@ __all__ = [
     "ReactionModel",
     "VoteModel",
     "NotificationModel",
+    "EventModel",
 ]
