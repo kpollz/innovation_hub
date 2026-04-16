@@ -10,6 +10,7 @@ from app.infrastructure.database.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.infrastructure.database.models.user_model import UserModel
+    from app.infrastructure.database.models.event_team_model import EventTeamModel
 
 
 class EventModel(BaseModel):
@@ -38,3 +39,6 @@ class EventModel(BaseModel):
 
     # Relationships
     creator: Mapped["UserModel"] = relationship("UserModel", back_populates="events")
+    teams: Mapped[list["EventTeamModel"]] = relationship(
+        "EventTeamModel", back_populates="event", cascade="all, delete-orphan"
+    )
