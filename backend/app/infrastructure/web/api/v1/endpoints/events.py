@@ -10,12 +10,18 @@ from app.application.dto.event_dto import (
     EventResponseDTO,
     EventListResponseDTO,
 )
+from app.application.dto.event_team_dto import (
+    AssignmentsResponseDTO,
+    AssignmentEntryDTO,
+    EventTeamAssignedDTO,
+)
 from app.application.services.response_enrichment import enrich_event, enrich_events
 from app.application.use_cases.event.create_event import CreateEventUseCase
 from app.application.use_cases.event.update_event import UpdateEventUseCase
 from app.application.use_cases.event.delete_event import DeleteEventUseCase
 from app.application.use_cases.event.close_event import CloseEventUseCase
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
+from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
@@ -117,3 +123,32 @@ async def delete_event(
             detail="Event not found",
         )
     return None
+
+
+@router.get("/{event_id}/assignments", response_model=AssignmentsResponseDTO)
+async def list_assignments(
+    event_id: UUID,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+):
+    """View full review assignment map for an event."""
+    event = await event_repo.get_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    teams, _ = await team_repo.list_teams_by_event(event_id, page=1, limit=200)
+
+    assignments = []
+    for team in teams:
+        entry = AssignmentEntryDTO(
+            team=EventTeamAssignedDTO(id=team.id, name=team.name),
+            reviews=None,
+        )
+        if team.assigned_to_team_id:
+            target = await team_repo.get_team_by_id(team.assigned_to_team_id)
+            if target:
+                entry.reviews = EventTeamAssignedDTO(id=target.id, name=target.name)
+        assignments.append(entry)
+
+    return AssignmentsResponseDTO(assignments=assignments)

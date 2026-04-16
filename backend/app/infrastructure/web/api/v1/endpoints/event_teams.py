@@ -10,6 +10,10 @@ from app.application.dto.event_team_dto import (
     EventTeamMemberResponseDTO,
     UpdateMemberStatusDTO,
     TransferLeadDTO,
+    AssignReviewDTO,
+    AssignmentsResponseDTO,
+    AssignmentEntryDTO,
+    EventTeamAssignedDTO,
 )
 from app.application.use_cases.event_team.create_team import CreateEventTeamUseCase
 from app.application.use_cases.event_team.list_teams import ListEventTeamsUseCase
@@ -18,10 +22,12 @@ from app.application.use_cases.event_team.update_member_status import UpdateMemb
 from app.application.use_cases.event_team.disband_team import DisbandEventTeamUseCase
 from app.application.use_cases.event_team.leave_team import LeaveEventTeamUseCase
 from app.application.use_cases.event_team.transfer_lead import TransferTeamLeadUseCase
+from app.application.use_cases.event_team.assign_review import AssignReviewUseCase
 from app.core.exceptions import (
     NotFoundException,
     ForbiddenException,
     ConflictException,
+    ValidationException,
 )
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
@@ -222,5 +228,27 @@ async def transfer_lead(
             current_user.id, current_user.role == "admin",
         )
     except (NotFoundException, ForbiddenException) as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    return await _enrich_team(team, user_repo, team_repo)
+
+
+@router.patch("/{team_id}/assign-review", response_model=EventTeamResponseDTO)
+async def assign_review(
+    event_id: UUID,
+    team_id: UUID,
+    data: AssignReviewDTO,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+):
+    """Admin assigns which team this team reviews."""
+    use_case = AssignReviewUseCase(event_repo, team_repo)
+    try:
+        team = await use_case.execute(
+            event_id, team_id, data.target_team_id,
+            current_user.id, current_user.role == "admin",
+        )
+    except (NotFoundException, ForbiddenException, ValidationException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     return await _enrich_team(team, user_repo, team_repo)

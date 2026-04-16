@@ -93,3 +93,16 @@ class EventTeamMemberResponseDTO(BaseModel):
     user: Optional[EventTeamMemberUserDTO] = None
     status: str
     joined_at: Optional[datetime] = None
+
+
+# --- Assignment DTOs ---
+
+class AssignmentEntryDTO(BaseModel):
+    """Single review assignment entry."""
+    team: EventTeamAssignedDTO
+    reviews: Optional[EventTeamAssignedDTO] = None
+
+
+class AssignmentsResponseDTO(BaseModel):
+    """Output for full assignment map."""
+    assignments: list[AssignmentEntryDTO]
