@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.idea import Idea
@@ -10,7 +10,6 @@ from app.domain.repositories.idea_repository import IdeaRepository
 from app.domain.value_objects.status import IdeaStatus
 from app.infrastructure.database.models.idea_model import IdeaModel
 from app.infrastructure.database.models.room_model import RoomModel, room_shared_users
-from app.infrastructure.database.models.problem_model import ProblemModel, problem_shared_users
 
 
 class SQLIdeaRepository(IdeaRepository):
@@ -82,56 +81,32 @@ class SQLIdeaRepository(IdeaRepository):
                     (IdeaModel.title.ilike(search)) |
                     (IdeaModel.description.ilike(search))
                 )
-            # Privacy filter: ideas inherit from Room, which cascades from Problem
+            # Privacy filter: ideas inherit from Room (Room is independent of Problem)
             current_user_id = filters.get("current_user_id")
             is_admin = filters.get("is_admin", False)
             if current_user_id and not is_admin:
                 uid = str(current_user_id)
 
-                # Subquery: rooms shared with user (for standalone rooms)
+                # Subquery: rooms shared with user
                 room_shared_sub = (
                     select(room_shared_users.c.room_id)
                     .where(room_shared_users.c.user_id == uid)
                 )
 
-                # Subquery: problem_ids visible to user
-                problem_shared_sub = (
-                    select(problem_shared_users.c.problem_id)
-                    .where(problem_shared_users.c.user_id == uid)
-                )
-                visible_problem_ids = (
-                    select(ProblemModel.id).where(
-                        or_(
-                            ProblemModel.visibility == "public",
-                            ProblemModel.author_id == uid,
-                            ProblemModel.id.in_(problem_shared_sub),
-                        )
-                    )
-                )
-
-                # Idea is visible if its room is in one of:
-                # 1. Room linked to a visible problem (privacy from problem)
-                # 2. Standalone room that is public / user is creator / shared with user
+                # Idea is visible if its room is visible to user:
+                # 1. Room is public
+                # 2. User is creator of the room
+                # 3. User is in room's shared_user_ids
+                # (Room privacy is independent of Problem)
                 visible_room_ids = (
                     select(RoomModel.id).where(
                         or_(
-                            # Room linked to visible problem
-                            RoomModel.problem_id.in_(visible_problem_ids),
-                            # Standalone room: public
-                            and_(
-                                RoomModel.problem_id.is_(None),
-                                RoomModel.visibility == "public",
-                            ),
-                            # Standalone room: creator
-                            and_(
-                                RoomModel.problem_id.is_(None),
-                                RoomModel.created_by == uid,
-                            ),
-                            # Standalone room: shared with user
-                            and_(
-                                RoomModel.problem_id.is_(None),
-                                RoomModel.id.in_(room_shared_sub),
-                            ),
+                            # Public room
+                            RoomModel.visibility == "public",
+                            # User is creator
+                            RoomModel.created_by == uid,
+                            # User is in shared_user_ids
+                            RoomModel.id.in_(room_shared_sub),
                         )
                     )
                 )

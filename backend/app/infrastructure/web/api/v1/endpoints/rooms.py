@@ -130,9 +130,7 @@ async def get_room(
     room = await room_repo.get_by_id(room_id)
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
-    # Load linked problem for privacy cascade
-    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
-    if not room.is_visible_to(current_user_id or UUID(int=0), is_admin, problem):
+    if not room.is_visible_to(current_user_id or UUID(int=0), is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to view this room",
@@ -155,10 +153,9 @@ async def update_room(
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
 
-    # Privacy check: must be visible to user (cascade from problem if linked)
+    # Privacy check: must be visible to user
     is_admin = current_user.role == "admin"
-    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
-    if not room.is_visible_to(current_user.id, is_admin, problem):
+    if not room.is_visible_to(current_user.id, is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to view this room",
@@ -202,10 +199,9 @@ async def delete_room(
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
 
-    # Privacy check: cascade from problem if linked
+    # Privacy check
     is_admin = current_user.role == "admin"
-    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
-    if not room.is_visible_to(current_user.id, is_admin, problem):
+    if not room.is_visible_to(current_user.id, is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to view this room",

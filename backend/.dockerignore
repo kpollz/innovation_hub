@@ -1,0 +1,6 @@
+postgres_data
+minio_data
+__pycache__
+*.pyc
+.env
+.venv

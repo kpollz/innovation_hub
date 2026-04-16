@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, X, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, X, ShieldAlert, Lock } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
 import { usersApi } from '@/api/users';
@@ -270,7 +270,10 @@ export const RoomDetailPage: React.FC = () => {
                 {room.status}
               </Badge>
               {room.visibility === 'private' && (
-                <Badge variant="warning">{t('rooms.private_badge')}</Badge>
+                <Badge variant="warning">
+                  <Lock className="h-3 w-3 mr-1" />
+                  {t('rooms.private_badge')}
+                </Badge>
               )}
             </div>
             {room.description && (

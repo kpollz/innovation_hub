@@ -417,7 +417,7 @@ Authorization: Bearer <access_token>
 - **Auth**: Tùy chọn (Bearer token). Nếu không có token, chỉ hiện phòng public.
 - **Query**: `?status=&problem_id=&search=&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&page=1&limit=20`
 - **Date filter**: `date_from` inclusive, `date_to` inclusive. Không truyền = không lọc theo thời gian.
-- **Privacy**: Kế thừa từ Problem nếu room có `problem_id`. Standalone rooms dùng quyền riêng. Admin thấy tất cả.
+- **Privacy**: Room có quyền riêng biệt, **độc lập** với Problem (kể cả khi có `problem_id`). Kiểm tra `visibility` + `shared_user_ids` của chính Room. Admin thấy tất cả.
 - **Response:** `{ items: RoomObject[], total, page, limit }`
 
 ### 5.2 POST `/rooms` — Tạo phòng mới (standalone) 🔒
@@ -472,8 +472,8 @@ Authorization: Bearer <access_token>
 ### 5.6 POST `/problems/{problem_id}/rooms` — Tạo phòng từ vấn đề (1-click) 🔒
 - **Status**: 201 Created
 - **Error**: 400 Bad Request nếu problem đã ở trạng thái `solved` hoặc `closed`
-- **Privacy**: Trả về 403 nếu problem private và user không có quyền truy cập.
-- **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room.
+- **Privacy**: Kiểm tra quyền truy cập Problem trước khi tạo Room. Room được tạo có quyền riêng biệt, độc lập với Problem.
+- **Logic**: Tạo room với `problem_id` liên kết, chuyển problem status sang `brainstorming`. 1 problem có thể liên kết với nhiều room. Privacy của Room độc lập với Problem.
 
 **Request Body:**
 ```json
@@ -912,22 +912,21 @@ active → archived
 
 ## 13. PRIVACY RULES (Quy tắc quyền riêng tư)
 
-### Nguyên tắc cascade: Problem → Room → Idea
+### Nguyên tắc: Problem và Room độc lập, Idea kế thừa Room
 
 ```
-Problem (visibility: public/private, shared_user_ids)
-  └── Room (kế thừa từ Problem nếu có liên kết)
-       └── Idea (kế thừa từ Room → Problem)
+Problem (visibility: public/private, shared_user_ids)  ← Độc lập
+  └── Room (liên kết hoặc độc lập)  ← Độc lập, KHÔNG kế thừa từ Problem
+       └── Idea  ← Kế thừa từ Room
 ```
 
 ### Quy tắc chi tiết
 
 | Tạo tác | Quyền riêng tư | Mô tả |
 |---------|----------------|-------|
-| **Problem** | `visibility` + `shared_user_ids` riêng | Nguồn gốc của quyền. Có thể là public hoặc private. |
-| **Room (liên kết Problem)** | **Kế thừa từ Problem** | Nếu room có `problem_id`, quyền xem được quyết định bởi Problem. Room không có quyền riêng. |
-| **Room (độc lập)** | `visibility` + `shared_user_ids` riêng | Room không liên kết problem nào thì dùng quyền riêng. |
-| **Idea** | **Kế thừa từ Room → Problem** | Ý tưởng luôn kế thừa quyền từ room chứa nó. |
+| **Problem** | `visibility` + `shared_user_ids` riêng | Độc lập. Có thể là public hoặc private. |
+| **Room** | `visibility` + `shared_user_ids` riêng | **Độc lập với Problem**, kể cả khi có liên kết (`problem_id`). Room có thể private dù Problem public, và ngược lại. |
+| **Idea** | **Kế thừa từ Room** | Ý tưởng luôn kế thừa quyền từ Room chứa nó. Không có bảng quyền riêng. |
 
 ### Logic kiểm tra quyền
 
@@ -935,22 +934,26 @@ Problem (visibility: public/private, shared_user_ids)
 - `public` → tất cả users đều thấy
 - `private` → chỉ author, users trong `shared_user_ids`, và Admin thấy
 
-**Room (có `problem_id`):**
-- Kiểm tra quyền của Problem liên kết
-- Nếu Problem `public` → room và ideas đều public
-- Nếu Problem `private` → chỉ users được share trong Problem mới thấy room và ideas
-
-**Room (không có `problem_id` - standalone):**
-- Dùng `visibility` và `shared_user_ids` riêng của room
-- Logic giống Problem: `public` = tất cả, `private` = author + shared + admin
+**Room (có hoặc không có `problem_id`):**
+- Luôn dùng `visibility` và `shared_user_ids` riêng của room
+- `public` → tất cả users đều thấy (kể cả khi Problem liên kết là private)
+- `private` → chỉ creator, users trong `shared_user_ids`, và Admin thấy (kể cả khi Problem liên kết là public)
 
 **Idea:**
 - Luôn kế thừa từ Room chứa nó
 - Không có bảng quyền riêng
 
+### Edge cases
+
+| Tình huống | Kết quả |
+|-----------|---------|
+| Problem **private** + Room **public** | Room hiển thị cho tất cả users. Khi click vào linked Problem → 403 nếu user không có quyền xem Problem. |
+| Problem **public** + Room **private** | Problem hiển thị cho tất cả users. Room chỉ hiển thị cho users được ủy quyền. |
+| Tạo Room từ Problem private | User phải có quyền xem Problem để tạo Room. Room mặc định `public` nhưng có thể set riêng. |
+
 ### Auto-set private
 - Khi `shared_user_ids` có giá trị và `visibility` là `public`, hệ thống tự động chuyển thành `private`
-- Áp dụng cho cả Problem và standalone Room
+- Áp dụng cho cả Problem và Room
 
 ### Admin bypass
 - Admin (`role = "admin"`) luôn thấy tất cả nội dung bất kể visibility

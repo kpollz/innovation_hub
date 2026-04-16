@@ -3,13 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 from app.domain.value_objects.status import RoomStatus
-
-if TYPE_CHECKING:
-    from app.domain.entities.problem import Problem
 
 
 @dataclass
@@ -52,18 +49,12 @@ class Room:
         self,
         user_id: UUID,
         is_admin: bool = False,
-        problem: Optional[Problem] = None,
     ) -> bool:
         """Check if a user can view this room.
 
-        If the room is linked to a problem, privacy is inherited from the problem.
-        Otherwise, uses the room's own visibility and shared_user_ids.
+        Room privacy is independent of Problem. Uses its own visibility
+        and shared_user_ids regardless of whether linked to a problem.
         """
-        # If linked to a problem, inherit privacy from it
-        if self.problem_id and problem is not None:
-            return problem.is_visible_to(user_id, is_admin)
-
-        # Standalone room: use own privacy settings
         if self.visibility == "public":
             return True
         if is_admin:

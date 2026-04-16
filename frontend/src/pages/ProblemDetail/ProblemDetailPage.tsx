@@ -12,7 +12,8 @@ import {
   Trash2,
   MoreVertical,
   Circle,
-  ShieldAlert
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useProblemStore } from '@/stores/problemStore';
@@ -290,6 +291,12 @@ export const ProblemDetailPage: React.FC = () => {
             <div className="flex items-center gap-2">
               {category && (
                 <Badge variant="info" size="sm">{category.label}</Badge>
+              )}
+              {(selectedProblem as any).visibility === 'private' && (
+                <Badge variant="warning" size="sm">
+                  <Lock className="h-3 w-3 mr-1" />
+                  {t('problems.private_badge')}
+                </Badge>
               )}
               {status && (
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${status.color}`}>

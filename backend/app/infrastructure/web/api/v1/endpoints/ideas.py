@@ -52,17 +52,15 @@ async def _get_optional_user_info(request: Request) -> tuple[Optional[UUID], boo
 
 async def _check_room_visibility(
     room_repo: SQLRoomRepository,
-    problem_repo: SQLProblemRepository,
     room_id: UUID,
     user_id: Optional[UUID],
     is_admin: bool,
 ) -> None:
-    """Check if user can access a room (with problem cascade). Raises 403 if not."""
+    """Check if user can access a room. Raises 403 if not."""
     room = await room_repo.get_by_id(room_id)
     if not room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
-    problem = await problem_repo.get_by_id(room.problem_id) if room.problem_id else None
-    if not room.is_visible_to(user_id or UUID(int=0), is_admin, problem):
+    if not room.is_visible_to(user_id or UUID(int=0), is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to access this room",
@@ -106,7 +104,7 @@ async def create_idea(
 ):
     """Create a new idea in a room."""
     is_admin = current_user.role == "admin"
-    await _check_room_visibility(room_repo, problem_repo, data.room_id, current_user.id, is_admin)
+    await _check_room_visibility(room_repo, data.room_id, current_user.id, is_admin)
 
     use_case = CreateIdeaUseCase(idea_repo, room_repo)
     idea = await use_case.execute(data, current_user.id)
@@ -132,8 +130,8 @@ async def get_idea(
     idea = await idea_repo.get_by_id(idea_id)
     if not idea:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
-    # Check room visibility with problem cascade
-    await _check_room_visibility(room_repo, problem_repo, idea.room_id, current_user_id, is_admin)
+    # Check room visibility
+    await _check_room_visibility(room_repo, idea.room_id, current_user_id, is_admin)
     return await enrich_idea(
         idea, user_repo, reaction_repo, comment_repo, vote_repo, current_user_id
     )
@@ -157,10 +155,10 @@ async def update_idea(
     old_idea = await idea_repo.get_by_id(idea_id)
     old_status = old_idea.status if old_idea else None
 
-    # Check room visibility with problem cascade
+    # Check room visibility
     if old_idea:
         is_admin = current_user.role == "admin"
-        await _check_room_visibility(room_repo, problem_repo, old_idea.room_id, current_user.id, is_admin)
+        await _check_room_visibility(room_repo, old_idea.room_id, current_user.id, is_admin)
 
     use_case = UpdateIdeaUseCase(idea_repo)
     idea = await use_case.execute(
@@ -198,9 +196,9 @@ async def delete_idea(
     idea = await idea_repo.get_by_id(idea_id)
     if not idea:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
-    # Check room visibility with problem cascade
+    # Check room visibility
     is_admin = current_user.role == "admin"
-    await _check_room_visibility(room_repo, problem_repo, idea.room_id, current_user.id, is_admin)
+    await _check_room_visibility(room_repo, idea.room_id, current_user.id, is_admin)
     if idea.author_id != current_user.id and not is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     await idea_repo.delete(idea_id)
@@ -224,9 +222,9 @@ async def vote_idea(
     idea = await idea_repo.get_by_id(idea_id)
     if not idea:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
-    # Check room visibility with problem cascade
+    # Check room visibility
     is_admin = current_user.role == "admin"
-    await _check_room_visibility(room_repo, problem_repo, idea.room_id, current_user.id, is_admin)
+    await _check_room_visibility(room_repo, idea.room_id, current_user.id, is_admin)
 
     data = CreateVoteDTO(idea_id=idea_id, stars=stars)
     use_case = VoteIdeaUseCase(vote_repo, idea_repo)

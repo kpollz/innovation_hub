@@ -2,14 +2,13 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import and_, func, insert, or_, select
+from sqlalchemy import func, insert, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.room import Room
 from app.domain.repositories.room_repository import RoomRepository
 from app.domain.value_objects.status import RoomStatus
 from app.infrastructure.database.models.room_model import RoomModel, room_shared_users
-from app.infrastructure.database.models.problem_model import ProblemModel, problem_shared_users
 
 
 class SQLRoomRepository(RoomRepository):
@@ -81,55 +80,31 @@ class SQLRoomRepository(RoomRepository):
                     (RoomModel.name.ilike(search)) |
                     (RoomModel.description.ilike(search))
                 )
-            # Privacy filter: cascade from Problem if linked, else use Room's own
+            # Privacy filter: Room uses its own visibility, independent of Problem
             current_user_id = filters.get("current_user_id")
             is_admin = filters.get("is_admin", False)
             if current_user_id and not is_admin:
                 uid = str(current_user_id)
 
-                # Subquery: rooms where user is in room's shared_users (standalone rooms)
+                # Subquery: rooms where user is in room's shared_users
                 room_shared_sub = (
                     select(room_shared_users.c.room_id)
                     .where(room_shared_users.c.user_id == uid)
                 )
 
-                # Subquery: problem_ids the user can see (public OR author OR shared)
-                problem_shared_sub = (
-                    select(problem_shared_users.c.problem_id)
-                    .where(problem_shared_users.c.user_id == uid)
-                )
-                visible_problem_ids = (
-                    select(ProblemModel.id).where(
-                        or_(
-                            ProblemModel.visibility == "public",
-                            ProblemModel.author_id == uid,
-                            ProblemModel.id.in_(problem_shared_sub),
-                        )
-                    )
-                )
-
                 # Room is visible if:
-                # 1. Linked to a visible problem (privacy inherited from problem)
-                # 2. Standalone (no problem_id) AND (public OR creator OR shared with user)
+                # 1. Public visibility
+                # 2. User is creator
+                # 3. User is in shared_user_ids
+                # (Independent of Problem privacy, even when linked)
                 query = query.where(
                     or_(
-                        # Linked to a visible problem
-                        RoomModel.problem_id.in_(visible_problem_ids),
-                        # Standalone room: public
-                        and_(
-                            RoomModel.problem_id.is_(None),
-                            RoomModel.visibility == "public",
-                        ),
-                        # Standalone room: creator
-                        and_(
-                            RoomModel.problem_id.is_(None),
-                            RoomModel.created_by == uid,
-                        ),
-                        # Standalone room: shared with user
-                        and_(
-                            RoomModel.problem_id.is_(None),
-                            RoomModel.id.in_(room_shared_sub),
-                        ),
+                        # Public room
+                        RoomModel.visibility == "public",
+                        # Creator
+                        RoomModel.created_by == uid,
+                        # Shared with user
+                        RoomModel.id.in_(room_shared_sub),
                     )
                 )
 
