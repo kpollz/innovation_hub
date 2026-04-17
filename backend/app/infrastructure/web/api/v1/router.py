@@ -14,6 +14,7 @@ from app.infrastructure.web.api.v1.endpoints import (
     events,
     event_teams,
     event_ideas,
+    event_scoring,
 )
 from app.infrastructure.web.api.v1.endpoints.reactions import (
     problem_reactions_router,
@@ -38,6 +39,9 @@ api_router.include_router(event_teams.router, prefix="/events/{event_id}/teams",
 
 # Event idea sub-routes (nested under events)
 api_router.include_router(event_ideas.router, prefix="/events/{event_id}/ideas", tags=["event-ideas"])
+
+# Event scoring sub-routes (nested under events)
+api_router.include_router(event_scoring.router, prefix="/events/{event_id}", tags=["event-scoring"])
 
 # Reaction sub-routes (nested under problems and ideas)
 api_router.include_router(problem_reactions_router, prefix="/problems", tags=["reactions"])

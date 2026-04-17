@@ -124,7 +124,7 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 | **Tạo Event** | Admin tạo sự kiện với tiêu đề, nội dung giới thiệu (TipTap editor hoặc nhúng web), thời gian. Event có 3 trạng thái: Draft → Active → Closed. |
 | **Tham gia** | Users tự tạo đội (name + slogan). Creator là Team Lead. Người khác xin tham gia, Team Lead duyệt. 1 user chỉ thuộc 1 team/event. |
 | **Submit Idea** | 2 đường: (1) Manual form với structured fields, (2) Copy từ Brainstorming Room — bridge 1 chiều. |
-| **Chấm điểm** | Admin gán đội chấm đội theo circular pattern (A→B→C→D→A). Tiêu chí configurable per event. Điểm = Σ(score × weight). |
+| **Chấm điểm** | Admin gán đội chấm đội theo circular pattern (A→B→C→D→A). 8 tiêu chí (4 Problem + 4 Solution), 5-point Likert scale (max 12.5/criteria, tổng max 100). Điểm = Σ(score × weight). |
 | **Dashboard** | Bảng xếp hạng ý tưởng theo điểm, đội theo số lượng ý tưởng. Real-time update. |
 | **FAQ** | Q&A đơn giản cho mỗi sự kiện. |
 
@@ -146,7 +146,7 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 - Danh sách ý tưởng với 3 filter: "My Team" | "Team I Review" | "All"
 - Submit qua 2 đường: Manual form (7 fields TipTap) hoặc từ Brainstorming Room
 - Click vào idea → xem chi tiết + chấm điểm (nếu có quyền)
-- Chấm điểm: List tiêu chí configurable, score 0-max_score
+- Chấm điểm: 8 tiêu chí (4 Problem + 4 Solution), 5-point Likert scale (12.5/10/7.5/5/2.5), max 100 điểm
 
 **Tab 4 — Dashboard:**
 - Bảng 1: Ý tưởng xếp theo điểm (cao → thấp, chưa chấm xếp cuối)
@@ -169,19 +169,39 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 | Research | TipTap | ❌ | Nghiên cứu/Nền tảng |
 | Solution | TipTap | ✅ | Giải pháp đề xuất |
 
-#### Hệ thống Chấm điểm (Configurable):
+#### Hệ thống Chấm điểm (5-point Likert Scale):
+
+**Cơ chế:** Mỗi tiêu chí được đánh giá trên 5 mức độ đồng ý, max 12.5 điểm/criteria.
+
+| Mức độ | Điểm |
+|--------|------|
+| Strongly Agree | 12.5 |
+| Agree | 10 |
+| Neutral | 7.5 |
+| Disagree | 5 |
+| Strongly Disagree | 2.5 |
+
+**8 Tiêu chí mặc định (2 nhóm):**
+
+**Nhóm Problem (đánh giá bài toán):**
+| # | Name | Câu hỏi đánh giá |
+|---|------|------------------|
+| 1 | Unresolved Problem | Bài toán chưa có giải pháp hoặc giải pháp chưa triệt để? |
+| 2 | Root Cause Analysis | Tác giả đã phân tích được nguyên nhân gốc rễ? |
+| 3 | Problem Recognition | Bài toán có độ nhận diện cao, được nhắc nhiều? |
+| 4 | Gap Evidence | Có bằng chứng gap analysis từ nguồn uy tín? |
+
+**Nhóm Solution (đánh giá giải pháp):**
+| # | Name | Câu hỏi đánh giá |
+|---|------|------------------|
+| 5 | Novelty | Giải pháp mới lạ, chưa từng xuất hiện? |
+| 6 | Root Cause Resolution | Giải pháp giải quyết triệt để vấn đề gốc rễ? |
+| 7 | Competitive Advantage | Giải pháp có ưu thế cạnh tranh? |
+| 8 | Technical Feasibility | Giải pháp khả thi về mặt kỹ thuật? |
 
 ```
-Admin định nghĩa tiêu chí per Event:
-┌──────────────┬─────────┬──────────┐
-│ Criteria     │ Weight  │ Max Score│
-├──────────────┼─────────┼──────────┤
-│ Pain Depth   │   1.0   │    10    │
-│ Insight      │   1.0   │    10    │
-│ Novelty      │   1.0   │    10    │
-│ Elegance     │   1.0   │    10    │
-└──────────────┴─────────┴──────────┘
 total_score = Σ(score_i × weight_i)
+Tổng tối đa = 8 × 12.5 = 100 điểm
 ```
 
 - Có thể thêm/xóa tiêu chí per Event qua API (không cần migration)

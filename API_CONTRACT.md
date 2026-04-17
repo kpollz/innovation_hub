@@ -1318,19 +1318,37 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
 
 ## 17. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm
 
+### Cơ chế chấm điểm (5-point Likert Scale)
+
+Mỗi tiêu chí được đánh giá trên thang điểm **5 mức độ đồng ý**:
+
+| Mức độ | Điểm | Label |
+|--------|------|-------|
+| Strongly Agree | 12.5 | Hoàn toàn đồng ý |
+| Agree | 10 | Đồng ý |
+| Neutral | 7.5 | Trung lập |
+| Disagree | 5 | Không đồng ý |
+| Strongly Disagree | 2.5 | Hoàn toàn không đồng ý |
+
+> **Max score per criteria = 12.5**. Tổng điểm tối đa = 8 × 12.5 = **100 điểm**.
+> **Validation**: Score phải là 1 trong 5 giá trị: {2.5, 5, 7.5, 10, 12.5}.
+
 ### EventScoringCriteriaObject
 ```json
 {
   "id": "uuid",
   "event_id": "uuid",
-  "name": "string (e.g., 'Pain Depth', 'Novelty')",
+  "group": "problem | solution",
+  "name": "string (e.g., 'Unresolved Problem', 'Root Cause Analysis')",
   "description": "string | null",
   "weight": 1.0,
-  "max_score": 10,
+  "max_score": 12.5,
   "sort_order": 0,
   "created_at": "datetime"
 }
 ```
+
+> **Note**: `group` phân loại tiêu chí thành "problem" (nhóm đánh giá bài toán) hoặc "solution" (nhóm đánh giá giải pháp).
 
 ### EventScoreObject
 ```json
@@ -1339,7 +1357,7 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
   "event_idea_id": "uuid",
   "scorer_team_id": "uuid",
   "scorer_team": { "id": "uuid", "name": "string" },
-  "criteria_scores": { "criteria_id_1": 8, "criteria_id_2": 9 },
+  "criteria_scores": { "criteria_id_1": 12.5, "criteria_id_2": 10 },
   "total_score": 0.0,
   "created_at": "datetime",
   "updated_at": "datetime | null"
@@ -1350,8 +1368,8 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
 
 ### Database Schema
 ```sql
-event_scoring_criteria: id, event_id, name, description, weight (float, default 1.0),
-  max_score (int, default 10), sort_order (int), created_at
+event_scoring_criteria: id, event_id, group (varchar: problem|solution), name, description,
+  weight (float, default 1.0), max_score (float, default 12.5), sort_order (int), created_at
 event_scores: id, event_idea_id, scorer_team_id,
   criteria_scores (JSONB: {criteria_id: score}), total_score (float, calculated),
   created_at, updated_at
@@ -1361,37 +1379,44 @@ event_scores: id, event_idea_id, scorer_team_id,
 ### 17.1 POST `/events/{event_id}/criteria` — Tạo tiêu chí chấm điểm 🔒 (Admin only)
 - **Quyền**: Admin
 - **Status**: 201 Created
+- **Condition**: Event chưa có criteria (chỉ tạo 1 lần)
 
 **Request Body:**
 ```json
 {
   "criteria": [
     {
+      "group": "problem | solution (bắt buộc)",
       "name": "string (bắt buộc)",
       "description": "string (tùy chọn)",
       "weight": 1.0,
-      "max_score": 10,
+      "max_score": 12.5,
       "sort_order": 0
     }
   ]
 }
 ```
 
-> **Logic**: Accept array để tạo nhiều criteria cùng lúc. Nếu không truyền → tạo 4 criteria mặc định (xem dưới).
+> **Logic**: Accept array để tạo nhiều criteria cùng lúc. Nếu body rỗng hoặc không truyền criteria → tạo 8 criteria mặc định (xem dưới).
 
 **Default Criteria (nếu không truyền):**
-| # | Name | Description | Weight | Max Score |
-|---|------|-------------|--------|-----------|
-| 1 | Pain Depth | How severe is the problem? | 1.0 | 10 |
-| 2 | Insight Clarity | How well is the problem understood? | 1.0 | 10 |
-| 3 | Novelty | How unexpected is the solution? | 1.0 | 10 |
-| 4 | Elegance | How simple/beautiful is the solution? | 1.0 | 10 |
+
+| # | Group | Name | Description | Weight | Max Score |
+|---|-------|------|-------------|--------|-----------|
+| 1 | problem | Unresolved Problem | Đây là một bài toán chưa có giải pháp hoặc giải pháp chưa triệt để? | 1.0 | 12.5 |
+| 2 | problem | Root Cause Analysis | Tác giả đã tìm hiểu và phân tích được nguyên nhân gốc rễ của vấn đề? | 1.0 | 12.5 |
+| 3 | problem | Problem Recognition | Đây là một bài toán có độ nhận diện cao, được nhắc nhiều trên báo đài hoặc tin tức? | 1.0 | 12.5 |
+| 4 | problem | Gap Evidence | Có bằng chứng về việc bài toán chưa được giải quyết (gap analysis) từ các nguồn uy tín? | 1.0 | 12.5 |
+| 5 | solution | Novelty | Ý tưởng của giải pháp thực sự mới lạ và chưa từng xuất hiện trong các giải pháp đã biết? | 1.0 | 12.5 |
+| 6 | solution | Root Cause Resolution | Giải pháp có khả năng giải quyết được vấn đề gốc rễ một cách triệt để? | 1.0 | 12.5 |
+| 7 | solution | Competitive Advantage | Giải pháp có những điểm khác biệt và ưu thế cạnh tranh so với các giải pháp hiện có? | 1.0 | 12.5 |
+| 8 | solution | Technical Feasibility | Giải pháp khả thi về mặt kỹ thuật, có thể phát triển dựa trên công nghệ hiện tại hoặc tương lai gần? | 1.0 | 12.5 |
 
 **Response:** `EventScoringCriteriaObject[]`
 
 ### 17.2 GET `/events/{event_id}/criteria` — Xem tiêu chí 🔒
 - **Status**: 200 OK
-- **Response:** `EventScoringCriteriaObject[]` (sorted by `sort_order`)
+- **Response:** `EventScoringCriteriaObject[]` (sorted by `group` ASC, `sort_order` ASC)
 
 ### 17.3 POST `/events/{event_id}/ideas/{idea_id}/scores` — Chấm điểm 🔒
 - **Quyền**: Team Lead của team được gán chấm team sở hữu idea (`can_score = true`)
@@ -1402,15 +1427,18 @@ event_scores: id, event_idea_id, scorer_team_id,
 ```json
 {
   "criteria_scores": {
-    "criteria_id_1": 8,
-    "criteria_id_2": 9,
-    "criteria_id_3": 7,
-    "criteria_id_4": 10
+    "criteria_id_1": 12.5,
+    "criteria_id_2": 10,
+    "criteria_id_3": 7.5,
+    "criteria_id_4": 5
   }
 }
 ```
 
-> **Validation**: Mỗi score phải ∈ [0, max_score] của criteria tương ứng. Phải có đủ scores cho tất cả criteria.
+> **Validation**:
+> - Mỗi score phải ∈ {2.5, 5, 7.5, 10, 12.5} (5-point Likert scale)
+> - Phải có đủ scores cho tất cả criteria của event
+> - 1 đội chỉ chấm 1 lần cho mỗi idea
 
 **Response:** EventScoreObject
 
