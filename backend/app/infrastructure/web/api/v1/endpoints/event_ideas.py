@@ -1,4 +1,5 @@
 """Event Idea endpoints."""
+import logging
 from typing import Optional
 from uuid import UUID
 
@@ -17,20 +18,56 @@ from app.application.use_cases.event_idea.list_ideas import ListEventIdeasUseCas
 from app.application.use_cases.event_idea.get_idea import GetEventIdeaUseCase
 from app.application.use_cases.event_idea.update_idea import UpdateEventIdeaUseCase
 from app.core.exceptions import NotFoundException, ForbiddenException
+from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
 from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
 from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
 from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 
 # --- Enrichment ---
+
+
+async def _notify_admins_idea_submitted(
+    event_id: UUID,
+    idea_title: str,
+    actor_id: UUID,
+    event_repo: SQLEventRepository,
+    user_repo: SQLUserRepository,
+    notification_repo: SQLNotificationRepository,
+):
+    """Notify all admins when a new idea is submitted in an event."""
+    try:
+        event = await event_repo.get_by_id(event_id)
+        admins, _ = await user_repo.list(filters={"role": "admin"}, limit=100)
+        notifications = [
+            Notification(
+                user_id=admin.id,
+                actor_id=actor_id,
+                type="event_idea_submitted",
+                target_id=event_id,
+                target_type="event",
+                target_title=event.title if event else "",
+                action_detail=idea_title,
+            )
+            for admin in admins
+            if admin.id != actor_id
+        ]
+        if notifications:
+            await notification_repo.create_bulk(notifications)
+    except Exception:
+        logger.exception("Failed to send event_idea_submitted notification")
+
 
 async def _enrich_idea(idea, user_repo, team_repo) -> EventIdeaResponseDTO:
     """Enrich idea with author and team info."""
@@ -66,6 +103,7 @@ async def create_idea(
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Submit a new idea via manual form. Auto-fills team_id from membership."""
     use_case = CreateEventIdeaUseCase(event_repo, team_repo, idea_repo)
@@ -73,6 +111,12 @@ async def create_idea(
         idea = await use_case.execute(event_id, data, current_user.id)
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    await _notify_admins_idea_submitted(
+        event_id, idea.title, current_user.id,
+        event_repo, user_repo, notification_repo,
+    )
+
     return await _enrich_idea(idea, user_repo, team_repo)
 
 
@@ -88,6 +132,7 @@ async def create_idea_from_room(
     room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Submit an idea from a brainstorming room. Copies content as independent record."""
     use_case = CreateEventIdeaFromRoomUseCase(
@@ -97,6 +142,12 @@ async def create_idea_from_room(
         idea = await use_case.execute(event_id, data.room_id, data.idea_id, current_user.id)
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    await _notify_admins_idea_submitted(
+        event_id, idea.title, current_user.id,
+        event_repo, user_repo, notification_repo,
+    )
+
     return await _enrich_idea(idea, user_repo, team_repo)
 
 

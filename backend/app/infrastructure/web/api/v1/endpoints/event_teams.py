@@ -1,4 +1,5 @@
 """Event Team endpoints."""
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -29,11 +30,15 @@ from app.core.exceptions import (
     ConflictException,
     ValidationException,
 )
+from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -141,6 +146,7 @@ async def join_team(
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Request to join a team. Creates pending membership."""
     use_case = JoinEventTeamUseCase(event_repo, team_repo)
@@ -148,6 +154,26 @@ async def join_team(
         member = await use_case.execute(event_id, team_id, current_user.id)
     except (NotFoundException, ForbiddenException, ConflictException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    # Notify Team Lead
+    try:
+        team = await team_repo.get_team_by_id(team_id)
+        event = await event_repo.get_by_id(event_id)
+        if team:
+            await notification_repo.create_bulk([
+                Notification(
+                    user_id=team.leader_id,
+                    actor_id=current_user.id,
+                    type="event_join_request",
+                    target_id=event_id,
+                    target_type="event",
+                    target_title=event.title if event else "",
+                    action_detail=team.name,
+                )
+            ])
+    except Exception:
+        logger.exception("Failed to send event_join_request notification")
+
     return await _enrich_member(member, user_repo)
 
 
@@ -161,6 +187,7 @@ async def update_member_status(
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Team Lead approves or rejects a join request."""
     use_case = UpdateMemberStatusUseCase(event_repo, team_repo)
@@ -171,6 +198,27 @@ async def update_member_status(
         )
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    # Notify the requester about approval/rejection
+    if data.status in ("active", "rejected"):
+        try:
+            team = await team_repo.get_team_by_id(team_id)
+            event = await event_repo.get_by_id(event_id)
+            ntype = "event_join_approved" if data.status == "active" else "event_join_rejected"
+            await notification_repo.create_bulk([
+                Notification(
+                    user_id=user_id,
+                    actor_id=current_user.id,
+                    type=ntype,
+                    target_id=event_id,
+                    target_type="event",
+                    target_title=event.title if event else "",
+                    action_detail=team.name if team else "",
+                )
+            ])
+        except Exception:
+            logger.exception("Failed to send %s notification", ntype)
+
     return await _enrich_member(member, user_repo)
 
 
