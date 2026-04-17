@@ -19,6 +19,12 @@ class CreateEventIdeaDTO(BaseModel):
     source_type: str = Field(default="manual", pattern="^(manual)$")
 
 
+class CreateEventIdeaFromRoomDTO(BaseModel):
+    """Input for linked idea submission from brainstorming room."""
+    room_id: UUID
+    idea_id: UUID
+
+
 class UpdateEventIdeaDTO(BaseModel):
     """Input for editing an idea."""
     title: Optional[str] = Field(None, min_length=3, max_length=255)

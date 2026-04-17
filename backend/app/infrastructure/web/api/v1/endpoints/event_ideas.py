@@ -6,11 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.application.dto.event_idea_dto import (
     CreateEventIdeaDTO,
+    CreateEventIdeaFromRoomDTO,
     UpdateEventIdeaDTO,
     EventIdeaResponseDTO,
     EventIdeaListResponseDTO,
 )
 from app.application.use_cases.event_idea.create_idea import CreateEventIdeaUseCase
+from app.application.use_cases.event_idea.create_idea_from_room import CreateEventIdeaFromRoomUseCase
 from app.application.use_cases.event_idea.list_ideas import ListEventIdeasUseCase
 from app.application.use_cases.event_idea.get_idea import GetEventIdeaUseCase
 from app.application.use_cases.event_idea.update_idea import UpdateEventIdeaUseCase
@@ -18,6 +20,9 @@ from app.core.exceptions import NotFoundException, ForbiddenException
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
 from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
+from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
+from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
+from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
@@ -66,6 +71,30 @@ async def create_idea(
     use_case = CreateEventIdeaUseCase(event_repo, team_repo, idea_repo)
     try:
         idea = await use_case.execute(event_id, data, current_user.id)
+    except (NotFoundException, ForbiddenException) as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    return await _enrich_idea(idea, user_repo, team_repo)
+
+
+@router.post("/from-room", response_model=EventIdeaResponseDTO, status_code=status.HTTP_201_CREATED)
+async def create_idea_from_room(
+    event_id: UUID,
+    data: CreateEventIdeaFromRoomDTO,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
+    room_idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    room_repo: SQLRoomRepository = Depends(deps.get_room_repo),
+    problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+):
+    """Submit an idea from a brainstorming room. Copies content as independent record."""
+    use_case = CreateEventIdeaFromRoomUseCase(
+        event_repo, team_repo, idea_repo, room_idea_repo, room_repo, problem_repo
+    )
+    try:
+        idea = await use_case.execute(event_id, data.room_id, data.idea_id, current_user.id)
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     return await _enrich_idea(idea, user_repo, team_repo)
