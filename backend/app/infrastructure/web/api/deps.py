@@ -17,6 +17,7 @@ from app.infrastructure.database.repositories.event_team_repository_impl import 
 from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
 from app.infrastructure.database.repositories.event_scoring_criteria_repository_impl import SQLEventScoringCriteriaRepository
 from app.infrastructure.database.repositories.event_score_repository_impl import SQLEventScoreRepository
+from app.infrastructure.database.repositories.event_faq_repository_impl import SQLEventFAQRepository
 from app.infrastructure.security.password import PasswordHasher
 
 
@@ -84,6 +85,10 @@ def get_event_scoring_criteria_repo(session: AsyncSession = Depends(get_db_sessi
 
 def get_event_score_repo(session: AsyncSession = Depends(get_db_session)) -> SQLEventScoreRepository:
     return SQLEventScoreRepository(session)
+
+
+def get_event_faq_repo(session: AsyncSession = Depends(get_db_session)) -> SQLEventFAQRepository:
+    return SQLEventFAQRepository(session)
 
 
 def get_password_hasher() -> PasswordHasher:
