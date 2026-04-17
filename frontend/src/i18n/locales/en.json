@@ -25,7 +25,8 @@
     "member": "Member",
     "menu": "Menu",
     "linked": "Linked",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "all_statuses": "All"
   },
   "errors": {
     "forbidden_title": "Access Denied",
@@ -66,6 +67,7 @@
     "home": "Home",
     "problem_feed": "Problem Feed",
     "idea_lab": "Idea Lab",
+    "events": "Events",
     "dashboard": "Dashboard",
     "user_management": "User Management",
     "admin": "Admin"
@@ -380,5 +382,37 @@
     "reaction_added": "{{actor}} reacted {{emoji}} on {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} voted {{stars}} stars on {{target_type}} \"{{title}}\"",
     "status_changed": "{{actor}} changed {{target_type}} \"{{title}}\" from {{old_status}} to {{new_status}}"
+  },
+  "events": {
+    "title": "Events",
+    "subtitle": "Innovation challenges and competitions",
+    "create_event": "Create Event",
+    "no_events": "No events yet",
+    "no_events_desc": "No innovation events have been created yet.",
+    "view_all": "View all events",
+    "status_draft": "Draft",
+    "status_active": "Active",
+    "status_closed": "Closed",
+    "draft_notice": "This event is being prepared. Some features may not be available yet.",
+    "closed_notice": "This event has ended. Content is read-only.",
+    "dates": "{{start}} — {{end}}",
+    "team_count": "{{count}} teams",
+    "idea_count": "{{count}} ideas",
+    "load_error": "Failed to load events",
+    "not_found": "Event not found",
+    "back_to_events": "Back to Events",
+    "coming_soon_create": "Create Event feature is coming soon!",
+    "tabs": {
+      "introduction": "Introduction",
+      "teams": "Teams",
+      "ideas": "Ideas",
+      "dashboard": "Dashboard",
+      "faq": "FAQ",
+      "coming_soon": "Coming soon"
+    },
+    "introduction": {
+      "no_content": "No introduction yet",
+      "no_content_desc": "The organizer hasn't added an introduction for this event."
+    }
   }
 }

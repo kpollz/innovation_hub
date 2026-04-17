@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -7,11 +7,16 @@ import {
   Lightbulb,
   LayoutDashboard,
   Users,
+  Trophy,
+  ChevronDown,
+  ChevronRight,
   X
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { classNames } from '@/utils/helpers';
+import { eventsApi } from '@/api/events';
+import type { EventObject } from '@/types';
 
 const navItems = [
   { path: '/', label: 'nav.home', icon: Home },
@@ -24,6 +29,12 @@ const adminNavItems = [
   { path: '/admin/users', label: 'nav.user_management', icon: Users },
 ];
 
+const statusDot: Record<string, string> = {
+  active: 'bg-green-500',
+  draft: 'bg-gray-400',
+  closed: 'bg-red-400',
+};
+
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
@@ -32,6 +43,29 @@ export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const isAdmin = user?.role === 'admin';
+  const [eventsOpen, setEventsOpen] = useState(false);
+  const [events, setEvents] = useState<EventObject[]>([]);
+
+  const isEventsActive = location.pathname.startsWith('/events');
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const result = await eventsApi.list({ limit: 50 });
+        setEvents(result.items);
+      } catch {
+        // silent
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  // Auto-expand if current path is an event page
+  useEffect(() => {
+    if (isEventsActive && !eventsOpen) {
+      setEventsOpen(true);
+    }
+  }, [isEventsActive]);
 
   return (
     <>
@@ -67,9 +101,9 @@ export const Sidebar: React.FC = () => {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path || 
+            const isActive = location.pathname === item.path ||
               (item.path !== '/' && location.pathname.startsWith(item.path));
-            
+
             return (
               <NavLink
                 key={item.path}
@@ -88,6 +122,71 @@ export const Sidebar: React.FC = () => {
             );
           })}
 
+          {/* Events Nav Item (collapsible) */}
+          <div>
+            <button
+              onClick={() => setEventsOpen(!eventsOpen)}
+              className={classNames(
+                'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                isEventsActive
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-gray-700 hover:bg-gray-100'
+              )}
+            >
+              <Trophy className={classNames('h-5 w-5', isEventsActive ? 'text-primary-600' : 'text-gray-500')} />
+              <span className="flex-1 text-left">{t('nav.events')}</span>
+              {eventsOpen ? (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+
+            {/* Events dropdown */}
+            {eventsOpen && (
+              <div className="ml-4 mt-1 space-y-0.5">
+                {events.length > 0 ? (
+                  <>
+                    {events.map((event) => (
+                      <NavLink
+                        key={event.id}
+                        to={`/events/${event.id}`}
+                        onClick={() => setSidebarOpen(false)}
+                        className={classNames(
+                          'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+                          location.pathname === `/events/${event.id}`
+                            ? 'bg-primary-50 text-primary-700 font-medium'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        )}
+                      >
+                        <span className={classNames('w-2 h-2 rounded-full flex-shrink-0', statusDot[event.status] || 'bg-gray-300')} />
+                        <span className="truncate">{event.title}</span>
+                      </NavLink>
+                    ))}
+                    <NavLink
+                      to="/events"
+                      onClick={() => setSidebarOpen(false)}
+                      className={classNames(
+                        'flex items-center gap-2 px-3 py-2 rounded-md text-xs text-gray-400 hover:text-primary-600 transition-colors',
+                        location.pathname === '/events' ? 'text-primary-600 font-medium' : ''
+                      )}
+                    >
+                      {t('events.view_all')} →
+                    </NavLink>
+                  </>
+                ) : (
+                  <NavLink
+                    to="/events"
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-gray-400 hover:text-primary-600 transition-colors"
+                  >
+                    {t('events.view_all')} →
+                  </NavLink>
+                )}
+              </div>
+            )}
+          </div>
+
           {isAdmin && (
             <>
               <div className="pt-4 mt-4 border-t border-gray-200">
@@ -99,7 +198,7 @@ export const Sidebar: React.FC = () => {
                   const isActive = item.path === '/admin'
                     ? location.pathname === '/admin'
                     : location.pathname.startsWith(item.path);
-                  
+
                   return (
                     <NavLink
                       key={item.path}

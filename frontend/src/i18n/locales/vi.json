@@ -25,7 +25,8 @@
     "member": "Thành viên",
     "menu": "Menu",
     "linked": "Liên kết",
-    "pinned": "Ghim"
+    "pinned": "Ghim",
+    "all_statuses": "Tất cả"
   },
   "auth": {
     "sign_in": "Đăng nhập",
@@ -60,6 +61,7 @@
     "home": "Trang chủ",
     "problem_feed": "Vấn đề",
     "idea_lab": "Phòng ý tưởng",
+    "events": "Sự kiện",
     "dashboard": "Tổng quan",
     "user_management": "Quản lý người dùng",
     "admin": "Quản trị"
@@ -374,5 +376,37 @@
     "reaction_added": "{{actor}} đã thả {{emoji}} trên {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} đã vote {{stars}} sao cho {{target_type}} \"{{title}}\"",
     "status_changed": "{{actor}} đã chuyển {{target_type}} \"{{title}}\" từ {{old_status}} sang {{new_status}}"
+  },
+  "events": {
+    "title": "Sự kiện",
+    "subtitle": "Các cuộc thi và chương trình đổi mới sáng tạo",
+    "create_event": "Tạo sự kiện",
+    "no_events": "Chưa có sự kiện",
+    "no_events_desc": "Chưa có sự kiện đổi mới sáng tạo nào được tạo.",
+    "view_all": "Xem tất cả",
+    "status_draft": "Nháp",
+    "status_active": "Đang diễn ra",
+    "status_closed": "Đã kết thúc",
+    "draft_notice": "Sự kiện đang được chuẩn bị. Một số tính năng chưa khả dụng.",
+    "closed_notice": "Sự kiện đã kết thúc. Nội dung chỉ xem được.",
+    "dates": "{{start}} — {{end}}",
+    "team_count": "{{count}} đội",
+    "idea_count": "{{count}} ý tưởng",
+    "load_error": "Không thể tải sự kiện",
+    "not_found": "Không tìm thấy sự kiện",
+    "back_to_events": "Quay lại Sự kiện",
+    "coming_soon_create": "Tính năng Tạo sự kiện sắp ra mắt!",
+    "tabs": {
+      "introduction": "Giới thiệu",
+      "teams": "Đội",
+      "ideas": "Ý tưởng",
+      "dashboard": "Bảng xếp hạng",
+      "faq": "FAQ",
+      "coming_soon": "Sắp ra mắt"
+    },
+    "introduction": {
+      "no_content": "Chưa có giới thiệu",
+      "no_content_desc": "Ban tổ chức chưa thêm nội dung giới thiệu cho sự kiện này."
+    }
   }
 }

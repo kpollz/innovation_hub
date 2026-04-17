@@ -19,6 +19,8 @@ import { IdeaDetailPage } from '@/pages/IdeaDetail/IdeaDetailPage';
 import { CreateIdeaPage } from '@/pages/RoomDetail/CreateIdeaPage';
 import { UserSettingsPage } from '@/pages/Settings/UserSettingsPage';
 import { AdminUsersPage } from '@/pages/Admin/AdminUsersPage';
+import { EventsPage } from '@/pages/Events/EventsPage';
+import { EventDetailPage } from '@/pages/EventDetail/EventDetailPage';
 
 function App() {
   const { fetchCurrentUser } = useAuthStore();
@@ -52,6 +54,8 @@ function App() {
                   <Route path="/ideas/:id" element={<IdeaDetailPage />} />
                   <Route path="/settings" element={<UserSettingsPage />} />
                   <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/events" element={<EventsPage />} />
+                  <Route path="/events/:id" element={<EventDetailPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </MainLayout>

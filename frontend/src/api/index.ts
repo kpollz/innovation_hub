@@ -4,3 +4,4 @@ export { problemsApi } from './problems';
 export { roomsApi } from './rooms';
 export { commentsApi } from './comments';
 export { dashboardApi } from './dashboard';
+export { eventsApi } from './events';

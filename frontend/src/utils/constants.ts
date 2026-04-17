@@ -37,3 +37,17 @@ export const SIDEBAR_ITEMS = [
   { path: '/problems', label: 'Problem Feed', icon: 'AlertCircle' },
   { path: '/rooms', label: 'Idea Lab', icon: 'Lightbulb' },
 ] as const;
+
+export const EVENT_STATUSES = [
+  { value: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-800' },
+  { value: 'active', label: 'Active', color: 'bg-green-100 text-green-800' },
+  { value: 'closed', label: 'Closed', color: 'bg-red-100 text-red-800' },
+] as const;
+
+export const EVENT_TABS = [
+  { key: 'introduction', label: 'events.tabs.introduction' },
+  { key: 'teams', label: 'events.tabs.teams' },
+  { key: 'ideas', label: 'events.tabs.ideas' },
+  { key: 'dashboard', label: 'events.tabs.dashboard' },
+  { key: 'faq', label: 'events.tabs.faq' },
+] as const;

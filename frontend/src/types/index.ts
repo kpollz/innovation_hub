@@ -262,7 +262,8 @@ export interface TopContributor {
 }
 
 // Notification Types
-export type NotificationType = 'comment_added' | 'reaction_added' | 'vote_added' | 'status_changed';
+export type NotificationType = 'comment_added' | 'reaction_added' | 'vote_added' | 'status_changed'
+  | 'event_join_request' | 'event_join_approved' | 'event_join_rejected' | 'event_idea_submitted' | 'event_scored';
 
 export interface NotificationActor {
   id: string;
@@ -311,6 +312,251 @@ export interface CommentFilters {
   target_type?: string;
   page?: number;
   limit?: number;
+}
+
+// Event Types
+export type EventStatus = 'draft' | 'active' | 'closed';
+export type IntroductionType = 'editor' | 'embed';
+export type EventCriteriaGroup = 'problem' | 'solution';
+
+export interface EventObject {
+  id: string;
+  title: string;
+  description: string | null;
+  introduction_type: IntroductionType;
+  embed_url: string | null;
+  status: EventStatus;
+  start_date: string | null;
+  end_date: string | null;
+  created_by: string;
+  creator: User | null;
+  team_count: number;
+  idea_count: number;
+  created_at: string;
+  updated_at: string | null;
+  closed_at: string | null;
+}
+
+export interface CreateEvent {
+  title: string;
+  description?: string;
+  embed_url?: string;
+  introduction_type?: IntroductionType;
+  status?: EventStatus;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface UpdateEvent {
+  title?: string;
+  description?: string;
+  embed_url?: string;
+  introduction_type?: IntroductionType;
+  status?: EventStatus;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface EventFilters {
+  status?: EventStatus;
+  page?: number;
+  limit?: number;
+}
+
+// Event Team Types
+export interface EventTeamObject {
+  id: string;
+  event_id: string;
+  name: string;
+  slogan: string | null;
+  leader_id: string;
+  leader: User | null;
+  assigned_to_team_id: string | null;
+  assigned_to_team: { id: string; name: string } | null;
+  member_count: number;
+  idea_count: number;
+  created_at: string;
+}
+
+export interface CreateEventTeam {
+  name: string;
+  slogan?: string;
+}
+
+export interface EventTeamMemberObject {
+  id: string;
+  team_id: string;
+  user_id: string;
+  user: User | null;
+  status: 'pending' | 'active';
+  joined_at: string;
+}
+
+export interface TransferLeadDTO {
+  new_leader_id: string;
+}
+
+export interface AssignReviewDTO {
+  target_team_id: string;
+}
+
+export interface UpdateMemberStatusDTO {
+  status: 'active' | 'rejected';
+}
+
+// Event Idea Types
+export interface EventIdeaObject {
+  id: string;
+  event_id: string;
+  team_id: string;
+  team: { id: string; name: string; slogan: string | null } | null;
+  title: string;
+  user_problem: string | null;
+  user_scenarios: string | null;
+  user_expectation: string | null;
+  research: string | null;
+  solution: string;
+  source_type: 'manual' | 'linked';
+  source_problem_id: string | null;
+  source_room_id: string | null;
+  source_idea_id: string | null;
+  author_id: string;
+  author: User | null;
+  total_score: number | null;
+  score_count: number;
+  can_score: boolean;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface CreateEventIdea {
+  title: string;
+  user_problem?: string;
+  user_scenarios?: string;
+  user_expectation?: string;
+  research?: string;
+  solution: string;
+  source_type?: 'manual';
+}
+
+export interface UpdateEventIdea {
+  title?: string;
+  user_problem?: string;
+  user_scenarios?: string;
+  user_expectation?: string;
+  research?: string;
+  solution?: string;
+}
+
+export interface CreateEventIdeaFromRoom {
+  room_id: string;
+  idea_id: string;
+}
+
+export interface EventIdeaFilters {
+  team_id?: string;
+  sort?: 'score' | 'newest';
+  page?: number;
+  limit?: number;
+}
+
+// Event Scoring Types
+export interface EventScoringCriteriaObject {
+  id: string;
+  event_id: string;
+  group: EventCriteriaGroup;
+  name: string;
+  description: string | null;
+  weight: number;
+  max_score: number;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface CreateCriteriaDTO {
+  criteria: {
+    group: EventCriteriaGroup;
+    name: string;
+    description?: string;
+    weight?: number;
+    max_score?: number;
+    sort_order?: number;
+  }[];
+}
+
+export interface EventScoreObject {
+  id: string;
+  event_idea_id: string;
+  scorer_team_id: string;
+  scorer_team: { id: string; name: string } | null;
+  criteria_scores: Record<string, number>;
+  total_score: number;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface ScoreInputDTO {
+  criteria_scores: Record<string, number>;
+}
+
+export interface ScoreListResponse {
+  idea_id: string;
+  scores: EventScoreObject[];
+  summary: {
+    total_avg: number;
+    criteria_avg: Record<string, number>;
+  };
+}
+
+// Event FAQ Types
+export interface FAQObject {
+  id: string;
+  event_id: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface CreateFAQ {
+  question: string;
+  answer?: string;
+  sort_order?: number;
+}
+
+export interface UpdateFAQ {
+  question?: string;
+  answer?: string;
+  sort_order?: number;
+}
+
+// Event Dashboard Types
+export interface EventDashboardIdea {
+  id: string;
+  title: string;
+  team: { id: string; name: string } | null;
+  author: User | null;
+  total_score: number | null;
+  score_count: number;
+  criteria_breakdown: Record<string, number>;
+  created_at: string;
+}
+
+export interface EventDashboardTeam {
+  team: { id: string; name: string; slogan: string | null };
+  idea_count: number;
+  avg_score: number | null;
+  total_score: number;
+  members: User[];
+}
+
+export interface AssignmentsResponse {
+  assignments: {
+    team: { id: string; name: string };
+    reviews: { id: string; name: string };
+  }[];
 }
 
 // UI Types
