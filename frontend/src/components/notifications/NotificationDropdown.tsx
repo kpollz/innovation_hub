@@ -19,7 +19,9 @@ const NotificationItem: React.FC<{
   const getTranslationParams = () => {
     const targetTypeLabel = notification.target_type === 'problem'
       ? t('notifications.target_problem')
-      : t('notifications.target_idea');
+      : notification.target_type === 'idea'
+        ? t('notifications.target_idea')
+        : t('notifications.target_event');
     const baseParams = {
       actor: actorName,
       title: notification.target_title,
@@ -49,7 +51,6 @@ const NotificationItem: React.FC<{
           stars: notification.action_detail || '?',
         };
       case 'status_changed': {
-        // action_detail format: "old_status → new_status"
         const [oldStatus, newStatus] = (notification.action_detail || '').split(' → ');
         return {
           ...baseParams,
@@ -57,6 +58,14 @@ const NotificationItem: React.FC<{
           new_status: newStatus || '?',
         };
       }
+      case 'event_join_request':
+      case 'event_join_approved':
+      case 'event_join_rejected':
+        return { ...baseParams, team_name: notification.action_detail || '' };
+      case 'event_idea_submitted':
+        return baseParams;
+      case 'event_scored':
+        return { ...baseParams, score_detail: notification.action_detail || '' };
       default:
         return baseParams;
     }
@@ -155,6 +164,8 @@ export const NotificationDropdown: React.FC = () => {
     closeDropdown();
     if (n.target_type === 'problem') {
       navigate(`/problems/${n.target_id}`);
+    } else if (n.target_type === 'event') {
+      navigate(`/events/${n.target_id}`);
     } else {
       navigate(`/ideas/${n.target_id}`);
     }

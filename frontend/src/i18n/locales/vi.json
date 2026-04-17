@@ -372,10 +372,16 @@
     "no_notifications": "Chưa có thông báo nào",
     "target_problem": "vấn đề",
     "target_idea": "ý tưởng",
+    "target_event": "sự kiện",
     "comment_added": "{{actor}} đã bình luận trên {{target_type}} \"{{title}}\": \"{{detail}}\"",
     "reaction_added": "{{actor}} đã thả {{emoji}} trên {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} đã vote {{stars}} sao cho {{target_type}} \"{{title}}\"",
-    "status_changed": "{{actor}} đã chuyển {{target_type}} \"{{title}}\" từ {{old_status}} sang {{new_status}}"
+    "status_changed": "{{actor}} đã chuyển {{target_type}} \"{{title}}\" từ {{old_status}} sang {{new_status}}",
+    "event_join_request": "{{actor}} yêu cầu tham gia đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\"",
+    "event_join_approved": "Yêu cầu tham gia đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\" đã được duyệt",
+    "event_join_rejected": "Yêu cầu tham gia đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\" đã bị từ chối",
+    "event_idea_submitted": "{{actor}} đã nộp ý tưởng mới trong {{target_type}} \"{{title}}\"",
+    "event_scored": "{{target_type}} \"{{title}}\" đã được chấm điểm: {{score_detail}}"
   },
   "events": {
     "title": "Sự kiện",

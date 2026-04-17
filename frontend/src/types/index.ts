@@ -279,7 +279,7 @@ export interface Notification {
   actor: NotificationActor | null;
   type: NotificationType;
   target_id: string;
-  target_type: 'problem' | 'idea';
+  target_type: 'problem' | 'idea' | 'event';
   target_title: string;
   action_detail: string | null;
   is_read: boolean;

@@ -36,9 +36,9 @@ class LeaveEventTeamUseCase:
                 "Team Lead cannot leave. Transfer leadership first or disband the team."
             )
 
-        # Find active membership
-        member = await self.team_repo.get_active_member_by_user_and_team(user_id, team_id)
+        # Find any membership (active or pending) — allows canceling join requests too
+        member = await self.team_repo.get_member_by_user_and_team(user_id, team_id)
         if not member:
-            raise NotFoundException("You are not an active member of this team")
+            raise NotFoundException("You are not a member of this team")
 
         await self.team_repo.remove_member(member.id)

@@ -79,6 +79,13 @@ class EventTeamRepository(ABC):
         """Get a user's active membership in a specific team."""
         pass
 
+    @abstractmethod
+    async def get_member_by_user_and_team(
+        self, user_id: UUID, team_id: UUID
+    ) -> Optional[EventTeamMember]:
+        """Get a user's membership (any status) in a specific team."""
+        pass
+
     # --- Review assignment cleanup ---
     @abstractmethod
     async def clear_review_assignments_for_team(self, team_id: UUID) -> List[UUID]:

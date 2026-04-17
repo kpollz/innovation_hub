@@ -38,6 +38,9 @@ class JoinEventTeamUseCase:
                 raise ConflictException("You already have a pending join request for this event")
             if existing.status == "active":
                 raise ConflictException("You are already in a team for this event")
+            # Rejected record — remove so user can rejoin
+            if existing.status == "rejected":
+                await self.team_repo.remove_member(existing.id)
 
         # Create pending membership
         member = EventTeamMember(

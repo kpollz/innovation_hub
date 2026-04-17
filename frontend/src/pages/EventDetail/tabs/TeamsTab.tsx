@@ -41,6 +41,22 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
 
   useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
+  // Fetch members for all teams to detect current user's membership
+  useEffect(() => {
+    if (teams.length === 0) return;
+    const fetchAllMembers = async () => {
+      for (const team of teams) {
+        if (!teamMembers[team.id]) {
+          try {
+            const result = await eventsApi.listTeamMembers(event.id, team.id);
+            setTeamMembers(prev => ({ ...prev, [team.id]: result.items }));
+          } catch { /* silent */ }
+        }
+      }
+    };
+    fetchAllMembers();
+  }, [teams]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchMembers = useCallback(async (teamId: string) => {
     setMembersLoading(prev => ({ ...prev, [teamId]: true }));
     try {

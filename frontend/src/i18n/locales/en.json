@@ -378,10 +378,16 @@
     "no_notifications": "No notifications yet",
     "target_problem": "problem",
     "target_idea": "idea",
+    "target_event": "event",
     "comment_added": "{{actor}} commented on {{target_type}} \"{{title}}\": \"{{detail}}\"",
     "reaction_added": "{{actor}} reacted {{emoji}} on {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} voted {{stars}} stars on {{target_type}} \"{{title}}\"",
-    "status_changed": "{{actor}} changed {{target_type}} \"{{title}}\" from {{old_status}} to {{new_status}}"
+    "status_changed": "{{actor}} changed {{target_type}} \"{{title}}\" from {{old_status}} to {{new_status}}",
+    "event_join_request": "{{actor}} requested to join team \"{{team_name}}\" in {{target_type}} \"{{title}}\"",
+    "event_join_approved": "Your request to join team \"{{team_name}}\" in {{target_type}} \"{{title}}\" has been approved",
+    "event_join_rejected": "Your request to join team \"{{team_name}}\" in {{target_type}} \"{{title}}\" has been rejected",
+    "event_idea_submitted": "{{actor}} submitted a new idea in {{target_type}} \"{{title}}\"",
+    "event_scored": "{{target_type}} \"{{title}}\" has been scored: {{score_detail}}"
   },
   "events": {
     "title": "Events",

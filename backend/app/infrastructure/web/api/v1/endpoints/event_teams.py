@@ -144,7 +144,7 @@ async def list_team_members(
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
 ):
-    """List all members of a team (active + pending)."""
+    """List all members of a team (active + pending). Excludes rejected."""
     event = await event_repo.get_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -153,7 +153,10 @@ async def list_team_members(
     if not team or str(team.event_id) != str(event_id):
         raise HTTPException(status_code=404, detail="Team not found")
 
-    members = await team_repo.get_team_members(team_id)
+    # Fetch all members, then filter out rejected in code since repo method
+    # supports optional status filter but we want both active + pending
+    all_members = await team_repo.get_team_members(team_id)
+    members = [m for m in all_members if m.status != "rejected"]
     items = []
     for member in members:
         items.append(await _enrich_member(member, user_repo))

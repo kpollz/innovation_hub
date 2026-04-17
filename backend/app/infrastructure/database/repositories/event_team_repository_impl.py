@@ -220,6 +220,18 @@ class SQLEventTeamRepository(EventTeamRepository):
         model = result.scalar_one_or_none()
         return self._to_member_entity(model) if model else None
 
+    async def get_member_by_user_and_team(
+        self, user_id: UUID, team_id: UUID
+    ) -> Optional[EventTeamMember]:
+        result = await self.session.execute(
+            select(EventTeamMemberModel).where(
+                EventTeamMemberModel.user_id == str(user_id),
+                EventTeamMemberModel.team_id == str(team_id),
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_member_entity(model) if model else None
+
     # --- Review assignment cleanup ---
 
     async def clear_review_assignments_for_team(self, team_id: UUID) -> List[UUID]:
