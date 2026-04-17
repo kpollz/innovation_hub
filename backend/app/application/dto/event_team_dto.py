@@ -95,6 +95,11 @@ class EventTeamMemberResponseDTO(BaseModel):
     joined_at: Optional[datetime] = None
 
 
+class EventTeamMemberListResponseDTO(BaseModel):
+    """Output for team member list."""
+    items: list[EventTeamMemberResponseDTO]
+
+
 # --- Assignment DTOs ---
 
 class AssignmentEntryDTO(BaseModel):

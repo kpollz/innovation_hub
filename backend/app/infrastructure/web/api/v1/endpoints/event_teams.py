@@ -9,6 +9,7 @@ from app.application.dto.event_team_dto import (
     EventTeamResponseDTO,
     EventTeamListResponseDTO,
     EventTeamMemberResponseDTO,
+    EventTeamMemberListResponseDTO,
     UpdateMemberStatusDTO,
     TransferLeadDTO,
     AssignReviewDTO,
@@ -132,6 +133,32 @@ async def list_teams(
         items.append(await _enrich_team(team, user_repo, team_repo))
 
     return EventTeamListResponseDTO(items=items, total=total, page=page, limit=limit)
+
+
+@router.get("/{team_id}/members", response_model=EventTeamMemberListResponseDTO)
+async def list_team_members(
+    event_id: UUID,
+    team_id: UUID,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+):
+    """List all members of a team (active + pending)."""
+    event = await event_repo.get_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    team = await team_repo.get_team_by_id(team_id)
+    if not team or str(team.event_id) != str(event_id):
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    members = await team_repo.get_team_members(team_id)
+    items = []
+    for member in members:
+        items.append(await _enrich_member(member, user_repo))
+
+    return EventTeamMemberListResponseDTO(items=items)
 
 
 @router.post(

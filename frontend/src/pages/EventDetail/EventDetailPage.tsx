@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Users, AlertTriangle, Info } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { EVENT_TABS } from '@/utils/constants';
 import { IntroductionTab } from './tabs/IntroductionTab';
+import { TeamsTab } from './tabs/TeamsTab';
 import type { EventObject } from '@/types';
 
 const statusStyles: Record<string, { bg: string; text: string }> = {
@@ -156,7 +157,8 @@ export const EventDetailPage: React.FC = () => {
       {/* Tab Content */}
       <div>
         {activeTab === 'introduction' && <IntroductionTab event={event} />}
-        {activeTab !== 'introduction' && (
+        {activeTab === 'teams' && <TeamsTab event={event} />}
+        {activeTab !== 'introduction' && activeTab !== 'teams' && (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🚧</div>
             <h3 className="text-lg font-medium text-gray-500">{t('events.tabs.coming_soon')}</h3>

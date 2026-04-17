@@ -68,6 +68,13 @@ export const eventsApi = {
     return response.data;
   },
 
+  listTeamMembers: async (eventId: string, teamId: string): Promise<{ items: EventTeamMemberObject[] }> => {
+    const response = await apiClient.get<{ items: EventTeamMemberObject[] }>(
+      `/events/${eventId}/teams/${teamId}/members`
+    );
+    return response.data;
+  },
+
   createTeam: async (eventId: string, data: CreateEventTeam): Promise<EventTeamObject> => {
     const response = await apiClient.post<EventTeamObject>(`/events/${eventId}/teams`, data);
     return response.data;
