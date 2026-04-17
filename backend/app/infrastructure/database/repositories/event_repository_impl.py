@@ -132,11 +132,8 @@ class SQLEventRepository(EventRepository):
 
     async def get_idea_count(self, event_id: UUID) -> int:
         """Get number of ideas in an event."""
-        try:
-            from app.infrastructure.database.models.event_idea_model import EventIdeaModel
-            result = await self.session.scalar(
-                select(func.count()).where(EventIdeaModel.event_id == str(event_id))
-            )
-            return result or 0
-        except ImportError:
-            return 0
+        from app.infrastructure.database.models.event_idea_model import EventIdeaModel
+        result = await self.session.scalar(
+            select(func.count()).where(EventIdeaModel.event_id == str(event_id))
+        )
+        return result or 0

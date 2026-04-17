@@ -137,14 +137,11 @@ class SQLEventTeamRepository(EventTeamRepository):
         return result or 0
 
     async def get_idea_count(self, team_id: UUID) -> int:
-        try:
-            from app.infrastructure.database.models.event_idea_model import EventIdeaModel
-            result = await self.session.scalar(
-                select(func.count()).where(EventIdeaModel.team_id == str(team_id))
-            )
-            return result or 0
-        except ImportError:
-            return 0
+        from app.infrastructure.database.models.event_idea_model import EventIdeaModel
+        result = await self.session.scalar(
+            select(func.count()).where(EventIdeaModel.team_id == str(team_id))
+        )
+        return result or 0
 
     # --- Member operations ---
 
