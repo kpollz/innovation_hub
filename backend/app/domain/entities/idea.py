@@ -1,7 +1,7 @@
 """Idea entity - Pure business logic, no infrastructure dependencies."""
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 from app.domain.value_objects.status import IdeaStatus
@@ -12,7 +12,7 @@ class Idea:
     """Domain entity representing an idea in a brainstorming room."""
     room_id: UUID
     title: str
-    description: str
+    description: dict[str, Any]
     author_id: UUID
     id: UUID = field(default_factory=uuid4)
     summary: Optional[str] = None
@@ -48,7 +48,7 @@ class Idea:
     def update_content(
         self,
         title: Optional[str] = None,
-        description: Optional[str] = None,
+        description: Optional[dict[str, Any]] = None,
         summary: Optional[str] = None
     ) -> None:
         """Update idea content."""

@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo } from '@/utils/helpers';
+import { extractTextFromTipTap } from '@/utils/tiptap';
 
 interface ProblemCardProps {
   problem: Problem;
@@ -47,7 +48,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
             {problem.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-            {problem.summary || problem.content}
+            {problem.summary || extractTextFromTipTap(problem.content)}
           </p>
 
           <div className="flex items-center justify-between">

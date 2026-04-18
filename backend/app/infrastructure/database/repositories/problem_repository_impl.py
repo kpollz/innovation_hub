@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select, desc, asc, or_
+from sqlalchemy import func, select, desc, asc, or_, Text as SQLText, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.problem import Problem
@@ -86,7 +86,7 @@ class SQLProblemRepository(ProblemRepository):
                 search = f"%{filters['search']}%"
                 query = query.where(
                     (ProblemModel.title.ilike(search)) |
-                    (ProblemModel.content.ilike(search))
+                    (cast(ProblemModel.content, SQLText).ilike(search))
                 )
             # Privacy filter: only show problems the user can see
             current_user_id = filters.get("current_user_id")

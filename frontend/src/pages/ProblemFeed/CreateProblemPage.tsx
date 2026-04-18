@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
+import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
 import type { ProblemCategory, ProblemVisibility } from '@/types';
 
 export const CreateProblemPage: React.FC = () => {
@@ -21,7 +22,7 @@ export const CreateProblemPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [category, setCategory] = useState('');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(EMPTY_TIPTAP_JSON);
   const [visibility, setVisibility] = useState<ProblemVisibility>('public');
   const [sharedUserIds, setSharedUserIds] = useState<string[]>([]);
   const [userSearch, setUserSearch] = useState('');
@@ -70,7 +71,7 @@ export const CreateProblemPage: React.FC = () => {
     if (!category) {
       newErrors.category = 'Please select a category';
     }
-    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    const textContent = extractTextFromTipTap(content);
     if (!textContent || textContent.length < 20) {
       newErrors.content = 'Description must be at least 20 characters';
     }
@@ -87,7 +88,7 @@ export const CreateProblemPage: React.FC = () => {
       await createProblem({
         title,
         summary: summary || undefined,
-        content,
+        content: jsonStringToContent(content) ?? JSON.parse(EMPTY_TIPTAP_JSON),
         category: category as ProblemCategory,
         visibility,
         shared_user_ids: visibility === 'private' ? sharedUserIds : undefined,
@@ -160,6 +161,7 @@ export const CreateProblemPage: React.FC = () => {
               placeholder={t('problems.description_placeholder')}
               error={errors.content}
               minHeight="250px"
+              jsonMode
             />
 
             {/* Privacy / Visibility Section */}

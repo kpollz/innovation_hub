@@ -12,14 +12,13 @@ import { Modal } from '@/components/ui/Modal';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
+import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
 import type { ProblemCategory, ProblemVisibility, User } from '@/types';
-
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
 const createProblemSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   summary: z.string().max(200, 'Summary must be at most 200 characters').optional().or(z.literal('')),
-  content: z.string().refine((val) => stripHtml(val).length >= 20, 'Description must be at least 20 characters'),
+  content: z.string().refine((val) => extractTextFromTipTap(val).length >= 20, 'Description must be at least 20 characters'),
   category: z.string().min(1, 'Please select a category'),
 });
 
@@ -70,7 +69,7 @@ export const CreateProblemModal: React.FC = () => {
     formState: { errors },
   } = useForm<CreateProblemForm>({
     resolver: zodResolver(createProblemSchema),
-    defaultValues: { content: '' },
+    defaultValues: { content: EMPTY_TIPTAP_JSON },
   });
 
   const onSubmit = async (data: CreateProblemForm) => {
@@ -78,7 +77,7 @@ export const CreateProblemModal: React.FC = () => {
       await createProblem({
         title: data.title,
         summary: data.summary || undefined,
-        content: data.content,
+        content: jsonStringToContent(data.content) ?? JSON.parse(EMPTY_TIPTAP_JSON),
         category: data.category as ProblemCategory,
         visibility,
         shared_user_ids: sharedUserIds.length > 0 ? sharedUserIds : undefined,
@@ -148,6 +147,7 @@ export const CreateProblemModal: React.FC = () => {
           placeholder={t('problems.description_placeholder')}
           error={errors.content?.message}
           minHeight="200px"
+          jsonMode
         />
 
         {/* Privacy / Visibility */}

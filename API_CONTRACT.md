@@ -265,7 +265,7 @@ Authorization: Bearer <access_token>
   "id": "uuid",
   "title": "string",
   "summary": "string | null",
-  "content": "string",
+  "content": "JSON (TipTap)",
   "category": "process | technical | people | tools | patent",
   "status": "open | discussing | brainstorming | solved | closed",
   "visibility": "public | private  ← NEW: default public",
@@ -302,7 +302,7 @@ Authorization: Bearer <access_token>
 {
   "title": "string (5-255 ký tự, bắt buộc)",
   "summary": "string (tối đa 500 ký tự, tùy chọn)",
-  "content": "string (tối thiểu 10 ký tự, bắt buộc)",
+  "content": "JSON (TipTap, bắt buộc)",
   "category": "process | technical | people | tools | patent (bắt buộc)",
   "visibility": "public | private (tùy chọn, mặc định: public)  ← NEW",
   "shared_user_ids": ["uuid"] (tùy chọn, mặc định: [])  ← NEW: danh sách user được share"
@@ -330,7 +330,7 @@ Authorization: Bearer <access_token>
 {
   "title": "string (5-255 ký tự)",
   "summary": "string (tối đa 500 ký tự)",
-  "content": "string (tối thiểu 10 ký tự)",
+  "content": "JSON (TipTap)",
   "category": "process | technical | people | tools | patent",
   "status": "open | discussing | brainstorming | solved | closed",
   "visibility": "public | private  ← NEW",
@@ -497,7 +497,7 @@ Authorization: Bearer <access_token>
   "id": "uuid",
   "room_id": "uuid",
   "title": "string",
-  "description": "string",
+  "description": "JSON (TipTap)",
   "summary": "string | null",
   "status": "draft | refining | reviewing | submitted | closed",
   "author_id": "uuid",
@@ -529,7 +529,7 @@ Authorization: Bearer <access_token>
 {
   "room_id": "uuid (bắt buộc)",
   "title": "string (3-255 ký tự, bắt buộc)",
-  "description": "string (tối thiểu 10 ký tự, bắt buộc)",
+  "description": "JSON (TipTap, bắt buộc)",
   "summary": "string (tối đa 500 ký tự, tùy chọn)"
 }
 ```
@@ -548,7 +548,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "title": "string (3-255 ký tự)",
-  "description": "string (tối thiểu 10 ký tự)",
+  "description": "JSON (TipTap)",
   "summary": "string",
   "status": "draft | refining | reviewing | submitted | closed",
   "is_pinned": "boolean (chỉ Admin)"

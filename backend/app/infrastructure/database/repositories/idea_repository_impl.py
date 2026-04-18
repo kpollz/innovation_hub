@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, Text as SQLText, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.idea import Idea
@@ -79,7 +79,7 @@ class SQLIdeaRepository(IdeaRepository):
                 search = f"%{filters['search']}%"
                 query = query.where(
                     (IdeaModel.title.ilike(search)) |
-                    (IdeaModel.description.ilike(search))
+                    (cast(IdeaModel.description, SQLText).ilike(search))
                 )
             # Privacy filter: ideas inherit from Room (Room is independent of Problem)
             current_user_id = filters.get("current_user_id")

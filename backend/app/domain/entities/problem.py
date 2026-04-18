@@ -1,7 +1,7 @@
 """Problem entity - Pure business logic, no infrastructure dependencies."""
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID, uuid4
 
 from app.domain.value_objects.category import ProblemCategory
@@ -13,7 +13,7 @@ from app.domain.value_objects.visibility import Visibility
 class Problem:
     """Domain entity representing a problem in the Problem Feed."""
     title: str
-    content: str
+    content: dict[str, Any]
     category: ProblemCategory
     author_id: UUID
     id: UUID = field(default_factory=uuid4)
@@ -50,7 +50,7 @@ class Problem:
         self,
         title: Optional[str] = None,
         summary: Optional[str] = None,
-        content: Optional[str] = None,
+        content: Optional[dict[str, Any]] = None,
         category: Optional[ProblemCategory] = None
     ) -> None:
         """Update problem content."""

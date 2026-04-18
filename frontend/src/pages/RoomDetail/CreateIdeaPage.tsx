@@ -12,12 +12,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
-
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
+import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
 
 const createIdeaSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(255),
-  description: z.string().refine((val) => stripHtml(val).length >= 10, 'Description must be at least 10 characters'),
+  description: z.string().refine((val) => extractTextFromTipTap(val).length >= 10, 'Description must be at least 10 characters'),
   summary: z.string().optional(),
 });
 
@@ -37,7 +36,7 @@ export const CreateIdeaPage: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<CreateIdeaForm>({
     resolver: zodResolver(createIdeaSchema),
-    defaultValues: { description: '' },
+    defaultValues: { description: EMPTY_TIPTAP_JSON },
   });
 
   const onSubmit = async (data: CreateIdeaForm) => {
@@ -46,7 +45,7 @@ export const CreateIdeaPage: React.FC = () => {
       const idea = await ideasApi.create({
         room_id: roomId,
         title: data.title,
-        description: data.description,
+        description: jsonStringToContent(data.description) ?? JSON.parse(EMPTY_TIPTAP_JSON),
         summary: data.summary || undefined,
       });
       showToast({ type: 'success', message: t('ideas.created_success') });
@@ -89,6 +88,7 @@ export const CreateIdeaPage: React.FC = () => {
               placeholder={t('ideas.desc_placeholder')}
               error={errors.description?.message}
               minHeight="200px"
+              jsonMode
             />
 
             <Textarea

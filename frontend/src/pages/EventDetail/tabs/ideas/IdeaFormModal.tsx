@@ -5,7 +5,8 @@ import { useUIStore } from '@/stores/uiStore';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import type { EventObject, EventIdeaObject, EventTeamObject, TipTapContent } from '@/types';
+import { contentToJsonString, jsonStringToContent, EMPTY_TIPTAP_JSON } from '@/utils/tiptap';
+import type { EventObject, EventIdeaObject, EventTeamObject } from '@/types';
 
 interface IdeaFormModalProps {
   event: EventObject;
@@ -14,44 +15,6 @@ interface IdeaFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
-}
-
-const EMPTY_JSON = '{"type":"doc","content":[{"type":"paragraph"}]}';
-
-/** Convert TipTapContent to JSON string for the editor */
-function contentToJsonString(content: TipTapContent | null | undefined): string {
-  if (!content) return EMPTY_JSON;
-  if (typeof content === 'string') {
-    try { JSON.parse(content); return content; } catch { return content; }
-  }
-  return JSON.stringify(content);
-}
-
-/** Check if a TipTap JSON doc is effectively empty (no text, no images, no non-text nodes) */
-function isEmptyDoc(doc: Record<string, unknown>): boolean {
-  const content = doc.content as Array<Record<string, unknown>> | undefined;
-  if (!Array.isArray(content) || content.length === 0) return true;
-  return content.every(node => {
-    if (node.type !== 'paragraph') return false;
-    const inner = node.content as Array<Record<string, unknown>> | undefined;
-    if (!Array.isArray(inner) || inner.length === 0) return true;
-    return inner.every((n: Record<string, unknown>) =>
-      n.type === 'text' && !(n.text as string || '').trim()
-    );
-  });
-}
-
-/** Convert editor JSON string to TipTapContent or undefined (if empty) */
-function jsonStringToContent(json: string): TipTapContent | undefined {
-  if (!json) return undefined;
-  try {
-    const parsed = JSON.parse(json);
-    if (isEmptyDoc(parsed)) return undefined;
-    return parsed;
-  } catch {
-    const stripped = json.replace(/<[^>]*>/g, '').trim();
-    return stripped || undefined;
-  }
 }
 
 export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
@@ -81,11 +44,11 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
         setResearch(contentToJsonString(idea.research));
       } else {
         setTitle('');
-        setSolution(EMPTY_JSON);
-        setUserProblem(EMPTY_JSON);
-        setUserScenarios(EMPTY_JSON);
-        setUserExpectation(EMPTY_JSON);
-        setResearch(EMPTY_JSON);
+        setSolution(EMPTY_TIPTAP_JSON);
+        setUserProblem(EMPTY_TIPTAP_JSON);
+        setUserScenarios(EMPTY_TIPTAP_JSON);
+        setUserExpectation(EMPTY_TIPTAP_JSON);
+        setResearch(EMPTY_TIPTAP_JSON);
       }
       setError('');
     }

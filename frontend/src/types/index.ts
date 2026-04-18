@@ -60,7 +60,7 @@ export interface Problem {
   id: string;
   title: string;
   summary?: string;
-  content: string;
+  content: TipTapContent;
   status: ProblemStatus;
   category: ProblemCategory;
   visibility: ProblemVisibility;
@@ -81,7 +81,7 @@ export interface Problem {
 export interface CreateProblem {
   title: string;
   summary?: string;
-  content: string;
+  content: TipTapContent;
   category: ProblemCategory;
   visibility?: ProblemVisibility;
   shared_user_ids?: string[];
@@ -90,7 +90,7 @@ export interface CreateProblem {
 export interface UpdateProblem {
   title?: string;
   summary?: string;
-  content?: string;
+  content?: TipTapContent;
   status?: ProblemStatus;
   category?: ProblemCategory;
   visibility?: ProblemVisibility;
@@ -183,7 +183,7 @@ export interface Idea {
   id: string;
   room_id: string;
   title: string;
-  description: string;
+  description: TipTapContent;
   summary: string | null;
   status: IdeaStatus;
   author_id: string;
@@ -204,13 +204,13 @@ export interface Idea {
 export interface CreateIdea {
   room_id: string;
   title: string;
-  description: string;
+  description: TipTapContent;
   summary?: string;
 }
 
 export interface UpdateIdea {
   title?: string;
-  description?: string;
+  description?: TipTapContent;
   summary?: string;
   status?: IdeaStatus;
   is_pinned?: boolean;

@@ -152,10 +152,17 @@ class _Converter(HTMLParser):
         return {"type": "doc", "content": content}
 
 
-def html_to_tiptap(html: str | None) -> dict[str, Any]:
-    """Convert an HTML string to a TipTap JSON object."""
-    if not html or not html.strip():
+def html_to_tiptap(content: str | dict | None) -> dict[str, Any]:
+    """Convert content to a TipTap JSON object.
+
+    Accepts HTML strings (converted), TipTap JSON dicts (pass-through), or None.
+    """
+    if content is None:
+        return {"type": "doc", "content": [_EMPTY_PARA.copy()]}
+    if isinstance(content, dict):
+        return content
+    if not content or not content.strip():
         return {"type": "doc", "content": [_EMPTY_PARA.copy()]}
     conv = _Converter()
-    conv.feed(html)
+    conv.feed(content)
     return conv.result()

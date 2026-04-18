@@ -29,8 +29,10 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
+import { contentToJsonString, jsonStringToContent, extractTextFromTipTap } from '@/utils/tiptap';
 import { Avatar } from '@/components/ui/Avatar';
 import type { Comment, ReactionType, ProblemStatus, ProblemCategory, ProblemVisibility, User } from '@/types';
 
@@ -152,7 +154,7 @@ export const ProblemDetailPage: React.FC = () => {
     if (selectedProblem) {
       setEditTitle(selectedProblem.title);
       setEditSummary(selectedProblem.summary || '');
-      setEditContent(selectedProblem.content);
+      setEditContent(contentToJsonString(selectedProblem.content));
       setEditCategory(selectedProblem.category);
       setEditVisibility((selectedProblem as any).visibility || 'public');
       setEditSharedUserIds((selectedProblem as any).shared_user_ids || []);
@@ -165,14 +167,14 @@ export const ProblemDetailPage: React.FC = () => {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !editTitle.trim() || !editContent.trim()) return;
+    if (!id || !editTitle.trim() || !extractTextFromTipTap(editContent)) return;
 
     setIsSubmitting(true);
     try {
       await problemsApi.update(id, {
         title: editTitle,
         summary: editSummary.trim() || undefined,
-        content: editContent,
+        content: jsonStringToContent(editContent),
         category: editCategory,
         visibility: editVisibility,
         shared_user_ids: editVisibility === 'private' ? editSharedUserIds : undefined,
@@ -387,10 +389,9 @@ export const ProblemDetailPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             {selectedProblem.title}
           </h1>
-          <div
-            className="text-gray-700 rich-content"
-            dangerouslySetInnerHTML={{ __html: selectedProblem.content }}
-          />
+          <div className="text-gray-700 rich-content">
+            <TipTapRenderer content={selectedProblem.content} />
+          </div>
 
           {/* Author Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
@@ -598,6 +599,7 @@ export const ProblemDetailPage: React.FC = () => {
             value={editContent}
             onChange={setEditContent}
             minHeight="200px"
+            jsonMode
           />
           <Select
             label={t('problems.category_label')}

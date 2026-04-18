@@ -1,6 +1,6 @@
 """Idea DTOs for crossing layer boundaries."""
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,14 +13,14 @@ class CreateIdeaDTO(BaseModel):
     """Input for creating an idea."""
     room_id: UUID
     title: str = Field(..., min_length=3, max_length=255)
-    description: str = Field(..., min_length=10)
+    description: dict[str, Any] = Field(..., description="TipTap JSON")
     summary: Optional[str] = None
 
 
 class UpdateIdeaDTO(BaseModel):
     """Input for updating an idea."""
     title: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str] = Field(None, min_length=10)
+    description: Optional[dict[str, Any]] = None
     summary: Optional[str] = None
     status: Optional[IdeaStatus] = None
     is_pinned: Optional[bool] = None
@@ -57,7 +57,7 @@ class IdeaResponseDTO(BaseModel):
     id: UUID
     room_id: UUID
     title: str
-    description: str
+    description: dict[str, Any]
     summary: Optional[str] = None
     status: IdeaStatus
     author_id: UUID

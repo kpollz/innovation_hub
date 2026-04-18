@@ -1,8 +1,8 @@
 """Problem SQLAlchemy model."""
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Column, ForeignKey, String, Table, Text
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import BaseModel
@@ -28,7 +28,7 @@ class ProblemModel(BaseModel):
     
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     summary: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[dict] = mapped_column(JSONB, nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="open")
     visibility: Mapped[str] = mapped_column(String(20), default="public", nullable=False)

@@ -24,8 +24,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
+import { contentToJsonString, jsonStringToContent, extractTextFromTipTap } from '@/utils/tiptap';
 import { Avatar } from '@/components/ui/Avatar';
 import type { Idea, Comment, ReactionType, IdeaStatus } from '@/types';
 
@@ -148,7 +150,7 @@ export const IdeaDetailPage: React.FC = () => {
   const openEditModal = () => {
     if (idea) {
       setEditTitle(idea.title);
-      setEditDescription(idea.description);
+      setEditDescription(contentToJsonString(idea.description));
       setEditSummary(idea.summary || '');
       setIsEditModalOpen(true);
       setShowActions(false);
@@ -157,12 +159,12 @@ export const IdeaDetailPage: React.FC = () => {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !editTitle.trim() || !editDescription.trim()) return;
+    if (!id || !editTitle.trim() || !extractTextFromTipTap(editDescription)) return;
     setIsSubmitting(true);
     try {
       const updated = await ideasApi.update(id, {
         title: editTitle,
-        description: editDescription,
+        description: jsonStringToContent(editDescription),
         summary: editSummary.trim() || undefined,
       });
       setIdea(updated);
@@ -312,10 +314,9 @@ export const IdeaDetailPage: React.FC = () => {
             </div>
           )}
 
-          <div
-            className="text-gray-700 rich-content"
-            dangerouslySetInnerHTML={{ __html: idea.description }}
-          />
+          <div className="text-gray-700 rich-content">
+            <TipTapRenderer content={idea.description} />
+          </div>
 
           {/* Author Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
@@ -465,6 +466,7 @@ export const IdeaDetailPage: React.FC = () => {
             value={editDescription}
             onChange={setEditDescription}
             minHeight="200px"
+            jsonMode
           />
           <Textarea
             label={t('ideas.summary_label')}

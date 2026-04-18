@@ -1,6 +1,6 @@
 """Problem DTOs for crossing layer boundaries."""
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -15,7 +15,7 @@ class CreateProblemDTO(BaseModel):
     """Input for creating a problem."""
     title: str = Field(..., min_length=5, max_length=255)
     summary: Optional[str] = Field(None, max_length=500)
-    content: str = Field(..., min_length=10)
+    content: dict[str, Any] = Field(..., description="TipTap JSON")
     category: ProblemCategory
     visibility: Visibility = Field(default=Visibility.PUBLIC)
     shared_user_ids: Optional[List[UUID]] = Field(default=None)
@@ -25,7 +25,7 @@ class UpdateProblemDTO(BaseModel):
     """Input for updating a problem."""
     title: Optional[str] = Field(None, min_length=5, max_length=255)
     summary: Optional[str] = Field(None, max_length=500)
-    content: Optional[str] = Field(None, min_length=10)
+    content: Optional[dict[str, Any]] = None
     category: Optional[ProblemCategory] = None
     status: Optional[ProblemStatus] = None
     visibility: Optional[Visibility] = None
@@ -67,7 +67,7 @@ class ProblemResponseDTO(BaseModel):
     id: UUID
     title: str
     summary: Optional[str] = None
-    content: str
+    content: dict[str, Any]
     category: ProblemCategory
     status: ProblemStatus
     visibility: Visibility = Visibility.PUBLIC
