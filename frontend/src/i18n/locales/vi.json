@@ -539,6 +539,41 @@
         "submit": "Nộp điểm",
         "update": "Cập nhật điểm"
       }
+    },
+    "dashboard": {
+      "ideas_title": "Xếp hạng Ý tưởng",
+      "teams_title": "Xếp hạng Đội",
+      "all_teams": "Tất cả Đội",
+      "no_ideas": "Chưa có ý tưởng nào",
+      "no_teams": "Chưa có đội nào",
+      "col_title": "Tiêu đề",
+      "col_team": "Đội",
+      "col_score": "Điểm",
+      "col_scores": "Lượt chấm",
+      "col_team_info": "Đội",
+      "col_ideas": "Ý tưởng",
+      "col_avg": "Điểm TB",
+      "col_total": "Tổng",
+      "col_members": "Thành viên"
+    },
+    "faq": {
+      "title": "Hỏi Đáp ({{count}})",
+      "create": "Đặt câu hỏi",
+      "create_title": "Đặt câu hỏi mới",
+      "question_label": "Câu hỏi",
+      "question_placeholder": "Nhập câu hỏi của bạn...",
+      "answer_label": "Câu trả lời (tùy chọn)",
+      "answer_placeholder": "Nhập câu trả lời...",
+      "no_answer": "Chưa có câu trả lời",
+      "no_faqs": "Chưa có câu hỏi nào",
+      "no_faqs_desc": "Hãy là người đầu tiên đặt câu hỏi!",
+      "edit": "Sửa",
+      "delete": "Xóa",
+      "delete_title": "Xóa câu hỏi",
+      "delete_confirm": "Bạn có chắc muốn xóa câu hỏi này?",
+      "create_error": "Không thể tạo câu hỏi",
+      "update_error": "Không thể cập nhật câu hỏi",
+      "delete_error": "Không thể xóa câu hỏi"
     }
   }
 }

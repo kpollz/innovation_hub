@@ -8,13 +8,13 @@ from pydantic import BaseModel, Field
 
 class CreateFAQRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
-    answer: Optional[str] = Field(None, max_length=5000)
+    answer: Optional[str] = Field(None, max_length=50000)
     sort_order: Optional[int] = None
 
 
 class UpdateFAQRequest(BaseModel):
     question: Optional[str] = Field(None, min_length=1, max_length=2000)
-    answer: Optional[str] = Field(None, max_length=5000)
+    answer: Optional[str] = Field(None, max_length=50000)
     sort_order: Optional[int] = None
 
 

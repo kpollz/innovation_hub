@@ -7,6 +7,8 @@ import { EVENT_TABS } from '@/utils/constants';
 import { IntroductionTab } from './tabs/IntroductionTab';
 import { TeamsTab } from './tabs/TeamsTab';
 import { IdeasTab } from './tabs/ideas';
+import { DashboardTab } from './tabs/DashboardTab';
+import { FAQTab } from './tabs/FAQTab';
 import { EventIdeaDetailPage } from './tabs/ideas/EventIdeaDetailPage';
 import type { EventObject, EventTeamObject } from '@/types';
 
@@ -195,12 +197,8 @@ export const EventDetailPage: React.FC = () => {
         {activeTab === 'introduction' && <IntroductionTab event={event} />}
         {activeTab === 'teams' && <TeamsTab event={event} />}
         {activeTab === 'ideas' && <IdeasTab event={event} />}
-        {activeTab !== 'introduction' && activeTab !== 'teams' && activeTab !== 'ideas' && (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-3">🚧</div>
-            <h3 className="text-lg font-medium text-gray-500">{t('events.tabs.coming_soon')}</h3>
-          </div>
-        )}
+        {activeTab === 'dashboard' && <DashboardTab event={event} />}
+        {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
       </div>
     </div>
   );
