@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "save": "Save Changes",
     "delete": "Delete",
     "edit": "Edit",
@@ -466,7 +467,84 @@
       "you_are_leader": "You are the leader of \"{{name}}\"",
       "you_are_member": "You are a member of \"{{name}}\"",
       "pending_request": "Your join request to \"{{name}}\" is pending approval",
-      "reviews_team": "Reviews"
+      "reviews_team": "Reviews",
+      "assign_review": "Assign Review",
+      "change_review": "Change Review",
+      "assign_review_title": "Assign Review Team",
+      "assign_review_desc": "Select which team this team will review:",
+      "assign_review_confirm": "Assign",
+      "select_team": "Select a team...",
+      "clear_review": "— Clear assignment —"
+    },
+    "ideas": {
+      "title": "Ideas",
+      "submit_idea": "Submit Idea",
+      "import_from_room": "Import from Room",
+      "edit": "Edit",
+      "delete": "Delete",
+      "delete_confirm": "Delete this idea? This cannot be undone.",
+      "back_to_list": "Back to Ideas",
+      "not_found": "Idea not found",
+      "linked": "Linked",
+      "linked_source": "This idea was imported from a Brainstorming Room. It is an independent copy — changes to the original will not affect this idea.",
+      "filter_all": "All",
+      "filter_my_team": "My Team",
+      "filter_review": "Team I Review",
+      "sort_newest": "Newest",
+      "sort_score": "Top Scored",
+      "no_ideas": "No ideas yet",
+      "no_ideas_filter": "No ideas matching this filter",
+      "no_ideas_submit": "Be the first to submit an idea for this event!",
+      "score_count": "{{count}} scores",
+      "fields": {
+        "title": "Title",
+        "title_placeholder": "Enter idea title",
+        "user_problem": "User Problem",
+        "user_problem_placeholder": "Describe the user problem this idea addresses...",
+        "user_scenarios": "User Scenarios",
+        "user_scenarios_placeholder": "Describe the usage scenarios...",
+        "user_expectation": "User Expectation",
+        "user_expectation_placeholder": "What do users expect from this solution?",
+        "research": "Research",
+        "research_placeholder": "Background research and references...",
+        "solution": "Solution",
+        "solution_placeholder": "Describe your proposed solution in detail..."
+      },
+      "form": {
+        "create_title": "Submit New Idea",
+        "edit_title": "Edit Idea",
+        "submit": "Submit",
+        "required_fields": "Title and Solution are required",
+        "error": "Failed to save idea"
+      },
+      "import": {
+        "title": "Import from Room",
+        "select_room": "Select a Brainstorming Room to import an idea from:",
+        "no_rooms": "No rooms available",
+        "room_label": "Room",
+        "back_rooms": "Back to rooms",
+        "idea_count": "{{count}} ideas",
+        "no_ideas": "No ideas in this room",
+        "button": "Import"
+      },
+      "scoring": {
+        "title": "Scoring",
+        "points": "points",
+        "current_avg": "Average: {{avg}}",
+        "score_count_label": "{{count}} teams scored",
+        "not_scored_yet": "Not scored yet",
+        "group_problem": "Problem Criteria",
+        "group_solution": "Solution Criteria",
+        "strongly_agree": "Strongly Agree",
+        "agree": "Agree",
+        "neutral": "Neutral",
+        "disagree": "Disagree",
+        "strongly_disagree": "Strongly Disagree",
+        "ready_submit": "Ready to submit",
+        "fill_all": "{{remaining}} criteria remaining",
+        "submit": "Submit Scores",
+        "update": "Update Scores"
+      }
     }
   }
 }

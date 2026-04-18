@@ -1177,7 +1177,7 @@ event_team_members: id, team_id, user_id, status (pending|active), joined_at
 }
 ```
 
-> **Validation**: `target_team_id` phải thuộc cùng event, không được trùng với `team_id` (không tự chấm mình).
+> **Validation**: `target_team_id` phải thuộc cùng event, không được trùng với `team_id` (không tự chấm mình). Mỗi team chỉ được chấm bởi tối đa 1 team — nếu `target_team_id` đã có reviewer khác, trả về 422.
 > **Ví dụ circular pattern 4 đội**: Team A→B, B→C, C→D, D→A (Admin gán thủ công từng pair).
 
 **Response:** EventTeamObject
@@ -1233,8 +1233,9 @@ event_team_members: id, team_id, user_id, status (pending|active), joined_at
 > - `source_type = "manual"`: Tạo trực tiếp trong Event. Các field `source_*` đều null.
 > - `source_type = "linked"`: Copy từ Brainstorming Room. Lưu traceability qua `source_*` fields.
 > - **Decoupled**: Event Idea là bản copy độc lập. Thay đổi trong Room/Problem gốc KHÔNG ảnh hưởng Event Idea.
-> - `can_score`: `true` nếu user là Team Lead của team được gán chấm team sở hữu idea này.
-> - `total_score`: Tổng điểm (= sum(score × weight)). `null` nếu chưa được chấm.
+> - `can_score`: `true` nếu user là Team Lead của team được gán chấm team sở hữu idea này. Backend tự động tính dựa trên `assigned_to_team_id` của user's team so với `team_id` của idea.
+> - `total_score`: Tổng điểm (= sum(score × weight)). `null` nếu chưa được chấm. Public — mọi user trong event đều thấy.
+> - `score_count`: Số lượng đội đã chấm. Public — hiển thị cho tất cả user.
 > - Nội dung các field TipTap (user_problem, user_scenarios, etc.) lưu dưới dạng JSON.
 
 ### Database Schema

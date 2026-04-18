@@ -39,3 +39,7 @@ class EventIdeaRepository(ABC):
     @abstractmethod
     async def count_by_team(self, team_id: UUID) -> int:
         pass
+
+    @abstractmethod
+    async def delete(self, idea_id: UUID) -> bool:
+        pass

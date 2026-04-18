@@ -154,6 +154,10 @@ export const eventsApi = {
     return response.data;
   },
 
+  deleteIdea: async (eventId: string, ideaId: string): Promise<void> => {
+    await apiClient.delete(`/events/${eventId}/ideas/${ideaId}`);
+  },
+
   // --- Scoring ---
   getCriteria: async (eventId: string): Promise<EventScoringCriteriaObject[]> => {
     const response = await apiClient.get<EventScoringCriteriaObject[]>(`/events/${eventId}/criteria`);

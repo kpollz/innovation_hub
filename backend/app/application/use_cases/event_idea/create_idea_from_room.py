@@ -9,6 +9,7 @@ from app.domain.repositories.event_team_repository import EventTeamRepository
 from app.domain.repositories.idea_repository import IdeaRepository
 from app.domain.repositories.room_repository import RoomRepository
 from app.domain.repositories.problem_repository import ProblemRepository
+from app.application.use_cases.event_idea.html_to_tiptap import html_to_tiptap
 
 
 class CreateEventIdeaFromRoomUseCase:
@@ -66,21 +67,18 @@ class CreateEventIdeaFromRoomUseCase:
         if not room.is_visible_to(user_id):
             raise ForbiddenException("You do not have permission to view this room")
 
-        # Resolve linked problem (if any)
+        # Resolve linked problem (if any) → user_problem
         source_problem_id = None
         user_problem = None
         if room.problem_id:
             problem = await self.problem_repo.get_by_id(room.problem_id)
             if problem:
                 source_problem_id = problem.id
-                # Copy problem content as TipTap-like JSON
-                user_problem = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": problem.content}]}]}
+                user_problem = html_to_tiptap(problem.content)
 
-        # Map idea.summary → title (if valid), else use idea.title
-        title = source_idea.summary if source_idea.summary and len(source_idea.summary.strip()) >= 3 else source_idea.title
-
-        # Copy idea.description → solution as TipTap JSON
-        solution = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": source_idea.description}]}]}
+        # Mapping: room idea → event idea
+        title = source_idea.title
+        solution = html_to_tiptap(source_idea.description)
 
         event_idea = EventIdea(
             event_id=event_id,

@@ -397,12 +397,15 @@ export interface TransferLeadDTO {
 }
 
 export interface AssignReviewDTO {
-  target_team_id: string;
+  target_team_id: string | null;
 }
 
 export interface UpdateMemberStatusDTO {
   status: 'active' | 'rejected';
 }
+
+// TipTap Content Type (JSON object or HTML string)
+export type TipTapContent = Record<string, unknown> | string;
 
 // Event Idea Types
 export interface EventIdeaObject {
@@ -411,11 +414,11 @@ export interface EventIdeaObject {
   team_id: string;
   team: { id: string; name: string; slogan: string | null } | null;
   title: string;
-  user_problem: string | null;
-  user_scenarios: string | null;
-  user_expectation: string | null;
-  research: string | null;
-  solution: string;
+  user_problem: TipTapContent | null;
+  user_scenarios: TipTapContent | null;
+  user_expectation: TipTapContent | null;
+  research: TipTapContent | null;
+  solution: TipTapContent;
   source_type: 'manual' | 'linked';
   source_problem_id: string | null;
   source_room_id: string | null;
@@ -431,21 +434,21 @@ export interface EventIdeaObject {
 
 export interface CreateEventIdea {
   title: string;
-  user_problem?: string;
-  user_scenarios?: string;
-  user_expectation?: string;
-  research?: string;
-  solution: string;
+  user_problem?: TipTapContent;
+  user_scenarios?: TipTapContent;
+  user_expectation?: TipTapContent;
+  research?: TipTapContent;
+  solution: TipTapContent;
   source_type?: 'manual';
 }
 
 export interface UpdateEventIdea {
   title?: string;
-  user_problem?: string;
-  user_scenarios?: string;
-  user_expectation?: string;
-  research?: string;
-  solution?: string;
+  user_problem?: TipTapContent;
+  user_scenarios?: TipTapContent;
+  user_expectation?: TipTapContent;
+  research?: TipTapContent;
+  solution?: TipTapContent;
 }
 
 export interface CreateEventIdeaFromRoom {

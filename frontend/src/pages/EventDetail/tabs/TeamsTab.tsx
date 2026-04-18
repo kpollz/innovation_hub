@@ -221,6 +221,28 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
     }
   };
 
+  // --- Assign Review ---
+  const [showAssignReview, setShowAssignReview] = useState(false);
+  const [assigningTeamId, setAssigningTeamId] = useState<string>('');
+  const [assignTargetTeamId, setAssignTargetTeamId] = useState('');
+  const [assigning, setAssigning] = useState(false);
+
+  const handleAssignReview = async () => {
+    if (!assigningTeamId) return;
+    setAssigning(true);
+    try {
+      await eventsApi.assignReview(event.id, assigningTeamId, {
+        target_team_id: assignTargetTeamId || null,
+      });
+      setShowAssignReview(false);
+      await fetchTeams();
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Failed to assign review');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
   // --- Approve/Reject ---
   const [actioningMemberId, setActioningMemberId] = useState<string | null>(null);
 
@@ -418,6 +440,28 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                     <Shield className="h-4 w-4 text-indigo-500" />
                     <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
                     <span className="font-medium text-gray-900">{team.assigned_to_team.name}</span>
+                  </div>
+                )}
+
+                {/* Admin: Assign review button */}
+                {isAdmin && isActive && (
+                  <div className="mt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Shield className="h-3.5 w-3.5" />}
+                      onClick={() => {
+                        setAssigningTeamId(team.id);
+                        setAssignTargetTeamId(team.assigned_to_team_id || '');
+                        setShowAssignReview(true);
+                      }}
+                      className="text-xs text-indigo-600 hover:text-indigo-700"
+                    >
+                      {team.assigned_to_team
+                        ? t('events.teams.change_review')
+                        : t('events.teams.assign_review')
+                      }
+                    </Button>
                   </div>
                 )}
 
@@ -645,6 +689,47 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
               <option key={m.user_id} value={m.user_id}>
                 {m.user?.full_name || m.user?.username || m.user_id}
               </option>
+            ))
+          }
+        </select>
+      </Modal>
+
+      {/* --- Assign Review Modal --- */}
+      <Modal
+        isOpen={showAssignReview}
+        onClose={() => { setShowAssignReview(false); setAssigningTeamId(''); }}
+        title={t('events.teams.assign_review_title')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setShowAssignReview(false); setAssigningTeamId(''); }}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleAssignReview} disabled={!assignTargetTeamId || assigning}>
+              {assigning ? t('common.loading') : t('events.teams.assign_review_confirm')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-600 mb-3">{t('events.teams.assign_review_desc')}</p>
+        <select
+          value={assignTargetTeamId}
+          onChange={e => setAssignTargetTeamId(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+        >
+          <option value="">{teams.find(t => t.id === assigningTeamId)?.assigned_to_team_id
+            ? t('events.teams.clear_review')
+            : t('events.teams.select_team')}</option>
+          {teams
+            .filter(t => t.id !== assigningTeamId)
+            .filter(t => {
+              // Show teams that have no reviewer yet, or are already assigned to this reviewer team
+              const hasOtherReviewer = teams.some(rt =>
+                rt.assigned_to_team_id === t.id && rt.id !== assigningTeamId
+              );
+              return !hasOtherReviewer;
+            })
+            .map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))
           }
         </select>

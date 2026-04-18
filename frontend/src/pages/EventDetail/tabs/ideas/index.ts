@@ -1,0 +1,1 @@
+export { IdeasTab } from './IdeasTab';

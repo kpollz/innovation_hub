@@ -25,8 +25,8 @@ class TransferLeadDTO(BaseModel):
 
 
 class AssignReviewDTO(BaseModel):
-    """Input for assigning review target."""
-    target_team_id: UUID
+    """Input for assigning or clearing review target."""
+    target_team_id: Optional[UUID] = None  # null = clear assignment
 
 
 # --- Output DTOs ---

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Calendar, Users, AlertTriangle, Info } from 'lucide-react';
@@ -6,7 +6,9 @@ import { eventsApi } from '@/api/events';
 import { EVENT_TABS } from '@/utils/constants';
 import { IntroductionTab } from './tabs/IntroductionTab';
 import { TeamsTab } from './tabs/TeamsTab';
-import type { EventObject } from '@/types';
+import { IdeasTab } from './tabs/ideas';
+import { EventIdeaDetailPage } from './tabs/ideas/EventIdeaDetailPage';
+import type { EventObject, EventTeamObject } from '@/types';
 
 const statusStyles: Record<string, { bg: string; text: string }> = {
   draft: { bg: 'bg-gray-100', text: 'text-gray-700' },
@@ -15,12 +17,13 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
 };
 
 export const EventDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, ideaId } = useParams<{ id: string; ideaId?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
 
   const [event, setEvent] = useState<EventObject | null>(null);
+  const [myTeam, setMyTeam] = useState<EventTeamObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -42,6 +45,34 @@ export const EventDetailPage: React.FC = () => {
     };
     fetchEvent();
   }, [id]);
+
+  // Fetch user's team for the event
+  const fetchMyTeam = useCallback(async () => {
+    if (!id) return;
+    try {
+      const result = await eventsApi.listTeams(id, 1, 100);
+      for (const team of result.items) {
+        // Check leader first
+        const userStr = localStorage.getItem('auth-storage');
+        const userId = userStr ? JSON.parse(userStr)?.state?.user?.id : null;
+        if (team.leader_id === userId) {
+          setMyTeam(team);
+          return;
+        }
+        // Check membership
+        try {
+          const members = await eventsApi.listTeamMembers(id, team.id);
+          const isMember = members.items.some(m => m.user_id === userId && m.status === 'active');
+          if (isMember) {
+            setMyTeam(team);
+            return;
+          }
+        } catch { /* continue */ }
+      }
+    } catch { /* silent */ }
+  }, [id]);
+
+  useEffect(() => { if (event) fetchMyTeam(); }, [event, fetchMyTeam]);
 
   const handleTabChange = (tabKey: string) => {
     setSearchParams({ tab: tabKey });
@@ -77,6 +108,11 @@ export const EventDetailPage: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // If ideaId is present, show the idea detail page
+  if (ideaId) {
+    return <EventIdeaDetailPage event={event} myTeam={myTeam} />;
   }
 
   const statusStyle = statusStyles[event.status] || statusStyles.draft;
@@ -158,7 +194,8 @@ export const EventDetailPage: React.FC = () => {
       <div>
         {activeTab === 'introduction' && <IntroductionTab event={event} />}
         {activeTab === 'teams' && <TeamsTab event={event} />}
-        {activeTab !== 'introduction' && activeTab !== 'teams' && (
+        {activeTab === 'ideas' && <IdeasTab event={event} />}
+        {activeTab !== 'introduction' && activeTab !== 'teams' && activeTab !== 'ideas' && (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🚧</div>
             <h3 className="text-lg font-medium text-gray-500">{t('events.tabs.coming_soon')}</h3>

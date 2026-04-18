@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Huỷ",
+    "confirm": "Xác nhận",
     "save": "Lưu thay đổi",
     "delete": "Xóa",
     "edit": "Chỉnh sửa",
@@ -460,7 +461,84 @@
       "you_are_leader": "Bạn là đội trưởng của \"{{name}}\"",
       "you_are_member": "Bạn là thành viên của \"{{name}}\"",
       "pending_request": "Yêu cầu tham gia \"{{name}}\" đang chờ duyệt",
-      "reviews_team": "Chấm điểm đội"
+      "reviews_team": "Chấm điểm đội",
+      "assign_review": "Gán chấm điểm",
+      "change_review": "Đổi đội chấm",
+      "assign_review_title": "Gán đội chấm điểm",
+      "assign_review_desc": "Chọn đội mà đội này sẽ chấm:",
+      "assign_review_confirm": "Gán",
+      "select_team": "Chọn đội...",
+      "clear_review": "— Gán assignment —"
+    },
+    "ideas": {
+      "title": "Ý tưởng",
+      "submit_idea": "Nộp ý tưởng",
+      "import_from_room": "Nhập từ Room",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "delete_confirm": "Xóa ý tưởng này? Không thể hoàn tác.",
+      "back_to_list": "Quay lại danh sách",
+      "not_found": "Không tìm thấy ý tưởng",
+      "linked": "Liên kết",
+      "linked_source": "Ý tưởng này được nhập từ Brainstorming Room. Đây là bản sao độc lập — thay đổi ở bản gốc không ảnh hưởng ý tưởng này.",
+      "filter_all": "Tất cả",
+      "filter_my_team": "Đội tôi",
+      "filter_review": "Đội tôi chấm",
+      "sort_newest": "Mới nhất",
+      "sort_score": "Điểm cao nhất",
+      "no_ideas": "Chưa có ý tưởng",
+      "no_ideas_filter": "Không có ý tưởng phù hợp bộ lọc",
+      "no_ideas_submit": "Hãy là người đầu tiên nộp ý tưởng cho sự kiện này!",
+      "score_count": "{{count}} lượt chấm",
+      "fields": {
+        "title": "Tiêu đề",
+        "title_placeholder": "Nhập tiêu đề ý tưởng",
+        "user_problem": "Vấn đề người dùng",
+        "user_problem_placeholder": "Mô tả vấn đề người dùng mà ý tưởng này giải quyết...",
+        "user_scenarios": "Tình huống sử dụng",
+        "user_scenarios_placeholder": "Mô tả các tình huống sử dụng...",
+        "user_expectation": "Kỳ vọng người dùng",
+        "user_expectation_placeholder": "Người dùng kỳ vọng gì từ giải pháp này?",
+        "research": "Nghiên cứu",
+        "research_placeholder": "Nền tảng nghiên cứu và tài liệu tham khảo...",
+        "solution": "Giải pháp",
+        "solution_placeholder": "Mô tả chi tiết giải pháp đề xuất..."
+      },
+      "form": {
+        "create_title": "Nộp ý tưởng mới",
+        "edit_title": "Chỉnh sửa ý tưởng",
+        "submit": "Nộp",
+        "required_fields": "Tiêu đề và Giải pháp là bắt buộc",
+        "error": "Không thể lưu ý tưởng"
+      },
+      "import": {
+        "title": "Nhập từ Room",
+        "select_room": "Chọn Brainstorming Room để nhập ý tưởng:",
+        "no_rooms": "Không có room nào",
+        "room_label": "Room",
+        "back_rooms": "Quay lại danh sách room",
+        "idea_count": "{{count}} ý tưởng",
+        "no_ideas": "Không có ý tưởng trong room này",
+        "button": "Nhập"
+      },
+      "scoring": {
+        "title": "Chấm điểm",
+        "points": "điểm",
+        "current_avg": "Trung bình: {{avg}}",
+        "score_count_label": "{{count}} đội đã chấm",
+        "not_scored_yet": "Chưa được chấm",
+        "group_problem": "Tiêu chí Bài toán",
+        "group_solution": "Tiêu chí Giải pháp",
+        "strongly_agree": "Hoàn toàn đồng ý",
+        "agree": "Đồng ý",
+        "neutral": "Trung lập",
+        "disagree": "Không đồng ý",
+        "strongly_disagree": "Hoàn toàn không đồng ý",
+        "ready_submit": "Sẵn sàng nộp",
+        "fill_all": "Còn {{remaining}} tiêu chí chưa chấm",
+        "submit": "Nộp điểm",
+        "update": "Cập nhật điểm"
+      }
     }
   }
 }

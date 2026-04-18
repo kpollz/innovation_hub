@@ -1,14 +1,15 @@
 """SQLAlchemy implementation of EventScoreRepository."""
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.event_score import EventScore
 from app.domain.repositories.event_score_repository import EventScoreRepository
 from app.infrastructure.database.models.event_score_model import EventScoreModel
+from app.infrastructure.database.models.event_idea_model import EventIdeaModel
 
 
 class SQLEventScoreRepository(EventScoreRepository):
@@ -82,3 +83,21 @@ class SQLEventScoreRepository(EventScoreRepository):
         await self.session.flush()
         await self.session.refresh(model)
         return self._to_entity(model)
+
+    async def get_stats_by_event(self, event_id: UUID) -> Dict[str, Tuple[float, int]]:
+        """Return {idea_id_str: (avg_total_score, count)} for all scored ideas."""
+        stmt = (
+            select(
+                EventScoreModel.event_idea_id,
+                func.avg(EventScoreModel.total_score),
+                func.count(EventScoreModel.id),
+            )
+            .join(EventIdeaModel, EventIdeaModel.id == EventScoreModel.event_idea_id)
+            .where(EventIdeaModel.event_id == str(event_id))
+            .group_by(EventScoreModel.event_idea_id)
+        )
+        result = await self.session.execute(stmt)
+        return {
+            str(row[0]): (float(row[1]), int(row[2]))
+            for row in result
+        }

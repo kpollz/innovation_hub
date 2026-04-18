@@ -20,7 +20,9 @@ const ResizableImageView: React.FC<NodeViewProps> = ({
   updateAttributes,
   selected,
   deleteNode,
+  editor,
 }) => {
+  const editable = editor.isEditable;
   const imgRef = useRef<HTMLImageElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
@@ -100,20 +102,20 @@ const ResizableImageView: React.FC<NodeViewProps> = ({
           alt={alt || ''}
           width={width || undefined}
           height={height || undefined}
-          onClick={() => setIsSelected(true)}
+          onClick={() => editable && setIsSelected(true)}
           draggable={false}
           className="block max-w-full rounded-lg"
           style={{
-            cursor: 'pointer',
-            outline: isSelected ? '2px solid #2563eb' : 'none',
+            cursor: editable ? 'pointer' : 'default',
+            outline: isSelected && editable ? '2px solid #2563eb' : 'none',
             outlineOffset: '2px',
             width: width ? `${width}px` : '100%',
             height: height ? `${height}px` : 'auto',
           }}
         />
 
-        {/* Resize handles & toolbar when selected */}
-        {isSelected && (
+        {/* Resize handles & toolbar when selected & editable */}
+        {isSelected && editable && (
           <>
             {/* Top-left */}
             <div

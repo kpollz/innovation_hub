@@ -137,3 +137,11 @@ class SQLEventIdeaRepository(EventIdeaRepository):
             )
         )
         return result or 0
+
+    async def delete(self, idea_id: UUID) -> bool:
+        model = await self.session.get(EventIdeaModel, str(idea_id))
+        if not model:
+            return False
+        await self.session.delete(model)
+        await self.session.flush()
+        return True

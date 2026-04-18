@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TextAlign } from '@tiptap/extension-text-align';
@@ -39,6 +39,8 @@ interface RichTextEditorProps {
   error?: string;
   placeholder?: string;
   minHeight?: string;
+  /** When true, value is JSON-stringified TipTap content and onChange returns JSON string */
+  jsonMode?: boolean;
 }
 
 const COLORS = [
@@ -53,6 +55,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   error,
   placeholder = 'Start writing...',
   minHeight = '200px',
+  jsonMode = false,
 }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -66,6 +69,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (showColorPicker) document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showColorPicker]);
+
+  // In jsonMode, parse JSON string to object for TipTap; otherwise use HTML string
+  const initialContent = useMemo(() => {
+    if (!value) return '';
+    if (jsonMode) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value; // fallback to HTML string
+      }
+    }
+    return value;
+  }, [value, jsonMode]);
 
   const editor = useEditor({
     extensions: [
@@ -85,12 +101,33 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }),
       Placeholder.configure({ placeholder }),
     ],
-    content: value,
+    content: initialContent,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (jsonMode) {
+        onChange(JSON.stringify(editor.getJSON()));
+      } else {
+        onChange(editor.getHTML());
+      }
     },
   });
+
+  // Sync editor content when value changes externally (e.g. editing an existing idea)
+  useEffect(() => {
+    if (!editor || !value) return;
+    if (jsonMode) {
+      try {
+        const current = JSON.stringify(editor.getJSON());
+        if (current !== value) {
+          editor.commands.setContent(JSON.parse(value));
+        }
+      } catch { /* ignore parse errors */ }
+    } else {
+      if (editor.getHTML() !== value) {
+        editor.commands.setContent(value);
+      }
+    }
+  }, [value, editor, jsonMode]);
 
   const addImage = useCallback(() => {
     if (!editor) return;

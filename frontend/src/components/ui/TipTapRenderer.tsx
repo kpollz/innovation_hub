@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TextAlign } from '@tiptap/extension-text-align';
@@ -7,13 +7,22 @@ import { Color } from '@tiptap/extension-color';
 import { Link as LinkExtension } from '@tiptap/extension-link';
 import { Underline } from '@tiptap/extension-underline';
 import { ResizableImage } from './ResizableImageExtension';
+import type { TipTapContent } from '@/types';
 
 interface TipTapRendererProps {
-  content: string | null | undefined;
+  content: TipTapContent | null | undefined;
   className?: string;
 }
 
 export const TipTapRenderer: React.FC<TipTapRendererProps> = ({ content, className = '' }) => {
+  // TipTap's content prop accepts HTML strings or JSON objects directly
+  const parsedContent = useMemo(() => {
+    if (!content) return '';
+    if (typeof content === 'string') return content;
+    // It's a JSON object — TipTap accepts it directly
+    return content;
+  }, [content]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
@@ -31,13 +40,12 @@ export const TipTapRenderer: React.FC<TipTapRendererProps> = ({ content, classNa
         },
       }),
     ],
-    content: content || '',
+    content: parsedContent,
     editable: false,
     immediatelyRender: false,
   });
 
   if (!content) return null;
-
   if (!editor) return null;
 
   return (

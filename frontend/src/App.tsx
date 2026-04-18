@@ -55,6 +55,7 @@ function App() {
                   <Route path="/settings" element={<UserSettingsPage />} />
                   <Route path="/admin/users" element={<AdminUsersPage />} />
                   <Route path="/events" element={<EventsPage />} />
+                  <Route path="/events/:id/ideas/:ideaId" element={<EventDetailPage />} />
                   <Route path="/events/:id" element={<EventDetailPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

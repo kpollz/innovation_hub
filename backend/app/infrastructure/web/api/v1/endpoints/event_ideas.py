@@ -17,11 +17,13 @@ from app.application.use_cases.event_idea.create_idea_from_room import CreateEve
 from app.application.use_cases.event_idea.list_ideas import ListEventIdeasUseCase
 from app.application.use_cases.event_idea.get_idea import GetEventIdeaUseCase
 from app.application.use_cases.event_idea.update_idea import UpdateEventIdeaUseCase
+from app.application.use_cases.event_idea.delete_idea import DeleteEventIdeaUseCase
 from app.core.exceptions import NotFoundException, ForbiddenException
 from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
 from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
+from app.infrastructure.database.repositories.event_score_repository_impl import SQLEventScoreRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
 from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
@@ -69,8 +71,8 @@ async def _notify_admins_idea_submitted(
         logger.exception("Failed to send event_idea_submitted notification")
 
 
-async def _enrich_idea(idea, user_repo, team_repo) -> EventIdeaResponseDTO:
-    """Enrich idea with author and team info."""
+async def _enrich_idea(idea, user_repo, team_repo, user_id=None, score_stats=None) -> EventIdeaResponseDTO:
+    """Enrich idea with author, team, score stats, and can_score."""
     dto = EventIdeaResponseDTO.model_validate(idea)
 
     # Author
@@ -87,6 +89,21 @@ async def _enrich_idea(idea, user_repo, team_repo) -> EventIdeaResponseDTO:
     team = await team_repo.get_team_by_id(idea.team_id)
     if team:
         dto.team = {"id": team.id, "name": team.name, "slogan": team.slogan}
+
+    # Score stats
+    if score_stats and str(idea.id) in score_stats:
+        avg, count = score_stats[str(idea.id)]
+        dto.total_score = avg
+        dto.score_count = count
+
+    # Can score: user's team is assigned to review the idea's team
+    if user_id:
+        teams, _ = await team_repo.list_teams_by_event(idea.event_id, page=1, limit=100)
+        for t in teams:
+            if t.leader_id == user_id:
+                if t.assigned_to_team_id and str(t.assigned_to_team_id) == str(idea.team_id):
+                    dto.can_score = True
+                break
 
     return dto
 
@@ -158,10 +175,12 @@ async def list_ideas(
     sort: str = Query("newest", pattern="^(score|newest)$"),
     page: int = 1,
     limit: int = 20,
+    current_user: Optional[UserResponseDTO] = Depends(get_current_active_user),
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    score_repo: SQLEventScoreRepository = Depends(deps.get_event_score_repo),
 ):
     """List ideas in an event with optional filters."""
     use_case = ListEventIdeasUseCase(event_repo, idea_repo)
@@ -170,9 +189,11 @@ async def list_ideas(
     except NotFoundException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
+    uid = current_user.id if current_user else None
+    score_stats = await score_repo.get_stats_by_event(event_id)
     items = []
     for idea in ideas:
-        items.append(await _enrich_idea(idea, user_repo, team_repo))
+        items.append(await _enrich_idea(idea, user_repo, team_repo, user_id=uid, score_stats=score_stats))
 
     return EventIdeaListResponseDTO(items=items, total=total, page=page, limit=limit)
 
@@ -181,9 +202,11 @@ async def list_ideas(
 async def get_idea(
     event_id: UUID,
     idea_id: UUID,
+    current_user: Optional[UserResponseDTO] = Depends(get_current_active_user),
     idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    score_repo: SQLEventScoreRepository = Depends(deps.get_event_score_repo),
 ):
     """Get idea detail."""
     use_case = GetEventIdeaUseCase(idea_repo)
@@ -195,7 +218,12 @@ async def get_idea(
     if idea.event_id != event_id:
         raise HTTPException(status_code=404, detail="Idea not found in this event")
 
-    return await _enrich_idea(idea, user_repo, team_repo)
+    score_stats = await score_repo.get_stats_by_event(event_id)
+    return await _enrich_idea(
+        idea, user_repo, team_repo,
+        user_id=current_user.id if current_user else None,
+        score_stats=score_stats,
+    )
 
 
 @router.patch("/{idea_id}", response_model=EventIdeaResponseDTO)
@@ -218,3 +246,23 @@ async def update_idea(
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     return await _enrich_idea(idea, user_repo, team_repo)
+
+
+@router.delete("/{idea_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_idea(
+    event_id: UUID,
+    idea_id: UUID,
+    current_user: UserResponseDTO = Depends(get_current_active_user),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
+):
+    """Delete idea (author, team lead, or admin). Only when event is not closed."""
+    use_case = DeleteEventIdeaUseCase(event_repo, team_repo, idea_repo)
+    try:
+        await use_case.execute(
+            event_id, idea_id, current_user.id, current_user.role == "admin"
+        )
+    except (NotFoundException, ForbiddenException) as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    return None
