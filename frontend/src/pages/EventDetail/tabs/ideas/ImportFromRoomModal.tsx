@@ -7,17 +7,18 @@ import { eventsApi } from '@/api/events';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { IdeaFormModal } from './IdeaFormModal';
-import type { EventObject, Room, Idea, EventIdeaObject } from '@/types';
+import type { EventObject, Room, Idea, EventIdeaObject, EventTeamObject } from '@/types';
 
 interface ImportFromRoomModalProps {
   event: EventObject;
+  myTeam?: EventTeamObject | null;
   isOpen: boolean;
   onClose: () => void;
   onImported: () => void;
 }
 
 export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
-  event, isOpen, onClose, onImported,
+  event, myTeam, isOpen, onClose, onImported,
 }) => {
   const { t } = useTranslation();
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -168,6 +169,7 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
         <IdeaFormModal
           event={event}
           idea={importedIdea}
+          myTeam={myTeam}
           isOpen={showEditForm}
           onClose={handleEditSaved}
           onSaved={handleEditSaved}

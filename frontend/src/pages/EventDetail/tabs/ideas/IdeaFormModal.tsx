@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { eventsApi } from '@/api/events';
+import { useUIStore } from '@/stores/uiStore';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import type { EventObject, EventIdeaObject, TipTapContent } from '@/types';
+import type { EventObject, EventIdeaObject, EventTeamObject, TipTapContent } from '@/types';
 
 interface IdeaFormModalProps {
   event: EventObject;
   idea: EventIdeaObject | null;
+  myTeam?: EventTeamObject | null;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -53,9 +55,10 @@ function jsonStringToContent(json: string): TipTapContent | undefined {
 }
 
 export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
-  event, idea, isOpen, onClose, onSaved,
+  event, idea, myTeam, isOpen, onClose, onSaved,
 }) => {
   const { t } = useTranslation();
+  const { showToast } = useUIStore();
   const isEditing = !!idea;
 
   const [title, setTitle] = useState(() => idea?.title || '');
@@ -119,6 +122,10 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
           source_type: 'manual',
         });
       }
+      showToast({
+        type: 'success',
+        message: isEditing ? t('events.ideas.form.update_success') : t('events.ideas.form.submit_success'),
+      });
       onSaved();
     } catch (err: unknown) {
       const resp = (err as { response?: { data?: { detail?: unknown } } })?.response?.data;
@@ -158,6 +165,17 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
             {error}
+          </div>
+        )}
+
+        {!isEditing && myTeam && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('events.ideas.fields.inventor')}
+            </label>
+            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+              {myTeam.name}
+            </div>
           </div>
         )}
 

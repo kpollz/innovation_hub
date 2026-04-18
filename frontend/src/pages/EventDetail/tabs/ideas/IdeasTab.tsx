@@ -274,6 +274,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
       <IdeaFormModal
         event={event}
         idea={editingIdea}
+        myTeam={myTeam}
         isOpen={showFormModal}
         onClose={() => { setShowFormModal(false); setEditingIdea(null); }}
         onSaved={editingIdea ? () => { setShowFormModal(false); setEditingIdea(null); fetchIdeas(); } : handleIdeaCreated}
@@ -282,6 +283,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
       {/* Import from Room Modal */}
       <ImportFromRoomModal
         event={event}
+        myTeam={myTeam}
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onImported={handleImported}

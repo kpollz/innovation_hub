@@ -285,7 +285,11 @@
     "pin_success": "Idea pinned!",
     "unpin_success": "Idea unpinned",
     "pin_error": "Failed to toggle pin",
-    "pin_status_error": "Failed to update pin status"
+    "pin_status_error": "Failed to update pin status",
+    "submit_to_event": "Submit to Event",
+    "submit_to_event_success": "Idea submitted to event successfully!",
+    "submit_to_event_error": "Failed to submit idea to event",
+    "no_active_events": "No active events available"
   },
   "settings": {
     "title": "Settings",
@@ -497,6 +501,7 @@
       "no_ideas_submit": "Be the first to submit an idea for this event!",
       "score_count": "{{count}} scores",
       "fields": {
+        "inventor": "Inventor (Team)",
         "title": "Title",
         "title_placeholder": "Enter idea title",
         "user_problem": "User Problem",
@@ -515,7 +520,9 @@
         "edit_title": "Edit Idea",
         "submit": "Submit",
         "required_fields": "Title and Solution are required",
-        "error": "Failed to save idea"
+        "error": "Failed to save idea",
+        "submit_success": "Idea submitted successfully!",
+        "update_success": "Idea updated successfully!"
       },
       "import": {
         "title": "Import from Room",

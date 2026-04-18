@@ -279,7 +279,11 @@
     "pin_success": "Đã ghim ý tưởng!",
     "unpin_success": "Đã bỏ ghim ý tưởng",
     "pin_error": "Không thể ghim/bỏ ghim",
-    "pin_status_error": "Không thể cập nhật trạng thái ghim"
+    "pin_status_error": "Không thể cập nhật trạng thái ghim",
+    "submit_to_event": "Gửi tới Event",
+    "submit_to_event_success": "Đã gửi ý tưởng tới sự kiện thành công!",
+    "submit_to_event_error": "Không thể gửi ý tưởng tới sự kiện",
+    "no_active_events": "Không có sự kiện đang hoạt động"
   },
   "settings": {
     "title": "Cài đặt",
@@ -491,6 +495,7 @@
       "no_ideas_submit": "Hãy là người đầu tiên nộp ý tưởng cho sự kiện này!",
       "score_count": "{{count}} lượt chấm",
       "fields": {
+        "inventor": "Nhà phát minh (Đội)",
         "title": "Tiêu đề",
         "title_placeholder": "Nhập tiêu đề ý tưởng",
         "user_problem": "Vấn đề người dùng",
@@ -509,7 +514,9 @@
         "edit_title": "Chỉnh sửa ý tưởng",
         "submit": "Nộp",
         "required_fields": "Tiêu đề và Giải pháp là bắt buộc",
-        "error": "Không thể lưu ý tưởng"
+        "error": "Không thể lưu ý tưởng",
+        "submit_success": "Nộp ý tưởng thành công!",
+        "update_success": "Cập nhật ý tưởng thành công!"
       },
       "import": {
         "title": "Nhập từ Room",

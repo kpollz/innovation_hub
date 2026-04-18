@@ -8,16 +8,19 @@ import {
   Lightbulb,
   MoreVertical,
   Pin,
-  Trash2
+  Trash2,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { ideasApi } from '@/api/ideas';
+import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
-import type { Idea, IdeaStatus } from '@/types';
+import type { Idea, IdeaStatus, EventObject } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { truncateText, classNames } from '@/utils/helpers';
 import { Avatar } from '@/components/ui/Avatar';
@@ -40,6 +43,11 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const [voteStars, setVoteStars] = useState(idea.user_vote?.stars || 3);
   const [showActions, setShowActions] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Submit to Event state
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [activeEvents, setActiveEvents] = useState<EventObject[]>([]);
+  const [submittingEventId, setSubmittingEventId] = useState<string | null>(null);
 
   const isAuthor = user?.id === idea.author_id;
   const isAdmin = user?.role === 'admin';
@@ -91,6 +99,34 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
     }
   };
 
+  const handleOpenSubmitToEvent = async () => {
+    setShowActions(false);
+    try {
+      const result = await eventsApi.list({ status: 'active', limit: 100 });
+      setActiveEvents(result.items);
+      setShowEventModal(true);
+    } catch {
+      showToast({ type: 'error', message: t('ideas.submit_to_event_error') });
+    }
+  };
+
+  const handleSubmitToEvent = async (eventId: string) => {
+    setSubmittingEventId(eventId);
+    try {
+      await eventsApi.createIdeaFromRoom(eventId, {
+        room_id: idea.room_id,
+        idea_id: idea.id,
+      });
+      showToast({ type: 'success', message: t('ideas.submit_to_event_success') });
+      setShowEventModal(false);
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || t('ideas.submit_to_event_error');
+      showToast({ type: 'error', message: msg });
+    } finally {
+      setSubmittingEventId(null);
+    }
+  };
+
   const authorName = idea.author?.full_name || idea.author?.username || 'Unknown';
 
   return (
@@ -136,6 +172,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                             {idea.is_pinned ? t('ideas.unpin_idea') : t('ideas.pin_idea')}
                           </button>
                         )}
+                        <button
+                          onClick={handleOpenSubmitToEvent}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Send className="h-4 w-4" />
+                          {t('ideas.submit_to_event')}
+                        </button>
                         <button
                           onClick={() => {
                             setShowActions(false);
@@ -216,6 +259,38 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Submit to Event Modal */}
+      <Modal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        title={t('ideas.submit_to_event')}
+      >
+        {activeEvents.length === 0 ? (
+          <div className="text-center py-8">
+            <Send className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+            <p className="text-gray-500">{t('ideas.no_active_events')}</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {activeEvents.map(ev => (
+              <button
+                key={ev.id}
+                onClick={() => handleSubmitToEvent(ev.id)}
+                disabled={!!submittingEventId}
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-left disabled:opacity-50"
+              >
+                <span className="font-medium text-gray-900 text-sm truncate">{ev.title}</span>
+                {submittingEventId === ev.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary-500 flex-shrink-0" />
+                ) : (
+                  <Send className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       {/* Vote Modal */}
       <Modal
