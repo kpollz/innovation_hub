@@ -538,14 +538,53 @@
         "group_problem": "Tiêu chí Bài toán",
         "group_solution": "Tiêu chí Giải pháp",
         "strongly_agree": "Hoàn toàn đồng ý",
+        "strongly_agree_short": "HT.Đồng ý",
         "agree": "Đồng ý",
+        "agree_short": "Đồng ý",
         "neutral": "Trung lập",
+        "neutral_short": "Trung lập",
         "disagree": "Không đồng ý",
+        "disagree_short": "Không ĐY",
         "strongly_disagree": "Hoàn toàn không đồng ý",
+        "strongly_disagree_short": "HT.Không ĐY",
         "ready_submit": "Sẵn sàng nộp",
         "fill_all": "Còn {{remaining}} tiêu chí chưa chấm",
         "submit": "Nộp điểm",
-        "update": "Cập nhật điểm"
+        "update": "Cập nhật điểm",
+        "criteria": {
+          "unresolved_problem": {
+            "name": "Bài toán chưa giải quyết",
+            "desc": "Đây là một bài toán chưa có giải pháp hoặc giải pháp chưa triệt để (chưa đáp ứng được nhu cầu người dùng)?"
+          },
+          "root_cause_analysis": {
+            "name": "Phân tích nguyên nhân gốc",
+            "desc": "Tác giả đã có sự tìm hiểu và phân tích được nguyên nhân gốc rễ của vấn đề/bài toán?"
+          },
+          "problem_recognition": {
+            "name": "Độ nhận diện bài toán",
+            "desc": "Đây là một bài toán có độ nhận diện cao, được nhắc nhiều trên báo đài hoặc tin tức?"
+          },
+          "gap_evidence": {
+            "name": "Bằng chứng khoảng trống",
+            "desc": "Có bằng chứng về việc bài toán chưa được giải quyết (gap analysis) từ các nguồn uy tín?"
+          },
+          "novelty": {
+            "name": "Tính mới lạ",
+            "desc": "Ý tưởng của giải pháp thực sự mới lạ và chưa từng xuất hiện trong các giải pháp đã biết (kể cả lĩnh vực khác)?"
+          },
+          "root_cause_resolution": {
+            "name": "Giải quyết nguyên nhân gốc",
+            "desc": "Giải pháp có khả năng giải quyết được vấn đề gốc rễ một cách triệt để và như mong đợi?"
+          },
+          "competitive_advantage": {
+            "name": "Lợi thế cạnh tranh",
+            "desc": "Giải pháp có những điểm khác biệt và ưu thế cạnh tranh so với các giải pháp hiện có trên thị trường?"
+          },
+          "technical_feasibility": {
+            "name": "Khả thi kỹ thuật",
+            "desc": "Giải pháp khả thi về mặt kỹ thuật, có thể phát triển và triển khai dựa trên các công nghệ hiện tại hoặc tương lai gần?"
+          }
+        }
       }
     },
     "dashboard": {

@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Edit2, Star, Trophy, Link as LinkIcon, Trash2,
-  ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
@@ -208,17 +207,13 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       {renderField(t('events.ideas.fields.research'), idea.research)}
       {renderField(t('events.ideas.fields.solution'), idea.solution)}
 
-      {/* Scoring panel — only for authorized reviewers */}
-      {idea.can_score && isActive && (
-        <ScoringPanel
-          event={event}
-          idea={idea}
-          onScoreUpdated={() => fetchIdea()}
-        />
-      )}
-
-      {/* Score summary — collapsible, visible to everyone */}
-      <ScoreSummary idea={idea} />
+      {/* Scoring panel — editable for reviewers, read-only for viewers */}
+      <ScoringPanel
+        event={event}
+        idea={idea}
+        readOnly={!(idea.can_score && isActive)}
+        onScoreUpdated={() => fetchIdea()}
+      />
 
       {/* Edit Modal */}
       {showEditForm && idea && (
@@ -234,72 +229,3 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
   );
 };
 
-/** Collapsible score summary — always visible, expand for detail. */
-const ScoreSummary: React.FC<{ idea: EventIdeaObject }> = ({ idea }) => {
-  const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
-  const [criteria, setCriteria] = useState<{ id: string; name: string; group: string }[]>([]);
-  const [scores, setScores] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    if (expanded && idea.total_score !== null) {
-      eventsApi.getCriteria(idea.event_id).then(c => setCriteria(c)).catch(() => {});
-      eventsApi.getScores(idea.event_id, idea.id).then(res => {
-        if (res.scores.length > 0) {
-          setScores(res.scores[0].criteria_scores);
-        }
-      }).catch(() => {});
-    }
-  }, [expanded, idea]);
-
-  return (
-    <div className="border-t border-gray-200 pt-6 mt-6">
-      <button
-        type="button"
-        onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between"
-      >
-        <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-          <Star className="h-4 w-4 text-yellow-500" />
-          {t('events.ideas.scoring.title')}
-        </h4>
-        <div className="flex items-center gap-2">
-          {idea.total_score !== null ? (
-            <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 rounded-lg px-2.5 py-1">
-              <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-              <span className="text-sm font-bold text-yellow-700">{idea.total_score.toFixed(1)}</span>
-              <span className="text-xs text-yellow-500">({idea.score_count})</span>
-            </div>
-          ) : (
-            <span className="text-xs text-gray-400">{t('events.ideas.scoring.not_scored_yet')}</span>
-          )}
-          {expanded
-            ? <ChevronDown className="h-4 w-4 text-gray-400" />
-            : <ChevronRight className="h-4 w-4 text-gray-400" />
-          }
-        </div>
-      </button>
-
-      {expanded && idea.total_score !== null && (
-        <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-          {criteria.map(c => (
-            <div key={c.id} className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">{c.name}</span>
-              <span className="font-semibold text-gray-900">{scores[c.id] ?? '—'}</span>
-            </div>
-          ))}
-          <div className="border-t border-gray-200 pt-2 mt-2 flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">{t('events.ideas.scoring.title')}</span>
-            <span className="text-lg font-bold text-yellow-700">{idea.total_score.toFixed(1)}</span>
-          </div>
-        </div>
-      )}
-
-      {expanded && idea.total_score === null && (
-        <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-400">
-          {t('events.ideas.scoring.not_scored_yet')}
-        </div>
-      )}
-    </div>
-  );
-};

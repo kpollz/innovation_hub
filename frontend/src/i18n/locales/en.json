@@ -544,14 +544,53 @@
         "group_problem": "Problem Criteria",
         "group_solution": "Solution Criteria",
         "strongly_agree": "Strongly Agree",
+        "strongly_agree_short": "S. Agree",
         "agree": "Agree",
+        "agree_short": "Agree",
         "neutral": "Neutral",
+        "neutral_short": "Neutral",
         "disagree": "Disagree",
+        "disagree_short": "Disagree",
         "strongly_disagree": "Strongly Disagree",
+        "strongly_disagree_short": "S. Disagree",
         "ready_submit": "Ready to submit",
         "fill_all": "{{remaining}} criteria remaining",
         "submit": "Submit Scores",
-        "update": "Update Scores"
+        "update": "Update Scores",
+        "criteria": {
+          "unresolved_problem": {
+            "name": "Unresolved Problem",
+            "desc": "Is this a problem with no existing solution or one where current solutions are inadequate?"
+          },
+          "root_cause_analysis": {
+            "name": "Root Cause Analysis",
+            "desc": "Has the author investigated and identified the root cause of the problem?"
+          },
+          "problem_recognition": {
+            "name": "Problem Recognition",
+            "desc": "Is this a widely recognized problem frequently mentioned in media or news?"
+          },
+          "gap_evidence": {
+            "name": "Gap Evidence",
+            "desc": "Is there evidence from credible sources that the problem remains unresolved (gap analysis)?"
+          },
+          "novelty": {
+            "name": "Novelty",
+            "desc": "Is the proposed solution truly novel and unprecedented among known solutions?"
+          },
+          "root_cause_resolution": {
+            "name": "Root Cause Resolution",
+            "desc": "Does the solution effectively address the root cause of the problem?"
+          },
+          "competitive_advantage": {
+            "name": "Competitive Advantage",
+            "desc": "Does the solution offer clear differentiation and competitive advantage over existing ones?"
+          },
+          "technical_feasibility": {
+            "name": "Technical Feasibility",
+            "desc": "Is the solution technically feasible with current or near-future technologies?"
+          }
+        }
       }
     },
     "dashboard": {
