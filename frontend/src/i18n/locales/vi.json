@@ -472,7 +472,8 @@
       "assign_review_desc": "Chọn đội mà đội này sẽ chấm:",
       "assign_review_confirm": "Gán",
       "select_team": "Chọn đội...",
-      "clear_review": "— Gán assignment —"
+      "clear_review": "— Gỡ gán —",
+      "unassign_review_confirm": "Gỡ"
     },
     "ideas": {
       "title": "Ý tưởng",

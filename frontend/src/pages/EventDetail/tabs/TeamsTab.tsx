@@ -435,33 +435,34 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                 )}
 
                 {/* Assigned review info */}
-                {team.assigned_to_team && (
+                {(team.assigned_to_team || (isAdmin && isActive)) && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Shield className="h-4 w-4 text-indigo-500" />
-                    <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
-                    <span className="font-medium text-gray-900">{team.assigned_to_team.name}</span>
-                  </div>
-                )}
-
-                {/* Admin: Assign review button */}
-                {isAdmin && isActive && (
-                  <div className="mt-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      leftIcon={<Shield className="h-3.5 w-3.5" />}
-                      onClick={() => {
-                        setAssigningTeamId(team.id);
-                        setAssignTargetTeamId(team.assigned_to_team_id || '');
-                        setShowAssignReview(true);
-                      }}
-                      className="text-xs text-indigo-600 hover:text-indigo-700"
-                    >
-                      {team.assigned_to_team
-                        ? t('events.teams.change_review')
-                        : t('events.teams.assign_review')
-                      }
-                    </Button>
+                    <Shield className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                    {team.assigned_to_team ? (
+                      <>
+                        <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
+                        <span className="font-medium text-gray-900">{team.assigned_to_team.name}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
+                    )}
+                    {isAdmin && isActive && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAssigningTeamId(team.id);
+                          setAssignTargetTeamId(team.assigned_to_team_id || '');
+                          setShowAssignReview(true);
+                        }}
+                        className="text-xs text-indigo-600 hover:text-indigo-700"
+                      >
+                        {team.assigned_to_team
+                          ? t('events.teams.change_review')
+                          : t('events.teams.assign_review')
+                        }
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -704,8 +705,12 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
             <Button variant="secondary" onClick={() => { setShowAssignReview(false); setAssigningTeamId(''); }}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAssignReview} disabled={!assignTargetTeamId || assigning}>
-              {assigning ? t('common.loading') : t('events.teams.assign_review_confirm')}
+            <Button
+              onClick={handleAssignReview}
+              disabled={(!assignTargetTeamId && !teams.find(tm => tm.id === assigningTeamId)?.assigned_to_team_id) || assigning}
+              variant={assignTargetTeamId ? 'primary' : 'danger'}
+            >
+              {assigning ? t('common.loading') : assignTargetTeamId ? t('events.teams.assign_review_confirm') : t('events.teams.unassign_review_confirm')}
             </Button>
           </>
         }

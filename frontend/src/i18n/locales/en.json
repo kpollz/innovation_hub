@@ -478,7 +478,8 @@
       "assign_review_desc": "Select which team this team will review:",
       "assign_review_confirm": "Assign",
       "select_team": "Select a team...",
-      "clear_review": "— Clear assignment —"
+      "clear_review": "— Clear assignment —",
+      "unassign_review_confirm": "Unassign"
     },
     "ideas": {
       "title": "Ideas",
