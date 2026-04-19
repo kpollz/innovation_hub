@@ -157,7 +157,7 @@ export const Sidebar: React.FC = () => {
               <button
                 onClick={() => setEventsOpen(!eventsOpen)}
                 className={classNames(
-                  'px-2 py-3 rounded-r-lg transition-colors',
+                  'flex items-center px-2 rounded-r-lg transition-colors min-h-[44px]',
                   isEventsActive
                     ? 'bg-primary-50 text-primary-600 hover:bg-primary-100'
                     : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
