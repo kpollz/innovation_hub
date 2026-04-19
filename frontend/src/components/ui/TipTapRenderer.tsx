@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TextAlign } from '@tiptap/extension-text-align';
@@ -44,6 +44,12 @@ export const TipTapRenderer: React.FC<TipTapRendererProps> = ({ content, classNa
     editable: false,
     immediatelyRender: false,
   });
+
+  useEffect(() => {
+    if (editor && parsedContent !== undefined) {
+      editor.commands.setContent(parsedContent);
+    }
+  }, [editor, parsedContent]);
 
   if (!content) return null;
   if (!editor) return null;
