@@ -1315,6 +1315,8 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
 
 **Response:** EventIdeaObject
 
+> **Comments**: Event Ideas hỗ trợ comments qua API `/comments` với `target_type='event_idea'`, `target_id=<idea_id>`. Xem section 7 (Comments) để biết chi tiết.
+
 ---
 
 ## 17. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm

@@ -3,16 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Edit2, Star, Trophy, Link as LinkIcon, Trash2,
+  MessageCircle,
 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
+import { commentsApi } from '@/api/comments';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { Textarea } from '@/components/ui/Textarea';
 import { Avatar } from '@/components/ui/Avatar';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { ScoringPanel } from './ScoringPanel';
 import { IdeaFormModal } from './IdeaFormModal';
-import { formatDate } from '@/utils/helpers';
-import type { EventObject, EventIdeaObject, EventTeamObject } from '@/types';
+import { formatDate, timeAgo } from '@/utils/helpers';
+import type { EventObject, EventIdeaObject, EventTeamObject, Comment as CommentType } from '@/types';
 
 interface EventIdeaDetailPageProps {
   event: EventObject;
@@ -28,6 +32,10 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
 
   const [idea, setIdea] = useState<EventIdeaObject | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Comments
+  const [comments, setComments] = useState<CommentType[]>([]);
+  const [newComment, setNewComment] = useState('');
 
   // Edit modal
   const [showEditForm, setShowEditForm] = useState(false);
@@ -50,6 +58,26 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
   }, [event.id, ideaId, navigate]);
 
   useEffect(() => { fetchIdea(); }, [fetchIdea]);
+
+  const fetchComments = useCallback(async () => {
+    if (!ideaId) return;
+    try {
+      const response = await commentsApi.list({ target_id: ideaId, target_type: 'event_idea' });
+      setComments(response.items || []);
+    } catch { /* silent */ }
+  }, [ideaId]);
+
+  useEffect(() => { if (idea) fetchComments(); }, [idea, fetchComments]);
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ideaId || !newComment.trim()) return;
+    try {
+      await commentsApi.create({ target_id: ideaId, target_type: 'event_idea', content: newComment });
+      setNewComment('');
+      await fetchComments();
+    } catch { /* silent */ }
+  };
 
   const isActive = event.status === 'active';
   const canEdit = isActive && idea && (
@@ -214,6 +242,61 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
         readOnly={!(idea.can_score && isActive)}
         onScoreUpdated={() => fetchIdea()}
       />
+
+      {/* Comments */}
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('comments.title', { count: comments.length })}
+            </h3>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {isActive && (
+            <form onSubmit={handleSubmitComment} className="space-y-3">
+              <Textarea
+                placeholder={t('comments.add_placeholder')}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={3}
+              />
+              <div className="flex justify-end">
+                <Button type="submit" disabled={!newComment.trim()}>{t('comments.post')}</Button>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-4">
+            {comments.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">{t('comments.no_comments')}</p>
+            ) : (
+              comments.map((comment) => {
+                const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
+                const isOwnComment = user?.id === comment.author_id;
+                return (
+                  <div
+                    key={comment.id}
+                    className={`flex gap-3 p-4 rounded-lg ${
+                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-gray-50'
+                    }`}
+                  >
+                    <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
+                    <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
+                      <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
+                        <span className="font-medium text-gray-900">{commentAuthorName}</span>
+                        <span className="text-xs text-gray-500">{timeAgo(comment.created_at)}</span>
+                      </div>
+                      <p className="text-gray-700">{comment.content}</p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Edit Modal */}
       {showEditForm && idea && (

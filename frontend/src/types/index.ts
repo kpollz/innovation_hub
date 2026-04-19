@@ -108,7 +108,7 @@ export interface CommentAuthor {
 export interface Comment {
   id: string;
   target_id: string;
-  target_type: 'problem' | 'idea';
+  target_type: 'problem' | 'idea' | 'event_idea';
   content: string;
   author_id: string;
   author: CommentAuthor | null;
@@ -119,7 +119,7 @@ export interface Comment {
 
 export interface CreateComment {
   target_id: string;
-  target_type: 'problem' | 'idea';
+  target_type: 'problem' | 'idea' | 'event_idea';
   content: string;
   parent_id?: string;
 }
@@ -236,7 +236,7 @@ export type ReactionType = 'like' | 'dislike' | 'insight';
 export interface Reaction {
   id: string;
   target_id: string;
-  target_type: 'problem' | 'idea';
+  target_type: 'problem' | 'idea' | 'event_idea';
   type: ReactionType;
   user_id: string;
   created_at: string;

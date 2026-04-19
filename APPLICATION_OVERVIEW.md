@@ -231,6 +231,7 @@ Problem (public/private) ← Độc lập
 - Event Idea là bản **copy** từ Room Idea, không live link
 - Thay đổi trong Room/Problem gốc KHÔNG ảnh hưởng Event Idea
 - Event Ideas không có status workflow riêng (chỉ phụ thuộc Event status)
+- Event Ideas hỗ trợ comments (`target_type='event_idea'`), cho phép các đội trao đổi/feedback
 
 ---
 

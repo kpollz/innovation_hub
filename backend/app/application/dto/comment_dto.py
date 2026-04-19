@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class CreateCommentDTO(BaseModel):
     """Input for creating a comment."""
     target_id: UUID
-    target_type: str = Field(..., pattern="^(problem|idea)$")
+    target_type: str = Field(..., pattern="^(problem|idea|event_idea)$")
     content: str = Field(..., min_length=1, max_length=5000)
     parent_id: Optional[UUID] = None
 
