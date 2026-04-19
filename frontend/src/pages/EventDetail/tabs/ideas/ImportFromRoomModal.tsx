@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, FolderOpen, FileText } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
-import { eventsApi } from '@/api/events';
+import { problemsApi } from '@/api/problems';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { IdeaFormModal } from './IdeaFormModal';
-import type { EventObject, Room, Idea, EventIdeaObject, EventTeamObject } from '@/types';
+import type { EventObject, Room, Idea, EventIdeaObject, EventTeamObject, TipTapContent } from '@/types';
 
 interface ImportFromRoomModalProps {
   event: EventObject;
@@ -25,10 +25,14 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [roomIdeas, setRoomIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(false);
 
-  // After import, open edit form
-  const [importedIdea, setImportedIdea] = useState<EventIdeaObject | null>(null);
+  // Pending import: stored until user confirms in edit form
+  const [pendingImport, setPendingImport] = useState<{
+    room: Room;
+    idea: Idea;
+    problemContent: TipTapContent | null;
+    sourceProblemId: string | null;
+  } | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
 
   const fetchRooms = useCallback(async () => {
@@ -62,26 +66,67 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
     await fetchRoomIdeas(room.id);
   };
 
-  const handleImport = async (ideaId: string) => {
+  const handleImport = async (idea: Idea) => {
     if (!selectedRoom) return;
-    setImporting(true);
-    try {
-      const result = await eventsApi.createIdeaFromRoom(event.id, {
-        room_id: selectedRoom.id,
-        idea_id: ideaId,
-      });
-      setImportedIdea(result);
-      setShowEditForm(true);
-    } catch { /* silent */ }
-    finally { setImporting(false); }
+    let problemContent: TipTapContent | null = null;
+    let sourceProblemId: string | null = null;
+
+    if (selectedRoom.problem_id) {
+      try {
+        const problem = await problemsApi.getById(selectedRoom.problem_id);
+        problemContent = problem.content;
+        sourceProblemId = problem.id;
+      } catch { /* silent — proceed without problem content */ }
+    }
+
+    setPendingImport({
+      room: selectedRoom,
+      idea,
+      problemContent,
+      sourceProblemId,
+    });
+    setShowEditForm(true);
   };
 
   const handleEditSaved = () => {
     setShowEditForm(false);
-    setImportedIdea(null);
+    setPendingImport(null);
     onImported();
     onClose();
   };
+
+  const handleEditCancelled = () => {
+    setShowEditForm(false);
+    setPendingImport(null);
+  };
+
+  // Build a fake EventIdeaObject from room idea + problem for form pre-population
+  const buildImportIdea = (
+    room: Room, idea: Idea,
+    problemContent: TipTapContent | null, sourceProblemId: string | null,
+  ): EventIdeaObject => ({
+    id: '__import__',
+    event_id: event.id,
+    team_id: '',
+    team: null,
+    title: idea.title,
+    user_problem: problemContent,
+    user_scenarios: null,
+    user_expectation: null,
+    research: null,
+    solution: idea.description,
+    source_type: 'linked',
+    source_problem_id: sourceProblemId,
+    source_room_id: room.id,
+    source_idea_id: idea.id,
+    author_id: '',
+    author: null,
+    total_score: null,
+    score_count: 0,
+    can_score: false,
+    created_at: '',
+    updated_at: null,
+  });
 
   return (
     <>
@@ -151,8 +196,7 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
                     </div>
                     <Button
                       size="sm"
-                      isLoading={importing}
-                      onClick={() => handleImport(idea.id)}
+                      onClick={() => handleImport(idea)}
                     >
                       {t('events.ideas.import.button')}
                     </Button>
@@ -165,14 +209,15 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
       </Modal>
 
       {/* Edit form for imported idea */}
-      {showEditForm && importedIdea && (
+      {showEditForm && pendingImport && (
         <IdeaFormModal
           event={event}
-          idea={importedIdea}
+          idea={buildImportIdea(pendingImport.room, pendingImport.idea, pendingImport.problemContent, pendingImport.sourceProblemId)}
           myTeam={myTeam}
           isOpen={showEditForm}
-          onClose={handleEditSaved}
+          onClose={handleEditCancelled}
           onSaved={handleEditSaved}
+          importSource={{ room_id: pendingImport.room.id, idea_id: pendingImport.idea.id }}
         />
       )}
     </>

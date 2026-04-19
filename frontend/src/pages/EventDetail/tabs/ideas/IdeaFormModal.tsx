@@ -15,10 +15,11 @@ interface IdeaFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
+  importSource?: { room_id: string; idea_id: string } | null;
 }
 
 export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
-  event, idea, myTeam, isOpen, onClose, onSaved,
+  event, idea, myTeam, isOpen, onClose, onSaved, importSource,
 }) => {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
@@ -65,7 +66,18 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
     setError('');
 
     try {
-      if (isEditing && idea) {
+      if (importSource) {
+        // Import mode: create from room first, then update with form data
+        const created = await eventsApi.createIdeaFromRoom(event.id, importSource);
+        await eventsApi.updateIdea(event.id, created.id, {
+          title: title.trim(),
+          user_problem: jsonStringToContent(userProblem),
+          user_scenarios: jsonStringToContent(userScenarios),
+          user_expectation: jsonStringToContent(userExpectation),
+          research: jsonStringToContent(research),
+          solution: solutionContent,
+        });
+      } else if (isEditing && idea) {
         await eventsApi.updateIdea(event.id, idea.id, {
           title: title.trim(),
           user_problem: jsonStringToContent(userProblem),
@@ -87,7 +99,9 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
       }
       showToast({
         type: 'success',
-        message: isEditing ? t('events.ideas.form.update_success') : t('events.ideas.form.submit_success'),
+        message: importSource
+          ? t('events.ideas.form.submit_success')
+          : isEditing ? t('events.ideas.form.update_success') : t('events.ideas.form.submit_success'),
       });
       onSaved();
     } catch (err: unknown) {
