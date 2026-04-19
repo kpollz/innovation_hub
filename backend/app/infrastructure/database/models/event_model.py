@@ -1,9 +1,9 @@
 """Event SQLAlchemy model."""
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import Date, DateTime, ForeignKey, String
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import BaseModel
@@ -19,7 +19,7 @@ class EventModel(BaseModel):
     __tablename__ = "events"
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # TipTap JSON
+    description: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     introduction_type: Mapped[str] = mapped_column(
         String(20), default="editor", nullable=False
     )

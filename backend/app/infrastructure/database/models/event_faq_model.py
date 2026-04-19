@@ -1,8 +1,8 @@
 """EventFAQ SQLAlchemy model."""
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from sqlalchemy import ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import BaseModel
@@ -23,7 +23,7 @@ class EventFAQModel(BaseModel):
         nullable=False,
     )
     question: Mapped[str] = mapped_column(Text, nullable=False)
-    answer: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    answer: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_by: Mapped[str] = mapped_column(
         PGUUID(as_uuid=False),

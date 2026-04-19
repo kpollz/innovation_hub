@@ -10,7 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { eventsApi } from '@/api/events';
-import { EMPTY_TIPTAP_JSON } from '@/utils/tiptap';
+import { EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
 import type { IntroductionType } from '@/types';
 
 const createEventSchema = z.object({
@@ -74,7 +74,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({ onSuccess })
     try {
       await eventsApi.create({
         title: data.title,
-        description: introductionType === 'editor' ? description : undefined,
+        description: introductionType === 'editor' ? jsonStringToContent(description) : undefined,
         introduction_type: introductionType,
         embed_url: introductionType === 'embed' ? embedUrl.trim() : undefined,
         start_date: startDate || undefined,

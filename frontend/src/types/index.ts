@@ -322,7 +322,7 @@ export type EventCriteriaGroup = 'problem' | 'solution';
 export interface EventObject {
   id: string;
   title: string;
-  description: string | null;
+  description: TipTapContent | null;
   introduction_type: IntroductionType;
   embed_url: string | null;
   status: EventStatus;
@@ -339,7 +339,7 @@ export interface EventObject {
 
 export interface CreateEvent {
   title: string;
-  description?: string;
+  description?: TipTapContent;
   embed_url?: string;
   introduction_type?: IntroductionType;
   status?: EventStatus;
@@ -349,7 +349,7 @@ export interface CreateEvent {
 
 export interface UpdateEvent {
   title?: string;
-  description?: string;
+  description?: TipTapContent;
   embed_url?: string;
   introduction_type?: IntroductionType;
   status?: EventStatus;
@@ -516,7 +516,7 @@ export interface FAQObject {
   id: string;
   event_id: string;
   question: string;
-  answer: string;
+  answer: TipTapContent;
   sort_order: number;
   created_by: string;
   created_at: string;
@@ -525,13 +525,13 @@ export interface FAQObject {
 
 export interface CreateFAQ {
   question: string;
-  answer?: string;
+  answer?: TipTapContent;
   sort_order?: number;
 }
 
 export interface UpdateFAQ {
   question?: string;
-  answer?: string;
+  answer?: TipTapContent;
   sort_order?: number;
 }
 

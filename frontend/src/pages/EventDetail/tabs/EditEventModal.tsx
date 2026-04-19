@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { eventsApi } from '@/api/events';
-import { contentToJsonString } from '@/utils/tiptap';
+import { contentToJsonString, jsonStringToContent } from '@/utils/tiptap';
 import type { EventObject, EventStatus, IntroductionType } from '@/types';
 
 const STATUS_OPTIONS: { value: EventStatus; labelKey: string }[] = [
@@ -60,7 +60,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
     try {
       const fieldsChanged = {
         title,
-        description: introductionType === 'editor' ? description : undefined,
+        description: introductionType === 'editor' ? jsonStringToContent(description) : undefined,
         introduction_type: introductionType,
         embed_url: introductionType === 'embed' ? embedUrl.trim() : undefined,
         start_date: startDate || undefined,

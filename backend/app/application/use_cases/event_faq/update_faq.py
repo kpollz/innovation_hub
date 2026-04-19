@@ -1,6 +1,6 @@
 """Update FAQ use case."""
 from uuid import UUID
-from typing import Optional
+from typing import Any, Optional
 
 from app.core.exceptions import NotFoundException, ForbiddenException
 from app.domain.repositories.event_faq_repository import EventFAQRepository
@@ -15,7 +15,7 @@ class UpdateFAQUseCase:
         self,
         faq_id: UUID,
         question: Optional[str],
-        answer: Optional[str],
+        answer: Optional[dict[str, Any]],
         sort_order: Optional[int],
         user_id: UUID,
         is_admin: bool,

@@ -1,7 +1,7 @@
 """Event entity - Pure business logic, no infrastructure dependencies."""
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 from app.domain.value_objects.status import EventStatus
@@ -13,7 +13,7 @@ class Event:
     title: str
     created_by: UUID
     id: UUID = field(default_factory=uuid4)
-    description: Optional[str] = None  # TipTap JSON string
+    description: Optional[dict[str, Any]] = None  # TipTap JSON object
     introduction_type: str = "editor"  # "editor" | "embed"
     embed_url: Optional[str] = None
     status: EventStatus = field(default=EventStatus.DRAFT)
@@ -53,7 +53,7 @@ class Event:
     def update(
         self,
         title: Optional[str] = None,
-        description: Optional[str] = None,
+        description: Optional[dict[str, Any]] = None,
         embed_url: Optional[str] = None,
         introduction_type: Optional[str] = None,
         status: Optional[EventStatus] = None,

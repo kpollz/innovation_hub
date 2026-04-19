@@ -9,17 +9,16 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import type { EventObject, EventTeamObject, FAQObject } from '@/types';
+import { extractTextFromTipTap, contentToJsonString, jsonStringToContent, EMPTY_TIPTAP_JSON } from '@/utils/tiptap';
+import type { EventObject, EventTeamObject, FAQObject, TipTapContent } from '@/types';
 
 interface FAQTabProps {
   event: EventObject;
   myTeam?: EventTeamObject | null;
 }
 
-const hasContent = (html: string | null | undefined): boolean => {
-  if (!html) return false;
-  const text = html.replace(/<[^>]*>/g, '').trim();
-  return text.length > 0;
+const hasContent = (content: TipTapContent | null | undefined): boolean => {
+  return !!extractTextFromTipTap(content);
 };
 
 export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
@@ -37,7 +36,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
   const [showDelete, setShowDelete] = useState<string | null>(null);
 
   const [formQuestion, setFormQuestion] = useState('');
-  const [formAnswer, setFormAnswer] = useState('');
+  const [formAnswer, setFormAnswer] = useState(EMPTY_TIPTAP_JSON);
   const [formSaving, setFormSaving] = useState(false);
 
   const canCreate = isAdmin || isTeamLead;
@@ -62,11 +61,11 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
     try {
       await eventsApi.createFAQ(event.id, {
         question: formQuestion.trim(),
-        answer: hasContent(formAnswer) ? formAnswer : undefined,
+        answer: hasContent(formAnswer) ? jsonStringToContent(formAnswer) : undefined,
       });
       setShowCreate(false);
       setFormQuestion('');
-      setFormAnswer('');
+      setFormAnswer(EMPTY_TIPTAP_JSON);
       await fetchFaqs();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.faq.create_error'));
@@ -81,11 +80,11 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
     try {
       await eventsApi.updateFAQ(event.id, editId, {
         question: formQuestion.trim(),
-        answer: hasContent(formAnswer) ? formAnswer : undefined,
+        answer: hasContent(formAnswer) ? jsonStringToContent(formAnswer) : undefined,
       });
       setEditId(null);
       setFormQuestion('');
-      setFormAnswer('');
+      setFormAnswer(EMPTY_TIPTAP_JSON);
       await fetchFaqs();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.faq.update_error'));
@@ -107,14 +106,14 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
   const openEdit = (faq: FAQObject) => {
     setEditId(faq.id);
     setFormQuestion(faq.question);
-    setFormAnswer(faq.answer || '');
+    setFormAnswer(contentToJsonString(faq.answer));
   };
 
   const closeForm = () => {
     setShowCreate(false);
     setEditId(null);
     setFormQuestion('');
-    setFormAnswer('');
+    setFormAnswer(EMPTY_TIPTAP_JSON);
   };
 
   const canEditFaq = (faq: FAQObject) => isAdmin || faq.created_by === user?.id;
@@ -142,7 +141,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
         </h2>
         {canCreate && (
           <button
-            onClick={() => { setFormQuestion(''); setFormAnswer(''); setShowCreate(true); }}
+            onClick={() => { setFormQuestion(''); setFormAnswer(EMPTY_TIPTAP_JSON); setShowCreate(true); }}
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
           >
             <Plus className="h-4 w-4" />
@@ -182,6 +181,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
                   onChange={setFormAnswer}
                   placeholder={t('events.faq.answer_placeholder')}
                   minHeight="120px"
+                  jsonMode
                 />
                 <div className="flex gap-2 justify-end">
                   <Button variant="secondary" size="sm" onClick={closeForm}>
@@ -287,6 +287,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
               onChange={setFormAnswer}
               placeholder={t('events.faq.answer_placeholder')}
               minHeight="150px"
+              jsonMode
             />
           </div>
         </div>

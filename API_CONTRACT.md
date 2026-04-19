@@ -1478,7 +1478,7 @@ event_scores: id, event_idea_id, scorer_team_id,
   "id": "uuid",
   "event_id": "uuid",
   "question": "string",
-  "answer": "string",
+  "answer": "JSON (TipTap) | null",
   "sort_order": 0,
   "created_by": "uuid",
   "created_at": "datetime",
@@ -1496,7 +1496,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 ```json
 {
   "question": "string (bắt buộc)",
-  "answer": "string (tùy chọn — có thể trả lời sau)",
+  "answer": "JSON (TipTap, tùy chọn — có thể trả lời sau)",
   "sort_order": 0
 }
 ```
@@ -1517,7 +1517,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 ```json
 {
   "question": "string",
-  "answer": "string",
+  "answer": "JSON (TipTap)",
   "sort_order": 0
 }
 ```

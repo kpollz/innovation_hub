@@ -1,7 +1,7 @@
 """Event DTOs for crossing layer boundaries."""
 import re
 from datetime import date, datetime
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -17,7 +17,7 @@ URL_PATTERN = re.compile(r"^https?://\S+$")
 class CreateEventDTO(BaseModel):
     """Input for creating an event."""
     title: str = Field(..., min_length=3, max_length=255)
-    description: Optional[str] = None  # TipTap JSON string
+    description: Optional[dict[str, Any]] = None  # TipTap JSON object
     introduction_type: str = Field(default="editor", pattern="^(editor|embed)$")
     embed_url: Optional[str] = None
     status: EventStatus = Field(default=EventStatus.DRAFT)
@@ -41,7 +41,7 @@ class CreateEventDTO(BaseModel):
 class UpdateEventDTO(BaseModel):
     """Input for updating an event."""
     title: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str] = None
+    description: Optional[dict[str, Any]] = None
     introduction_type: Optional[str] = Field(None, pattern="^(editor|embed)$")
     embed_url: Optional[str] = None
     status: Optional[EventStatus] = None
@@ -66,7 +66,7 @@ class EventResponseDTO(BaseModel):
 
     id: UUID
     title: str
-    description: Optional[str] = None
+    description: Optional[dict[str, Any]] = None
     introduction_type: str = "editor"
     embed_url: Optional[str] = None
     status: EventStatus

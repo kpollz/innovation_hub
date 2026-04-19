@@ -26,10 +26,7 @@ export const IntroductionTab: React.FC<IntroductionTabProps> = ({ event }) => {
   }
 
   if (event.introduction_type === 'editor' && event.description) {
-    const desc = typeof event.description === 'string'
-      ? (() => { try { return JSON.parse(event.description); } catch { return event.description; } })()
-      : event.description;
-    return <TipTapRenderer content={desc} className="p-4" />;
+    return <TipTapRenderer content={event.description} className="p-4" />;
   }
 
   return (

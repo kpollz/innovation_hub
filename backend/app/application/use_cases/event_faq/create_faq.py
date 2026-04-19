@@ -1,4 +1,5 @@
 """Create FAQ use case."""
+from typing import Any, Optional
 from uuid import UUID
 
 from app.core.exceptions import NotFoundException, ForbiddenException
@@ -17,8 +18,8 @@ class CreateFAQUseCase:
         self,
         event_id: UUID,
         question: str,
-        answer: str | None,
-        sort_order: int | None,
+        answer: Optional[dict[str, Any]],
+        sort_order: Optional[int],
         created_by: UUID,
         is_admin: bool,
         is_team_lead: bool,

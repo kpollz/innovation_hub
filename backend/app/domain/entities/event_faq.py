@@ -1,7 +1,7 @@
 """EventFAQ entity - Pure business logic."""
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 
@@ -12,7 +12,7 @@ class EventFAQ:
     question: str
     created_by: UUID
     id: UUID = field(default_factory=uuid4)
-    answer: Optional[str] = None
+    answer: Optional[dict[str, Any]] = None
     sort_order: int = 0
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
@@ -20,7 +20,7 @@ class EventFAQ:
     def update(
         self,
         question: Optional[str] = None,
-        answer: Optional[str] = None,
+        answer: Optional[dict[str, Any]] = None,
         sort_order: Optional[int] = None,
     ) -> None:
         if question is not None:
