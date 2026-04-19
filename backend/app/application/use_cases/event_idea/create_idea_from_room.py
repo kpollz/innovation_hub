@@ -37,6 +37,7 @@ class CreateEventIdeaFromRoomUseCase:
         room_id: UUID,
         source_idea_id: UUID,
         user_id: UUID,
+        is_admin: bool = False,
     ) -> EventIdea:
         # Validate event exists and is active
         event = await self.event_repo.get_by_id(event_id)
@@ -68,11 +69,12 @@ class CreateEventIdeaFromRoomUseCase:
             raise ForbiddenException("You do not have permission to view this room")
 
         # Resolve linked problem (if any) → user_problem
+        # Only include problem content if user has access to it
         source_problem_id = None
         user_problem = None
         if room.problem_id:
             problem = await self.problem_repo.get_by_id(room.problem_id)
-            if problem:
+            if problem and problem.is_visible_to(user_id, is_admin):
                 source_problem_id = problem.id
                 user_problem = html_to_tiptap(problem.content)
 

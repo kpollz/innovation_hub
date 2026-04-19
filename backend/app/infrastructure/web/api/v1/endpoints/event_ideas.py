@@ -156,7 +156,7 @@ async def create_idea_from_room(
         event_repo, team_repo, idea_repo, room_idea_repo, room_repo, problem_repo
     )
     try:
-        idea = await use_case.execute(event_id, data.room_id, data.idea_id, current_user.id)
+        idea = await use_case.execute(event_id, data.room_id, data.idea_id, current_user.id, current_user.role == "admin")
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
