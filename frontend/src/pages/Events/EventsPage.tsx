@@ -53,7 +53,7 @@ export const EventsPage: React.FC = () => {
   ];
 
   return (
-    <div className="px-4 py-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -93,7 +93,7 @@ export const EventsPage: React.FC = () => {
 
       {/* Loading */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-5 animate-pulse">
               <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
@@ -118,7 +118,7 @@ export const EventsPage: React.FC = () => {
 
       {/* Event Cards */}
       {!loading && events.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => (
             <button
               key={event.id}

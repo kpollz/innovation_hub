@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, LayoutGrid, List, Lightbulb, Filter, Lock } from 'lucide-react';
+import { Plus, LayoutGrid, List, Lightbulb, Filter, Lock, BrainCircuit } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -121,7 +121,10 @@ export const IdeaLabPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('rooms.title')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <BrainCircuit className="h-7 w-7 text-primary-600" />
+            {t('rooms.title')}
+          </h1>
           <p className="text-gray-600 mt-1">
             {t('rooms.subtitle')}
           </p>
