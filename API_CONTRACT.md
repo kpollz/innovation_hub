@@ -1319,6 +1319,8 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
 
 ## 17. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm
 
+> **Tiêu chí chấm điểm cố định**: 8 tiêu chí mặc định (4 Problem + 4 Solution), tự động tạo (auto-seed) khi event lần đầu được truy cập. Không thể tạo/sửa/xóa qua API.
+
 ### Cơ chế chấm điểm (5-point Likert Scale)
 
 Mỗi tiêu chí được đánh giá trên thang điểm **5 mức độ đồng ý**:
@@ -1377,30 +1379,12 @@ event_scores: id, event_idea_id, scorer_team_id,
 -- Constraint: UNIQUE(event_idea_id, scorer_team_id) — 1 đội chỉ chấm 1 lần/idea
 ```
 
-### 17.1 POST `/events/{event_id}/criteria` — Tạo tiêu chí chấm điểm 🔒 (Admin only)
-- **Quyền**: Admin
-- **Status**: 201 Created
-- **Condition**: Event chưa có criteria (chỉ tạo 1 lần)
+### 17.1 GET `/events/{event_id}/criteria` — Xem tiêu chí
+- **Status**: 200 OK
+- **Auto-seed**: Nếu event chưa có criteria → tự động tạo 8 tiêu chí mặc định
+- **Response:** `EventScoringCriteriaObject[]` (sorted by `group` ASC, `sort_order` ASC)
 
-**Request Body:**
-```json
-{
-  "criteria": [
-    {
-      "group": "problem | solution (bắt buộc)",
-      "name": "string (bắt buộc)",
-      "description": "string (tùy chọn)",
-      "weight": 1.0,
-      "max_score": 12.5,
-      "sort_order": 0
-    }
-  ]
-}
-```
-
-> **Logic**: Accept array để tạo nhiều criteria cùng lúc. Nếu body rỗng hoặc không truyền criteria → tạo 8 criteria mặc định (xem dưới).
-
-**Default Criteria (nếu không truyền):**
+**8 Tiêu chí cố định:**
 
 | # | Group | Name | Description | Weight | Max Score |
 |---|-------|------|-------------|--------|-----------|
@@ -1413,13 +1397,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 | 7 | solution | Competitive Advantage | Giải pháp có những điểm khác biệt và ưu thế cạnh tranh so với các giải pháp hiện có? | 1.0 | 12.5 |
 | 8 | solution | Technical Feasibility | Giải pháp khả thi về mặt kỹ thuật, có thể phát triển dựa trên công nghệ hiện tại hoặc tương lai gần? | 1.0 | 12.5 |
 
-**Response:** `EventScoringCriteriaObject[]`
-
-### 17.2 GET `/events/{event_id}/criteria` — Xem tiêu chí 🔒
-- **Status**: 200 OK
-- **Response:** `EventScoringCriteriaObject[]` (sorted by `group` ASC, `sort_order` ASC)
-
-### 17.3 POST `/events/{event_id}/ideas/{idea_id}/scores` — Chấm điểm 🔒
+### 17.2 POST `/events/{event_id}/ideas/{idea_id}/scores` — Chấm điểm 🔒
 - **Quyền**: Team Lead của team được gán chấm team sở hữu idea (`can_score = true`)
 - **Status**: 201 Created
 - **Condition**: Event phải `active`
@@ -1443,7 +1421,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 **Response:** EventScoreObject
 
-### 17.4 PUT `/events/{event_id}/ideas/{idea_id}/scores` — Cập nhật điểm 🔒
+### 17.3 PUT `/events/{event_id}/ideas/{idea_id}/scores` — Cập nhật điểm 🔒
 - **Quyền**: Team Lead đã chấm (cùng điều kiện 17.3)
 - **Status**: 200 OK
 - **Condition**: Event phải `active`
@@ -1453,7 +1431,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 **Response:** EventScoreObject
 
-### 17.5 GET `/events/{event_id}/ideas/{idea_id}/scores` — Xem điểm 🔒
+### 17.4 GET `/events/{event_id}/ideas/{idea_id}/scores` — Xem điểm 🔒
 - **Status**: 200 OK
 
 **Response:**

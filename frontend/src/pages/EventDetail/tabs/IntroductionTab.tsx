@@ -13,12 +13,11 @@ export const IntroductionTab: React.FC<IntroductionTabProps> = ({ event }) => {
 
   if (event.introduction_type === 'embed' && event.embed_url) {
     return (
-      <div className="w-full">
+      <div className="w-full" style={{ aspectRatio: '16 / 9' }}>
         <iframe
           src={event.embed_url}
           title="Event Introduction"
-          className="w-full border border-gray-200 rounded-lg"
-          style={{ minHeight: '500px' }}
+          className="w-full h-full border border-gray-200 rounded-lg"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
         />
       </div>

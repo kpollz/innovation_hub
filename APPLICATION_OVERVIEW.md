@@ -204,7 +204,7 @@ total_score = Σ(score_i × weight_i)
 Tổng tối đa = 8 × 12.5 = 100 điểm
 ```
 
-- Có thể thêm/xóa tiêu chí per Event qua API (không cần migration)
+- 8 tiêu chí cố định, tự động tạo (auto-seed) khi event lần đầu được truy cập — không thể tạo/sửa/xóa qua API
 - Mỗi đội chỉ chấm 1 lần cho mỗi idea
 - Chỉ Team Lead (của team được gán) mới chấm được
 

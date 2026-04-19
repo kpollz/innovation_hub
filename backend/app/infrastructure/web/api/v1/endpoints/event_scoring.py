@@ -51,37 +51,27 @@ def _handle_exceptions(exc):
 # --- Criteria endpoints ---
 
 
-@router.post("/criteria", response_model=list[CriteriaResponseDTO], status_code=status.HTTP_201_CREATED)
-async def create_criteria(
-    event_id: UUID,
-    data: CreateCriteriaDTO = None,
-    current_user: UserResponseDTO = Depends(get_current_active_user),
-    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
-    criteria_repo: SQLEventScoringCriteriaRepository = Depends(deps.get_event_scoring_criteria_repo),
-):
-    """Create scoring criteria for an event. Admin only. Empty body = 8 defaults."""
-    is_admin = current_user.role == "admin"
-    use_case = CreateCriteriaUseCase(event_repo, criteria_repo)
-    try:
-        criteria_data = [c.model_dump() for c in data.criteria] if data and data.criteria else None
-        criteria = await use_case.execute(event_id, criteria_data, is_admin)
-    except (NotFoundException, ForbiddenException, ConflictException, ValidationException) as e:
-        _handle_exceptions(e)
-    return criteria
-
-
 @router.get("/criteria", response_model=list[CriteriaResponseDTO])
 async def list_criteria(
     event_id: UUID,
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     criteria_repo: SQLEventScoringCriteriaRepository = Depends(deps.get_event_scoring_criteria_repo),
 ):
-    """View scoring criteria for an event."""
+    """View scoring criteria for an event. Auto-seeds defaults if none exist."""
     use_case = ListCriteriaUseCase(event_repo, criteria_repo)
     try:
-        return await use_case.execute(event_id)
+        criteria = await use_case.execute(event_id)
     except NotFoundException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    if not criteria:
+        create_uc = CreateCriteriaUseCase(event_repo, criteria_repo)
+        try:
+            criteria = await create_uc.execute(event_id, None, is_admin=True)
+        except ConflictException:
+            criteria = await use_case.execute(event_id)
+
+    return criteria
 
 
 # --- Score endpoints ---

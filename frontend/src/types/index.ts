@@ -476,17 +476,6 @@ export interface EventScoringCriteriaObject {
   created_at: string;
 }
 
-export interface CreateCriteriaDTO {
-  criteria: {
-    group: EventCriteriaGroup;
-    name: string;
-    description?: string;
-    weight?: number;
-    max_score?: number;
-    sort_order?: number;
-  }[];
-}
-
 export interface EventScoreObject {
   id: string;
   event_idea_id: string;

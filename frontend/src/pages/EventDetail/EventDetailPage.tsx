@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Calendar, Users, AlertTriangle, Info, Edit2 } from 'lucide-react';
+import { Calendar, Users, AlertTriangle, Info, Edit2 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
-import { EVENT_TABS } from '@/utils/constants';
+
 import { IntroductionTab } from './tabs/IntroductionTab';
 import { TeamsTab } from './tabs/TeamsTab';
 import { IdeasTab } from './tabs/ideas';
@@ -24,7 +24,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
 export const EventDetailPage: React.FC = () => {
   const { id, ideaId } = useParams<{ id: string; ideaId?: string }>();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { showModal } = useUIStore();
@@ -81,20 +81,11 @@ export const EventDetailPage: React.FC = () => {
 
   useEffect(() => { if (event) fetchMyTeam(); }, [event, fetchMyTeam]);
 
-  const handleTabChange = (tabKey: string) => {
-    setSearchParams({ tab: tabKey });
-  };
-
   if (loading) {
     return (
       <div className="px-4 py-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
         <div className="h-4 bg-gray-200 rounded w-1/4 mb-6" />
-        <div className="flex gap-1 mb-6">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-gray-100 rounded-md w-24" />
-          ))}
-        </div>
         <div className="h-64 bg-gray-100 rounded-lg" />
       </div>
     );
@@ -125,23 +116,25 @@ export const EventDetailPage: React.FC = () => {
   const statusStyle = statusStyles[event.status] || statusStyles.draft;
 
   return (
-    <div className="px-4 py-6">
-      {/* Back button */}
-      <button
-        onClick={() => navigate('/events')}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('events.back_to_events')}
-      </button>
-
+    <div className="px-4 py-6 space-y-6">
       {/* Event Header */}
-      <div className="mb-6">
-        <div className="flex items-start gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
-            {t(`events.status_${event.status}`)}
-          </span>
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
+              {t(`events.status_${event.status}`)}
+            </span>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={() => showModal({ type: 'editEvent' })}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0"
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+              {t('events.edit.button')}
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
@@ -164,51 +157,19 @@ export const EventDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Admin Actions */}
-      {isAdmin && (
-        <div className="flex items-center gap-2 mb-4">
-          <button
-            onClick={() => showModal({ type: 'editEvent' })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Edit2 className="h-3.5 w-3.5" />
-            {t('events.edit.button')}
-          </button>
-        </div>
-      )}
-
       {/* Status Notice */}
       {event.status === 'draft' && (
-        <div className="flex items-center gap-2 p-3 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+        <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
           <Info className="h-4 w-4 flex-shrink-0" />
           {t('events.draft_notice')}
         </div>
       )}
       {event.status === 'closed' && (
-        <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           <Info className="h-4 w-4 flex-shrink-0" />
           {t('events.closed_notice')}
         </div>
       )}
-
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-0">
-          {EVENT_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => handleTabChange(tab.key)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-primary-600 text-primary-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {t(tab.label)}
-            </button>
-          ))}
-        </nav>
-      </div>
 
       {/* Tab Content */}
       <div>

@@ -17,7 +17,6 @@ import type {
   CreateEventIdeaFromRoom,
   EventIdeaFilters,
   EventScoringCriteriaObject,
-  CreateCriteriaDTO,
   EventScoreObject,
   ScoreInputDTO,
   ScoreListResponse,
@@ -165,11 +164,6 @@ export const eventsApi = {
   // --- Scoring ---
   getCriteria: async (eventId: string): Promise<EventScoringCriteriaObject[]> => {
     const response = await apiClient.get<EventScoringCriteriaObject[]>(`/events/${eventId}/criteria`);
-    return response.data;
-  },
-
-  createCriteria: async (eventId: string, data?: CreateCriteriaDTO): Promise<EventScoringCriteriaObject[]> => {
-    const response = await apiClient.post<EventScoringCriteriaObject[]>(`/events/${eventId}/criteria`, data || {});
     return response.data;
   },
 

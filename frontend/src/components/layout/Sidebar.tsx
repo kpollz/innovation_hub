@@ -10,7 +10,9 @@ import {
   Trophy,
   ChevronDown,
   ChevronRight,
-  X
+  X,
+  FileText,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -35,6 +37,14 @@ const statusDot: Record<string, string> = {
   closed: 'bg-red-400',
 };
 
+const tabItems = [
+  { key: 'introduction', label: 'events.tabs.introduction', icon: FileText },
+  { key: 'teams', label: 'events.tabs.teams', icon: Users },
+  { key: 'ideas', label: 'events.tabs.ideas', icon: Lightbulb },
+  { key: 'dashboard', label: 'events.tabs.dashboard', icon: LayoutDashboard },
+  { key: 'faq', label: 'events.tabs.faq', icon: HelpCircle },
+];
+
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
@@ -47,6 +57,12 @@ export const Sidebar: React.FC = () => {
   const [events, setEvents] = useState<EventObject[]>([]);
 
   const isEventsActive = location.pathname.startsWith('/events');
+  const eventPathMatch = location.pathname.match(/^\/events\/([^/]+)/);
+  const currentEventId = eventPathMatch ? eventPathMatch[1] : null;
+  const urlSearchParams = new URLSearchParams(location.search);
+  const currentTab = urlSearchParams.get('tab') || 'introduction';
+  const isIdeaDetail = location.pathname.includes('/ideas/');
+  const effectiveTab = isIdeaDetail ? 'ideas' : currentTab;
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -124,37 +140,50 @@ export const Sidebar: React.FC = () => {
 
           {/* Events Nav Item (collapsible) */}
           <div>
-            <button
-              onClick={() => setEventsOpen(!eventsOpen)}
-              className={classNames(
-                'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                isEventsActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
-              )}
-            >
-              <Trophy className={classNames('h-5 w-5', isEventsActive ? 'text-primary-600' : 'text-gray-500')} />
-              <span className="flex-1 text-left">{t('nav.events')}</span>
-              {eventsOpen ? (
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              )}
-            </button>
+            <div className="flex items-center">
+              <NavLink
+                to="/events"
+                onClick={() => setSidebarOpen(false)}
+                className={classNames(
+                  'flex-1 flex items-center gap-3 px-4 py-3 rounded-l-lg text-sm font-medium transition-colors',
+                  isEventsActive
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-gray-700 hover:bg-gray-100'
+                )}
+              >
+                <Trophy className={classNames('h-5 w-5', isEventsActive ? 'text-primary-600' : 'text-gray-500')} />
+                <span>{t('nav.events')}</span>
+              </NavLink>
+              <button
+                onClick={() => setEventsOpen(!eventsOpen)}
+                className={classNames(
+                  'px-2 py-3 rounded-r-lg transition-colors',
+                  isEventsActive
+                    ? 'bg-primary-50 text-primary-600 hover:bg-primary-100'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                )}
+              >
+                {eventsOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+            </div>
 
             {/* Events dropdown */}
-            {eventsOpen && (
+            {eventsOpen && events.length > 0 && (
               <div className="ml-4 mt-1 space-y-0.5">
-                {events.length > 0 ? (
-                  <>
-                    {events.map((event) => (
+                {events.map((event) => {
+                  const isCurrentEvent = currentEventId === event.id;
+                  return (
+                    <div key={event.id}>
                       <NavLink
-                        key={event.id}
                         to={`/events/${event.id}`}
                         onClick={() => setSidebarOpen(false)}
                         className={classNames(
                           'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
-                          location.pathname === `/events/${event.id}`
+                          isCurrentEvent
                             ? 'bg-primary-50 text-primary-700 font-medium'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         )}
@@ -162,27 +191,35 @@ export const Sidebar: React.FC = () => {
                         <span className={classNames('w-2 h-2 rounded-full flex-shrink-0', statusDot[event.status] || 'bg-gray-300')} />
                         <span className="truncate">{event.title}</span>
                       </NavLink>
-                    ))}
-                    <NavLink
-                      to="/events"
-                      onClick={() => setSidebarOpen(false)}
-                      className={classNames(
-                        'flex items-center gap-2 px-3 py-2 rounded-md text-xs text-gray-400 hover:text-primary-600 transition-colors',
-                        location.pathname === '/events' ? 'text-primary-600 font-medium' : ''
+
+                      {/* Tab sub-items for current event */}
+                      {isCurrentEvent && (
+                        <div className="ml-4 mt-0.5 space-y-0.5">
+                          {tabItems.map((tab) => {
+                            const TabIcon = tab.icon;
+                            const isTabActive = effectiveTab === tab.key;
+                            return (
+                              <NavLink
+                                key={tab.key}
+                                to={`/events/${event.id}?tab=${tab.key}`}
+                                onClick={() => setSidebarOpen(false)}
+                                className={classNames(
+                                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors',
+                                  isTabActive
+                                    ? 'text-primary-700 font-medium bg-primary-50'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                )}
+                              >
+                                <TabIcon className="h-3.5 w-3.5" />
+                                <span>{t(tab.label)}</span>
+                              </NavLink>
+                            );
+                          })}
+                        </div>
                       )}
-                    >
-                      {t('events.view_all')} →
-                    </NavLink>
-                  </>
-                ) : (
-                  <NavLink
-                    to="/events"
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-gray-400 hover:text-primary-600 transition-colors"
-                  >
-                    {t('events.view_all')} →
-                  </NavLink>
-                )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
