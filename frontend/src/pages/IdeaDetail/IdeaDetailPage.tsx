@@ -220,7 +220,7 @@ export const IdeaDetailPage: React.FC = () => {
   const isTerminal = ['submitted', 'closed'].includes(idea.status);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Back link */}
       <Link
         to={`/rooms/${idea.room_id}`}
