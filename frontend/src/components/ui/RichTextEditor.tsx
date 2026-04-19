@@ -44,8 +44,10 @@ interface RichTextEditorProps {
 }
 
 const COLORS = [
-  '#000000', '#374151', '#6b7280', '#dc2626', '#ea580c',
-  '#d97706', '#16a34a', '#2563eb', '#7c3aed', '#db2777',
+  '#000000', '#434343', '#666666', '#999999',
+  '#dc2626', '#ea580c', '#d97706', '#ca8a04',
+  '#16a34a', '#059669', '#0891b2', '#2563eb',
+  '#4f46e5', '#7c3aed', '#a855f7', '#db2777',
 ];
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -271,41 +273,62 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
           <Separator />
 
-          {/* Text color - click toggle */}
+          {/* Text color */}
           <div className="relative" ref={colorPickerRef}>
             <ToolbarButton
               onClick={() => setShowColorPicker(!showColorPicker)}
               isActive={showColorPicker}
               title="Text Color"
             >
-              <Palette className={iconSize} />
+              <div className="relative">
+                <Palette className={iconSize} />
+                <span
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-3 rounded-full"
+                  style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }}
+                />
+              </div>
             </ToolbarButton>
             {showColorPicker && (
-              <div className="absolute left-0 top-full mt-1 grid grid-cols-5 gap-1 p-2 bg-white rounded-lg shadow-lg border border-gray-200 z-30">
-                {COLORS.map((color) => (
+              <div className="absolute left-0 top-full mt-1 p-3 bg-white rounded-lg shadow-lg border border-gray-200 z-30 w-[184px]">
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => {
+                        editor.chain().focus().setColor(color).run();
+                        setShowColorPicker(false);
+                      }}
+                      className="w-8 h-8 rounded-md border-2 border-gray-200 hover:border-gray-400 hover:scale-110 transition-all cursor-pointer"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                  <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                    <input
+                      type="color"
+                      className="w-7 h-7 rounded cursor-pointer border-0 p-0"
+                      onChange={(e) => {
+                        editor.chain().focus().setColor(e.target.value).run();
+                        setShowColorPicker(false);
+                      }}
+                    />
+                    Custom
+                  </label>
                   <button
-                    key={color}
                     type="button"
                     onClick={() => {
-                      editor.chain().focus().setColor(color).run();
+                      editor.chain().focus().unsetColor().run();
                       setShowColorPicker(false);
                     }}
-                    className="w-6 h-6 rounded border border-gray-200 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    editor.chain().focus().unsetColor().run();
-                    setShowColorPicker(false);
-                  }}
-                  className="w-6 h-6 rounded border border-gray-200 text-xs hover:bg-gray-100"
-                  title="Reset color"
-                >
-                  ✕
-                </button>
+                    className="ml-auto px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                    title="Reset color"
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
             )}
           </div>
