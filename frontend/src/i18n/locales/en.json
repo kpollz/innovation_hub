@@ -413,6 +413,52 @@
     "not_found": "Event not found",
     "back_to_events": "Back to Events",
     "coming_soon_create": "Create Event feature is coming soon!",
+    "edit": {
+      "button": "Edit Event",
+      "modal_title": "Edit Event",
+      "status_label": "Status",
+      "success": "Event updated successfully!",
+      "error": "Failed to update event. Please try again."
+    },
+    "activate": {
+      "button": "Activate",
+      "confirm": "Are you sure you want to activate this event? Teams can start joining and submitting ideas.",
+      "success": "Event activated successfully!",
+      "error": "Failed to activate event."
+    },
+    "close": {
+      "button": "Close Event",
+      "confirm": "Are you sure you want to close this event? All content will become read-only.",
+      "success": "Event closed successfully!",
+      "error": "Failed to close event."
+    },
+    "delete": {
+      "button": "Delete",
+      "confirm": "Are you sure you want to delete this event? This action cannot be undone.",
+      "success": "Event deleted successfully!",
+      "error": "Failed to delete event."
+    },
+    "create": {
+      "modal_title": "Create New Event",
+      "title_label": "Event Title",
+      "title_placeholder": "Enter event title...",
+      "introduction_type_label": "Introduction Type",
+      "type_editor": "Rich Text Editor",
+      "type_embed": "Embed URL",
+      "description_label": "Description",
+      "description_placeholder": "Write event introduction...",
+      "embed_url_label": "Embed URL",
+      "embed_url_placeholder": "https://example.com/introduction",
+      "embed_url_required": "Embed URL is required when type is Embed",
+      "embed_url_invalid": "Embed URL must start with http:// or https://",
+      "start_date_label": "Start Date",
+      "end_date_label": "End Date",
+      "date_placeholder": "Select date",
+      "end_date_before_start": "End date must be after start date",
+      "submit": "Create Event",
+      "success": "Event created successfully!",
+      "error": "Failed to create event. Please try again."
+    },
     "tabs": {
       "introduction": "Introduction",
       "teams": "Teams",

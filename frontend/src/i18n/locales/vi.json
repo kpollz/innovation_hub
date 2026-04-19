@@ -407,6 +407,52 @@
     "not_found": "Không tìm thấy sự kiện",
     "back_to_events": "Quay lại Sự kiện",
     "coming_soon_create": "Tính năng Tạo sự kiện sắp ra mắt!",
+    "edit": {
+      "button": "Chỉnh sửa",
+      "modal_title": "Chỉnh sửa Sự kiện",
+      "status_label": "Trạng thái",
+      "success": "Cập nhật sự kiện thành công!",
+      "error": "Không thể cập nhật sự kiện. Vui lòng thử lại."
+    },
+    "activate": {
+      "button": "Kích hoạt",
+      "confirm": "Bạn có chắc muốn kích hoạt sự kiện này? Các đội có thể bắt đầu tham gia và nộp ý tưởng.",
+      "success": "Kích hoạt sự kiện thành công!",
+      "error": "Không thể kích hoạt sự kiện."
+    },
+    "close": {
+      "button": "Đóng sự kiện",
+      "confirm": "Bạn có chắc muốn đóng sự kiện này? Toàn bộ nội dung sẽ chỉ có thể xem.",
+      "success": "Đóng sự kiện thành công!",
+      "error": "Không thể đóng sự kiện."
+    },
+    "delete": {
+      "button": "Xóa",
+      "confirm": "Bạn có chắc muốn xóa sự kiện này? Không thể hoàn tác.",
+      "success": "Xóa sự kiện thành công!",
+      "error": "Không thể xóa sự kiện."
+    },
+    "create": {
+      "modal_title": "Tạo Sự kiện mới",
+      "title_label": "Tên sự kiện",
+      "title_placeholder": "Nhập tên sự kiện...",
+      "introduction_type_label": "Kiểu giới thiệu",
+      "type_editor": "Trình soạn thảo",
+      "type_embed": "Nhúng URL",
+      "description_label": "Mô tả",
+      "description_placeholder": "Viết nội dung giới thiệu sự kiện...",
+      "embed_url_label": "URL nhúng",
+      "embed_url_placeholder": "https://example.com/gioi-thieu",
+      "embed_url_required": "URL nhúng là bắt buộc khi chọn kiểu Nhúng URL",
+      "embed_url_invalid": "URL phải bắt đầu bằng http:// hoặc https://",
+      "start_date_label": "Ngày bắt đầu",
+      "end_date_label": "Ngày kết thúc",
+      "date_placeholder": "Chọn ngày",
+      "end_date_before_start": "Ngày kết thúc phải sau ngày bắt đầu",
+      "submit": "Tạo sự kiện",
+      "success": "Tạo sự kiện thành công!",
+      "error": "Không thể tạo sự kiện. Vui lòng thử lại."
+    },
     "tabs": {
       "introduction": "Giới thiệu",
       "teams": "Đội",

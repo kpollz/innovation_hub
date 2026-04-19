@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Trophy, Plus, Calendar, Users, Lightbulb, ChevronRight } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
+import { CreateEventModal } from './CreateEventModal';
 import type { EventObject, EventStatus } from '@/types';
 
 type FilterStatus = EventStatus | 'all';
@@ -18,26 +20,28 @@ export const EventsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { showModal } = useUIStore();
   const [events, setEvents] = useState<EventObject[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterStatus>('all');
 
   const isAdmin = user?.role === 'admin';
 
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const result = await eventsApi.list(
+        filter === 'all' ? {} : { status: filter as EventStatus, limit: 100 }
+      );
+      setEvents(result.items);
+    } catch {
+      // error handled silently, empty state shown
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const result = await eventsApi.list(
-          filter === 'all' ? {} : { status: filter as EventStatus, limit: 100 }
-        );
-        setEvents(result.items);
-      } catch {
-        // error handled silently, empty state shown
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchEvents();
   }, [filter]);
 
@@ -61,7 +65,7 @@ export const EventsPage: React.FC = () => {
         </div>
         {isAdmin && (
           <button
-            onClick={() => alert(t('events.coming_soon_create', 'Create Event feature is coming soon!'))}
+            onClick={() => showModal({ type: 'createEvent' })}
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
           >
             <Plus className="h-4 w-4" />
@@ -163,6 +167,8 @@ export const EventsPage: React.FC = () => {
           ))}
         </div>
       )}
+
+      <CreateEventModal onSuccess={() => window.location.reload()} />
     </div>
   );
 };
