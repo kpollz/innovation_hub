@@ -1,14 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Calendar, Users, AlertTriangle, Info } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, AlertTriangle, Info, Edit2 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 import { EVENT_TABS } from '@/utils/constants';
 import { IntroductionTab } from './tabs/IntroductionTab';
 import { TeamsTab } from './tabs/TeamsTab';
 import { IdeasTab } from './tabs/ideas';
 import { DashboardTab } from './tabs/DashboardTab';
 import { FAQTab } from './tabs/FAQTab';
+import { EditEventModal } from './tabs/EditEventModal';
 import { EventIdeaDetailPage } from './tabs/ideas/EventIdeaDetailPage';
 import type { EventObject, EventTeamObject } from '@/types';
 
@@ -23,6 +26,9 @@ export const EventDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const { showModal } = useUIStore();
+  const isAdmin = user?.role === 'admin';
 
   const [event, setEvent] = useState<EventObject | null>(null);
   const [myTeam, setMyTeam] = useState<EventTeamObject | null>(null);
@@ -31,22 +37,21 @@ export const EventDetailPage: React.FC = () => {
 
   const activeTab = searchParams.get('tab') || 'introduction';
 
-  useEffect(() => {
+  const fetchEvent = useCallback(async (silent = false) => {
     if (!id) return;
-    const fetchEvent = async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        const data = await eventsApi.getById(id);
-        setEvent(data);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvent();
+    if (!silent) setLoading(true);
+    setError(false);
+    try {
+      const data = await eventsApi.getById(id);
+      setEvent(data);
+    } catch {
+      setError(true);
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => { fetchEvent(); }, [fetchEvent]);
 
   // Fetch user's team for the event
   const fetchMyTeam = useCallback(async () => {
@@ -159,6 +164,19 @@ export const EventDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Admin Actions */}
+      {isAdmin && (
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => showModal({ type: 'editEvent' })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+            {t('events.edit.button')}
+          </button>
+        </div>
+      )}
+
       {/* Status Notice */}
       {event.status === 'draft' && (
         <div className="flex items-center gap-2 p-3 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
@@ -200,6 +218,8 @@ export const EventDetailPage: React.FC = () => {
         {activeTab === 'dashboard' && <DashboardTab event={event} />}
         {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
       </div>
+
+      {isAdmin && <EditEventModal event={event} onSaved={() => window.location.reload()} />}
     </div>
   );
 };

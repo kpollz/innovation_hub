@@ -60,6 +60,10 @@ export const eventsApi = {
     return response.data;
   },
 
+  deleteEvent: async (id: string): Promise<void> => {
+    await apiClient.delete(`/events/${id}`);
+  },
+
   // --- Teams ---
   listTeams: async (eventId: string, page = 1, limit = 20): Promise<PaginatedResponse<EventTeamObject>> => {
     const response = await apiClient.get<PaginatedResponse<EventTeamObject>>(
