@@ -13,6 +13,7 @@ import type { DateRangeParams } from '@/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
+import { PROBLEM_STATUSES, IDEA_STATUSES } from '@/utils/constants';
 import { DatePicker } from '@/components/ui/DatePicker';
 import type { DashboardStats, TopContributor } from '@/types';
 
@@ -178,12 +179,16 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats?.problems_by_status && Object.entries(stats.problems_by_status).map(([status, count]) => (
+              {stats?.problems_by_status && Object.entries(stats.problems_by_status).map(([status, count]) => {
+                const statusCfg = PROBLEM_STATUSES.find(s => s.value === status);
+                return (
                 <div key={status} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Badge variant={status === 'open' ? 'warning' : status === 'solved' ? 'success' : 'default'}>
-                      {status}
-                    </Badge>
+                    {statusCfg ? (
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusCfg.color}`}>{statusCfg.label}</span>
+                    ) : (
+                      <Badge>{status}</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 flex-1 ml-4">
                     <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -197,7 +202,8 @@ export const DashboardPage: React.FC = () => {
                     <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {!stats?.problems_by_status && (
                 <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
               )}
@@ -211,16 +217,16 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats?.ideas_by_status && Object.entries(stats.ideas_by_status).map(([status, count]) => (
+              {stats?.ideas_by_status && Object.entries(stats.ideas_by_status).map(([status, count]) => {
+                const statusCfg = IDEA_STATUSES.find(s => s.value === status);
+                return (
                 <div key={status} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Badge variant={
-                      status === 'submitted' ? 'success' :
-                      status === 'reviewing' ? 'warning' :
-                      status === 'closed' ? 'danger' : 'default'
-                    }>
-                      {status}
-                    </Badge>
+                    {statusCfg ? (
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusCfg.color}`}>{statusCfg.label}</span>
+                    ) : (
+                      <Badge>{status}</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 flex-1 ml-4">
                     <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -234,7 +240,8 @@ export const DashboardPage: React.FC = () => {
                     <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {!stats?.ideas_by_status && (
                 <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
               )}

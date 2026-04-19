@@ -289,7 +289,97 @@ export const ProblemDetailPage: React.FC = () => {
       {/* Problem Header */}
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {selectedProblem.title}
+            </h1>
+            {/* Actions Dropdown for Owner/Admin */}
+            {canModify && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowActions(!showActions)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="h-5 w-5 text-gray-500" />
+                </button>
+
+                {showActions && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowActions(false)}
+                    />
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                      <button
+                        onClick={openEditModal}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        {t('problems.edit_problem')}
+                      </button>
+
+                      <div className="border-t border-gray-200 my-1" />
+
+                      {(() => {
+                        const current = selectedProblem.status;
+                        const terminal = ['solved', 'closed'];
+                        if (terminal.includes(current)) return null;
+                        const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
+                        const currentIdx = order.indexOf(current);
+                        const options = PROBLEM_STATUSES.filter((s) => {
+                          const targetIdx = order.indexOf(s.value);
+                          return targetIdx > currentIdx && terminal.includes(s.value);
+                        });
+                        if (options.length === 0) return null;
+                        return (<>
+                      <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
+                      {options.map((s) => (
+                        <button
+                          key={s.value}
+                          onClick={() => handleStatusChange(s.value as ProblemStatus)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                          <Circle className="h-4 w-4" />
+                          {s.label}
+                        </button>
+                      ))}
+                        </>);
+                      })()}
+
+                      <div className="border-t border-gray-200 my-1" />
+
+                      <button
+                        onClick={() => {
+                          setShowActions(false);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {t('problems.delete_problem')}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          <div className="text-gray-700 rich-content">
+            <TipTapRenderer content={selectedProblem.content} />
+          </div>
+
+          {/* Author + Tags row */}
+          <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar src={authorAvatar} name={authorName} size="lg" />
+              <div>
+                <p className="text-sm font-medium text-gray-900">{authorName}</p>
+                <p className="text-xs text-gray-500">Posted {timeAgo(selectedProblem.created_at)}</p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               {category && (
                 <Badge variant="info" size="sm">{category.label}</Badge>
@@ -306,107 +396,6 @@ export const ProblemDetailPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
-                Posted {timeAgo(selectedProblem.created_at)}
-              </span>
-
-              {/* Actions Dropdown for Owner/Admin */}
-              {canModify && (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowActions(!showActions)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <MoreVertical className="h-5 w-5 text-gray-500" />
-                  </button>
-
-                  {showActions && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowActions(false)}
-                      />
-                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                        <button
-                          onClick={openEditModal}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          {t('problems.edit_problem')}
-                        </button>
-
-                        <div className="border-t border-gray-200 my-1" />
-
-                        {(() => {
-                          const current = selectedProblem.status;
-                          const terminal = ['solved', 'closed'];
-                          if (terminal.includes(current)) return null;
-                          const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
-                          const currentIdx = order.indexOf(current);
-                          const options = PROBLEM_STATUSES.filter((s) => {
-                            const targetIdx = order.indexOf(s.value);
-                            return targetIdx > currentIdx && terminal.includes(s.value);
-                          });
-                          if (options.length === 0) return null;
-                          return (<>
-                        <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
-                        {options.map((s) => (
-                          <button
-                            key={s.value}
-                            onClick={() => handleStatusChange(s.value as ProblemStatus)}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                          >
-                            <Circle className="h-4 w-4" />
-                            {s.label}
-                          </button>
-                        ))}
-                          </>);
-                        })()}
-
-                        <div className="border-t border-gray-200 my-1" />
-
-                        <button
-                          onClick={() => {
-                            setShowActions(false);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {t('problems.delete_problem')}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-0">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {selectedProblem.title}
-          </h1>
-          <div className="text-gray-700 rich-content">
-            <TipTapRenderer content={selectedProblem.content} />
-          </div>
-
-          {/* Author Info */}
-          <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar src={authorAvatar} name={authorName} size="lg" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {authorName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {t('common.author')}
-                </p>
-              </div>
-            </div>
-
           </div>
         </CardContent>
       </Card>

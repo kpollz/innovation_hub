@@ -233,15 +233,8 @@ export const IdeaDetailPage: React.FC = () => {
       {/* Header Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {status && <Badge className={status.color}>{status.label}</Badge>}
-              {idea.is_pinned && (
-                <Badge className="bg-amber-100 text-amber-800">
-                  <Pin className="h-3 w-3 mr-1" /> Pinned
-                </Badge>
-              )}
-            </div>
+          <div className="flex items-start justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">{idea.title}</h1>
             {canModify && (
               <div className="relative">
                 <button
@@ -305,10 +298,8 @@ export const IdeaDetailPage: React.FC = () => {
         </CardHeader>
 
         <CardContent className="pt-0">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{idea.title}</h1>
-
           {idea.summary && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-4 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm font-medium text-green-800 mb-1">{t('ideas.summary')}</p>
               <p className="text-green-700">{idea.summary}</p>
             </div>
@@ -318,7 +309,7 @@ export const IdeaDetailPage: React.FC = () => {
             <TipTapRenderer content={idea.description} />
           </div>
 
-          {/* Author Info */}
+          {/* Author + Tags row */}
           <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar src={authorAvatar} name={authorName} size="lg" />
@@ -326,6 +317,14 @@ export const IdeaDetailPage: React.FC = () => {
                 <p className="text-sm font-medium text-gray-900">{authorName}</p>
                 <p className="text-xs text-gray-500">Posted {timeAgo(idea.created_at)}</p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {status && <Badge className={status.color}>{status.label}</Badge>}
+              {idea.is_pinned && (
+                <Badge className="bg-amber-100 text-amber-800">
+                  <Pin className="h-3 w-3 mr-1" /> Pinned
+                </Badge>
+              )}
             </div>
           </div>
         </CardContent>
