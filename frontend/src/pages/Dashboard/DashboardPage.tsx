@@ -28,7 +28,7 @@ const StatCard: React.FC<{
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-card-heading font-bold text-gray-900 mt-2">{value}</p>
         </div>
         <div className={`p-4 rounded-xl ${color}`}>
           <Icon className="h-6 w-6 text-white" />
@@ -81,7 +81,7 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+          <h1 className="text-section-heading font-bold text-gray-900">{t('dashboard.title')}</h1>
           <p className="text-gray-600 mt-1">{t('dashboard.welcome')}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">{t('dashboard.interaction_rate')}</p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-feature-title font-bold text-gray-900">
                   {stats.interaction_rate?.toFixed(1) || 0}%
                 </p>
               </div>
@@ -164,7 +164,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">{t('dashboard.resolved_problems')}</p>
-                <p className="text-xl font-bold text-gray-900">{stats.resolved_problems || 0}</p>
+                <p className="text-feature-title font-bold text-gray-900">{stats.resolved_problems || 0}</p>
               </div>
             </CardContent>
           </Card>

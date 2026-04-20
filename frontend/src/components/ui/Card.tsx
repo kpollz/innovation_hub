@@ -32,7 +32,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   className,
   ...props
 }) => (
-  <h3 className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+  <h3 className={cn('text-feature-title font-semibold leading-tight tracking-tight', className)} {...props} />
 );
 
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({

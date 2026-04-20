@@ -278,7 +278,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-feature-title font-semibold text-gray-900">
           {t('events.teams.title', { count: teams.length })}
         </h2>
         {canCreateTeam && (

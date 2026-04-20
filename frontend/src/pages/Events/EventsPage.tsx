@@ -57,7 +57,7 @@ export const EventsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-section-heading font-bold text-gray-900 flex items-center gap-2">
             <Trophy className="h-7 w-7 text-primary-600" />
             {t('events.title')}
           </h1>

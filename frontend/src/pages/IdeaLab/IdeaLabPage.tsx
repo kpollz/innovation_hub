@@ -46,7 +46,7 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
 
           {/* Middle: Content (flex-1 fills remaining space) */}
           <div className="px-5 flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+            <h3 className="text-feature-title font-semibold text-gray-900 mb-2 line-clamp-1">
               {room.name}
             </h3>
             <p className="text-sm text-gray-600 line-clamp-2 mb-4">
@@ -130,7 +130,7 @@ export const IdeaLabPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-section-heading font-bold text-gray-900 flex items-center gap-2">
             <BrainCircuit className="h-7 w-7 text-primary-600" />
             {t('rooms.title')}
           </h1>
@@ -200,7 +200,7 @@ export const IdeaLabPage: React.FC = () => {
 
       {/* Active Rooms */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-feature-title font-semibold text-gray-900 mb-4">
           {t('rooms.active_rooms', { count: activeRooms.length })}
         </h2>
         {isLoading ? (
@@ -226,7 +226,7 @@ export const IdeaLabPage: React.FC = () => {
       {/* Archived Rooms */}
       {archivedRooms.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-feature-title font-semibold text-gray-900 mb-4">
             {t('rooms.archived_rooms', { count: archivedRooms.length })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">

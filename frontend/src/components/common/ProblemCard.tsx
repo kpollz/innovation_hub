@@ -46,7 +46,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
 
         {/* Middle: Content (flex-1 fills remaining space) */}
         <div className="px-5 flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-feature-title font-semibold text-gray-900 mb-2 line-clamp-2">
             {problem.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-3 mb-4">

@@ -239,7 +239,7 @@ export const RoomDetailPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-gray-400'}`} />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">
+        <h2 className="text-card-heading font-semibold text-gray-700 mb-2">
           {accessError === 'forbidden' ? t('errors.forbidden_title') : t('errors.not_found_title')}
         </h2>
         <p className="text-gray-500 mb-4">
@@ -268,7 +268,7 @@ export const RoomDetailPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-900">{room.name}</h1>
+              <h1 className="text-section-heading font-bold text-gray-900">{room.name}</h1>
               <Badge variant={room.status === 'active' ? 'success' : 'default'}>
                 {room.status}
               </Badge>

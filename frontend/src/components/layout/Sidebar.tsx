@@ -106,7 +106,7 @@ export const Sidebar: React.FC = () => {
         )}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 lg:hidden flex-shrink-0">
-          <span className="text-lg font-semibold text-gray-900">{t('common.menu')}</span>
+          <span className="text-feature-title font-semibold text-gray-900">{t('common.menu')}</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="p-2 hover:bg-gray-100 rounded-lg"

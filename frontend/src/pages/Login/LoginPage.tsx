@@ -60,7 +60,7 @@ export const LoginPage: React.FC = () => {
             <div className="bg-primary-600 p-3 rounded-xl">
               <Lightbulb className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Innovation Hub</h1>
+            <h1 className="text-card-heading font-bold text-gray-900">Innovation Hub</h1>
           </div>
         </div>
 

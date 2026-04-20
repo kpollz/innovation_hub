@@ -28,7 +28,7 @@ export const Header: React.FC = () => {
             <div className="bg-primary-600 p-1.5 rounded-lg">
               <Lightbulb className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-semibold text-gray-900 hidden sm:block">
+            <span className="text-feature-title font-semibold text-gray-900 hidden sm:block">
               Innovation Hub
             </span>
           </Link>

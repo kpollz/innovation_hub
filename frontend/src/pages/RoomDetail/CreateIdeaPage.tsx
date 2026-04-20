@@ -69,7 +69,7 @@ export const CreateIdeaPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">{t('ideas.create_title')}</h1>
+          <h1 className="text-section-heading font-bold text-gray-900">{t('ideas.create_title')}</h1>
           <p className="text-gray-500 mt-1">{t('ideas.create_desc')}</p>
         </CardHeader>
         <CardContent>

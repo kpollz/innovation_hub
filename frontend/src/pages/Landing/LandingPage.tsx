@@ -17,10 +17,10 @@ export const LandingPage: React.FC = () => {
           <Sparkles className="h-4 w-4" />
           {t('landing.welcome')}
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-card-heading sm:text-section-heading md:text-display-secondary font-bold text-gray-900 mb-4">
           {t('landing.hero_title')}
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+        <p className="text-body-lg text-gray-600 max-w-2xl mx-auto mb-8">
           {t('landing.hero_desc')}{' '}
           {t('landing.hello', { name: user?.full_name || user?.username })} 👋
         </p>
@@ -34,7 +34,7 @@ export const LandingPage: React.FC = () => {
             <div className="p-3 bg-warning-100 rounded-xl">
               <AlertCircle className="h-8 w-8 text-warning-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">{t('landing.problem_feed')}</h2>
+            <h2 className="text-card-heading font-bold text-gray-900">{t('landing.problem_feed')}</h2>
           </div>
           <p className="text-gray-600 mb-6">
             {t('landing.problem_feed_desc')}
@@ -67,7 +67,7 @@ export const LandingPage: React.FC = () => {
             <div className="p-3 bg-primary-100 rounded-xl">
               <Lightbulb className="h-8 w-8 text-primary-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">{t('landing.idea_lab')}</h2>
+            <h2 className="text-card-heading font-bold text-gray-900">{t('landing.idea_lab')}</h2>
           </div>
           <p className="text-gray-600 mb-6">
             {t('landing.idea_lab_desc')}
@@ -97,7 +97,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Quick Stats */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white">
-        <h3 className="text-lg font-semibold mb-4 text-center">{t('landing.ready_to_innovate')}</h3>
+        <h3 className="text-feature-title font-semibold mb-4 text-center">{t('landing.ready_to_innovate')}</h3>
         <p className="text-primary-100 text-center max-w-xl mx-auto">
           {t('landing.ready_desc')}
         </p>
@@ -109,7 +109,7 @@ export const LandingPage: React.FC = () => {
           <HelpCircle className="h-8 w-8 text-primary-600" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{t('landing.help_card_title')}</h3>
+          <h3 className="text-feature-title font-semibold text-gray-900">{t('landing.help_card_title')}</h3>
           <p className="text-sm text-gray-600 mt-1">{t('landing.help_card_desc')}</p>
         </div>
         <Link to="/help">

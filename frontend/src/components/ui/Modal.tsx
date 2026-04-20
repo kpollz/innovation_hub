@@ -46,7 +46,7 @@ export const Modal: React.FC<ModalProps> = ({
         >
           {title && (
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <DialogPrimitive.Title className="text-lg font-semibold text-foreground">
+              <DialogPrimitive.Title className="text-feature-title font-semibold text-foreground">
                 {title}
               </DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>

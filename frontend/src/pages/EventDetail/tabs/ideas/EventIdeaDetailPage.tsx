@@ -196,7 +196,7 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{idea.title}</h1>
+          <h1 className="text-section-heading font-bold text-gray-900">{idea.title}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <Avatar
@@ -300,7 +300,7 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-feature-title font-semibold text-gray-900">
               {t('comments.title', { count: comments.length })}
             </h3>
           </div>

@@ -121,7 +121,7 @@ export const EventDetailPage: React.FC = () => {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
+            <h1 className="text-section-heading font-bold text-gray-900">{event.title}</h1>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
               {t(`events.status_${event.status}`)}
             </span>

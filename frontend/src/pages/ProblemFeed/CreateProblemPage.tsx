@@ -103,14 +103,14 @@ export const CreateProblemPage: React.FC = () => {
         <Link to="/problems" className="text-sm text-gray-600 hover:text-gray-900 mb-4 inline-block">
           ← {t('problems.back_to_problems')}
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">{t('problems.create_title')}</h1>
+        <h1 className="text-section-heading font-bold text-gray-900">{t('problems.create_title')}</h1>
         <p className="text-gray-600 mt-1">{t('problems.create_desc')}</p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader className="border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">{t('problems.problem_details')}</h2>
+            <h2 className="text-feature-title font-semibold text-gray-900">{t('problems.problem_details')}</h2>
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">

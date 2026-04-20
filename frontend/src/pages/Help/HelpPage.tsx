@@ -147,7 +147,7 @@ export const HelpPage: React.FC = () => {
           <div className="p-2.5 bg-primary-50 rounded-xl">
             <HelpCircle className="h-6 w-6 text-primary-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('help.title')}</h1>
+          <h1 className="text-section-heading font-bold text-gray-900">{t('help.title')}</h1>
         </div>
         <p className="text-gray-600 ml-14">{t('help.subtitle')}</p>
       </div>

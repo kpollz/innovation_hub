@@ -253,7 +253,7 @@ export const ProblemDetailPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-gray-400'}`} />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">
+        <h2 className="text-card-heading font-semibold text-gray-700 mb-2">
           {accessError === 'forbidden' ? t('errors.forbidden_title') : t('errors.not_found_title')}
         </h2>
         <p className="text-gray-500 mb-4">
@@ -294,7 +294,7 @@ export const ProblemDetailPage: React.FC = () => {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between flex-wrap gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-section-heading font-bold text-gray-900">
               {selectedProblem.title}
             </h1>
             {/* Actions Dropdown for Owner/Admin */}
@@ -504,7 +504,7 @@ export const ProblemDetailPage: React.FC = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-feature-title font-semibold text-gray-900">
               {t('comments.title', { count: comments.length })}
             </h2>
           </div>

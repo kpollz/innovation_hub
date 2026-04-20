@@ -135,7 +135,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <h2 className="text-feature-title font-semibold text-gray-900 flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-indigo-500" />
           {t('events.faq.title', { count: faqs.length })}
         </h2>

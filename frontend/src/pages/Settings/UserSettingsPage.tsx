@@ -119,7 +119,7 @@ export const UserSettingsPage: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+        <h1 className="text-section-heading font-bold text-gray-900">{t('settings.title')}</h1>
         <p className="text-gray-500 mt-1">{t('settings.subtitle')}</p>
       </div>
 
@@ -162,7 +162,7 @@ export const UserSettingsPage: React.FC = () => {
               )}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-feature-title font-semibold text-gray-900">
                 {user?.full_name || user?.username}
               </h2>
               <p className="text-sm text-gray-500">@{user?.username}</p>
@@ -200,7 +200,7 @@ export const UserSettingsPage: React.FC = () => {
       {activeTab === 'profile' && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">{t('settings.profile_info')}</h3>
+            <h3 className="text-feature-title font-semibold text-gray-900">{t('settings.profile_info')}</h3>
           </CardHeader>
           <CardContent className="p-6 pt-4">
             <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
@@ -243,7 +243,7 @@ export const UserSettingsPage: React.FC = () => {
       {activeTab === 'password' && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">{t('settings.change_password')}</h3>
+            <h3 className="text-feature-title font-semibold text-gray-900">{t('settings.change_password')}</h3>
           </CardHeader>
           <CardContent className="p-6 pt-4">
             <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">

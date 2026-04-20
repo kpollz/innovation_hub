@@ -59,7 +59,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
       {/* Ideas Ranking */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h2 className="text-feature-title font-semibold text-gray-900 flex items-center gap-2">
             <Trophy className="h-5 w-5 text-yellow-500" />
             {t('events.dashboard.ideas_title')}
           </h2>
@@ -154,7 +154,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
 
       {/* Teams Ranking */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+        <h2 className="text-feature-title font-semibold text-gray-900 flex items-center gap-2 mb-4">
           <Users className="h-5 w-5 text-blue-500" />
           {t('events.dashboard.teams_title')}
         </h2>

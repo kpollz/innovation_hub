@@ -236,7 +236,7 @@ export const IdeaDetailPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">{idea.title}</h1>
+            <h1 className="text-section-heading font-bold text-gray-900">{idea.title}</h1>
             {canModify && (
               <>
                 <button
@@ -407,7 +407,7 @@ export const IdeaDetailPage: React.FC = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-900">{t('comments.title', { count: comments.length })}</h2>
+            <h2 className="text-feature-title font-semibold text-gray-900">{t('comments.title', { count: comments.length })}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

@@ -149,7 +149,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
     <div>
       {/* Header with actions */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-feature-title font-semibold text-gray-900">
           {t('events.ideas.title')}
           {!loading && <span className="text-gray-400 font-normal ml-2">({total})</span>}
         </h2>

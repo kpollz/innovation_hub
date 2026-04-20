@@ -173,7 +173,19 @@ export default {
         'clay-lg': '6px 6px 0 0 hsl(var(--foreground) / 0.12), 12px 12px 0 0 hsl(var(--foreground) / 0.06), 24px 24px 0 0 hsl(var(--foreground) / 0.03)',
       },
       fontFamily: {
-        sans: ['Inter', ...defaultTheme.fontFamily.sans],
+        sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
+      },
+      fontSize: {
+        /* Clay Typography Scale */
+        'display-hero': ['5rem', { lineHeight: '1', letterSpacing: '-0.04em' }],
+        'display-secondary': ['3.75rem', { lineHeight: '1', letterSpacing: '-0.04em' }],
+        'section-heading': ['2.75rem', { lineHeight: '1.1', letterSpacing: '-0.03em' }],
+        'card-heading': ['2rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'feature-title': ['1.25rem', { lineHeight: '1.4', letterSpacing: '-0.02em' }],
+        'body-lg': ['1.25rem', { lineHeight: '1.6' }],
+        'body': ['1.125rem', { lineHeight: '1.6', letterSpacing: '-0.01em' }],
+        'caption': ['0.875rem', { lineHeight: '1.5', letterSpacing: '-0.01em' }],
+        'label-uppercase': ['0.75rem', { lineHeight: '1.2', letterSpacing: '0.09em' }],
       },
     },
   },
