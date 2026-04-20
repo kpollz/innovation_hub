@@ -21,6 +21,7 @@ import { UserSettingsPage } from '@/pages/Settings/UserSettingsPage';
 import { AdminUsersPage } from '@/pages/Admin/AdminUsersPage';
 import { EventsPage } from '@/pages/Events/EventsPage';
 import { EventDetailPage } from '@/pages/EventDetail/EventDetailPage';
+import { HelpPage } from '@/pages/Help/HelpPage';
 
 function App() {
   const { fetchCurrentUser } = useAuthStore();
@@ -57,6 +58,7 @@ function App() {
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/events/:id/ideas/:ideaId" element={<EventDetailPage />} />
                   <Route path="/events/:id" element={<EventDetailPage />} />
+                  <Route path="/help" element={<HelpPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </MainLayout>

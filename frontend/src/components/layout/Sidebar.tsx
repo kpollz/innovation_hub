@@ -24,6 +24,7 @@ const navItems = [
   { path: '/', label: 'nav.home', icon: Home },
   { path: '/problems', label: 'nav.problem_feed', icon: AlertCircle },
   { path: '/rooms', label: 'nav.idea_lab', icon: Lightbulb },
+  { path: '/help', label: 'nav.help', icon: HelpCircle },
 ];
 
 const adminNavItems = [

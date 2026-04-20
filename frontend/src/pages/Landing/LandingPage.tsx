@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
+import { AlertCircle, Lightbulb, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -101,6 +101,23 @@ export const LandingPage: React.FC = () => {
         <p className="text-primary-100 text-center max-w-xl mx-auto">
           {t('landing.ready_desc')}
         </p>
+      </div>
+
+      {/* Getting Started */}
+      <div className="mt-8 bg-white rounded-2xl border border-gray-200 p-6 flex items-center gap-5 hover:shadow-lg transition-shadow">
+        <div className="p-3 bg-primary-50 rounded-xl flex-shrink-0">
+          <HelpCircle className="h-8 w-8 text-primary-600" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-900">{t('landing.help_card_title')}</h3>
+          <p className="text-sm text-gray-600 mt-1">{t('landing.help_card_desc')}</p>
+        </div>
+        <Link to="/help">
+          <Button variant="secondary" className="gap-2 whitespace-nowrap">
+            {t('landing.help_card_cta')}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
       </div>
     </div>
   );

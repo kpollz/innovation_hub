@@ -71,7 +71,8 @@
     "events": "Events",
     "dashboard": "Dashboard",
     "user_management": "User Management",
-    "admin": "Admin"
+    "admin": "Admin",
+    "help": "Help & Guide"
   },
   "landing": {
     "welcome": "Welcome to Innovation Hub",
@@ -91,7 +92,10 @@
     "idea_feature_3": "Collaborate to refine solutions",
     "enter_idea_lab": "Enter Idea Lab",
     "ready_to_innovate": "Ready to innovate?",
-    "ready_desc": "Start by exploring existing problems or jump into an idea room to collaborate with your colleagues. Your next breakthrough could be just one idea away!"
+    "ready_desc": "Start by exploring existing problems or jump into an idea room to collaborate with your colleagues. Your next breakthrough could be just one idea away!",
+    "help_card_title": "Getting Started",
+    "help_card_desc": "New to Innovation Hub? Learn how to share problems, brainstorm ideas, and join innovation events.",
+    "help_card_cta": "Read the Guide"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -676,6 +680,137 @@
       "create_error": "Failed to create FAQ",
       "update_error": "Failed to update FAQ",
       "delete_error": "Failed to delete FAQ"
+    }
+  },
+  "help": {
+    "title": "Help & Guide",
+    "subtitle": "Everything you need to know about using Innovation Hub",
+    "search_placeholder": "Search questions...",
+    "no_results": "No matching questions found.",
+    "getting_started": {
+      "title": "Getting Started",
+      "q1": {
+        "q": "What is Innovation Hub?",
+        "a": "Innovation Hub is an internal platform designed to foster collaborative innovation. You can share problems you encounter, brainstorm ideas with colleagues in dedicated rooms, and participate in innovation events and competitions. The platform follows a structured flow: identify problems → brainstorm solutions → compete in events."
+      },
+      "q2": {
+        "q": "How do I create an account?",
+        "a": "Click \"Create account\" on the login page. Fill in your username (min 3 characters), password (min 6 characters), and optionally your email, full name, and team. After registration, you can log in and start using the platform immediately."
+      },
+      "q3": {
+        "q": "How do I switch languages?",
+        "a": "Go to Settings (click your avatar in the sidebar bottom) → Language section. Choose between English and Vietnamese. The interface will update instantly."
+      },
+      "q4": {
+        "q": "What can I do on Innovation Hub?",
+        "a": "You can: 1) Share and browse problems in the Problem Feed, 2) Create or join brainstorming rooms in the Idea Lab, 3) Submit and vote on ideas, 4) Join innovation Events with teams, compete and get scored, 5) Comment, react, and collaborate with colleagues across all content."
+      }
+    },
+    "problems": {
+      "title": "Problem Feed",
+      "q1": {
+        "q": "What is the Problem Feed?",
+        "a": "The Problem Feed is where you share challenges or issues you've encountered. Every innovation starts with identifying a problem. You can browse problems from all teams, filter by category and status, and sort by relevance."
+      },
+      "q2": {
+        "q": "How do I share a problem?",
+        "a": "Click \"Share Problem\" on the Problem Feed page. Fill in: Title (min 5 characters), Description with rich text formatting (min 20 characters), Category (Process, Technical, People, Tools, or Patent), and optional Summary. You can also set visibility to Public or Private."
+      },
+      "q3": {
+        "q": "What are the problem categories?",
+        "a": "There are 5 categories: Process (workflow or process-related issues), Technical (technical challenges or bugs), People (people or organization-related challenges), Tools (tool or equipment issues), Patent (patent or intellectual property related)."
+      },
+      "q4": {
+        "q": "How do problem statuses work?",
+        "a": "Problems follow a workflow: Open → Discussing (auto: when someone comments) → Brainstorming (auto: when a brainstorming room is created) → Solved or Closed (manual: by author or admin). The status automatically updates based on community engagement."
+      },
+      "q5": {
+        "q": "How can I interact with problems?",
+        "a": "You can: Like or mark as Insight using reaction buttons, Leave comments to discuss the problem, Create a Brainstorming Room linked to the problem, and Share the problem with specific users if it's private."
+      }
+    },
+    "rooms": {
+      "title": "Idea Lab (Brainstorming Rooms)",
+      "q1": {
+        "q": "What is the Idea Lab?",
+        "a": "The Idea Lab contains Brainstorming Rooms — collaborative spaces where you and your colleagues can brainstorm solutions to problems. Each room can be linked to a specific problem and contains multiple ideas."
+      },
+      "q2": {
+        "q": "How do I create a brainstorming room?",
+        "a": "Click \"Create Room\" on the Idea Lab page. Enter a Room Name (min 3 characters), optional Description, optionally link to an existing problem, and set visibility (Public or Private). Your room will appear in the Active Rooms section."
+      },
+      "q3": {
+        "q": "How do I add ideas to a room?",
+        "a": "Open a brainstorming room and click \"Add Idea\". Enter a Title (min 3 characters), detailed Description with rich text formatting (min 10 characters), and optional Summary. Ideas can be voted on and commented by other users."
+      },
+      "q4": {
+        "q": "What is the Board view?",
+        "a": "The Board view shows ideas as cards in columns by status: Draft, Refining, Reviewing, Submitted, and Closed. You can drag and drop ideas between non-terminal statuses. Only the idea author or admin can change idea status."
+      },
+      "q5": {
+        "q": "How does voting work?",
+        "a": "Click the star rating on any idea to vote from 1-5 stars. You can change your vote at any time. The idea displays the average rating and total vote count. Voting helps surface the best ideas."
+      }
+    },
+    "events": {
+      "title": "Events & Competitions",
+      "q1": {
+        "q": "What are Events?",
+        "a": "Events are structured innovation competitions created by administrators. Each event has an Introduction, Teams, Ideas, Dashboard, and FAQ tab. Events go through three stages: Draft (being prepared), Active (teams can participate), and Closed (read-only)."
+      },
+      "q2": {
+        "q": "How do I join an event team?",
+        "a": "Go to the Teams tab of an active event. You can either: 1) Click \"Create Team\" to start a new team (you become Team Lead automatically), or 2) Click \"Join\" on an existing team to send a join request (the Team Lead must approve it)."
+      },
+      "q3": {
+        "q": "How do I submit an idea to an event?",
+        "a": "In the Ideas tab of an active event, click \"Submit Idea\". Fill in the required fields: Title and Solution are mandatory. You can also add User Problem, User Scenarios, User Expectation, and Research sections — all with rich text formatting. Alternatively, click \"Import from Room\" to copy an idea from a Brainstorming Room."
+      },
+      "q4": {
+        "q": "How does event scoring work?",
+        "a": "Ideas are evaluated on 8 criteria (4 Problem + 4 Solution) using a 5-point Likert scale (Strongly Agree = 12.5 pts to Strongly Disagree = 2.5 pts), with a maximum total of 100 points. Teams are assigned to review other teams' ideas (circular review). Only Team Leads of assigned reviewer teams can score. View results in the Dashboard tab."
+      },
+      "q5": {
+        "q": "What are Team Lead responsibilities?",
+        "a": "Team Leads can: Approve or reject join requests, Transfer leadership to another member, Disband the team (ideas are kept), Score other teams' ideas (if assigned as reviewer). Regular members can leave the team at any time."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "q1": {
+        "q": "What notifications will I receive?",
+        "a": "You'll be notified when: Someone comments on your content, Someone reacts to your content, Someone votes on your idea, A content status changes, Someone requests to join your event team, Your join request is approved/rejected, A new idea is submitted in your event, Your team's idea is scored."
+      },
+      "q2": {
+        "q": "How do I manage notifications?",
+        "a": "Click the bell icon in the header to see recent notifications. Click a notification to navigate to the related content (it will be marked as read). Use \"Mark all as read\" to clear the unread count. Scroll down and click \"View more\" to load older notifications."
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Permissions",
+      "q1": {
+        "q": "What is the difference between Public and Private?",
+        "a": "Public content is visible to all authenticated users. Private content is only visible to the creator, shared users, and administrators. Problems, Rooms, and Events each have independent visibility settings."
+      },
+      "q2": {
+        "q": "How do I share private content with specific users?",
+        "a": "When creating or editing a problem or room, set Visibility to \"Private\". A \"Share with specific users\" field will appear — search for users by name and select them. Only you, the shared users, and admins will be able to see the content."
+      },
+      "q3": {
+        "q": "Who can edit or delete my content?",
+        "a": "You can always edit and delete your own content. Administrators can edit and delete any content. In Events, Team Leads can also edit and delete ideas belonging to their team members."
+      }
+    },
+    "profile": {
+      "title": "Profile & Settings",
+      "q1": {
+        "q": "How do I update my profile?",
+        "a": "Click your avatar in the sidebar or go to Settings. You can update your full name, email, and team. Your username cannot be changed. You can also upload an avatar image (JPG, PNG, or WebP, max 10MB)."
+      },
+      "q2": {
+        "q": "How do I change my password?",
+        "a": "Go to Settings → Password section. Enter your current password, then your new password (min 8 characters). Confirm the new password and click \"Save Changes\". Your new password must be different from the current one."
+      }
     }
   }
 }

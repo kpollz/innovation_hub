@@ -65,7 +65,8 @@
     "events": "Sự kiện",
     "dashboard": "Tổng quan",
     "user_management": "Quản lý người dùng",
-    "admin": "Quản trị"
+    "admin": "Quản trị",
+    "help": "Trợ giúp & Hướng dẫn"
   },
   "landing": {
     "welcome": "Chào mừng đến Innovation Hub",
@@ -85,7 +86,10 @@
     "idea_feature_3": "Cùng hoàn thiện giải pháp",
     "enter_idea_lab": "Vào Phòng Ý Tưởng",
     "ready_to_innovate": "Sẵn sàng đổi mới?",
-    "ready_desc": "Bắt đầu bằng cách khám phá các vấn đề hoặc tham gia phòng ý tưởng để cộng tác với đồng nghiệp. Bước đột phá tiếp theo có thể chỉ cách bạn một ý tưởng!"
+    "ready_desc": "Bắt đầu bằng cách khám phá các vấn đề hoặc tham gia phòng ý tưởng để cộng tác với đồng nghiệp. Bước đột phá tiếp theo có thể chỉ cách bạn một ý tưởng!",
+    "help_card_title": "Bắt đầu sử dụng",
+    "help_card_desc": "Lần đầu sử dụng Innovation Hub? Tìm hiểu cách chia sẻ vấn đề, brainstorm ý tưởng và tham gia sự kiện đổi mới.",
+    "help_card_cta": "Đọc hướng dẫn"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -670,6 +674,137 @@
       "create_error": "Không thể tạo câu hỏi",
       "update_error": "Không thể cập nhật câu hỏi",
       "delete_error": "Không thể xóa câu hỏi"
+    }
+  },
+  "help": {
+    "title": "Trợ giúp & Hướng dẫn",
+    "subtitle": "Tất cả những gì bạn cần biết về cách sử dụng Innovation Hub",
+    "search_placeholder": "Tìm kiếm câu hỏi...",
+    "no_results": "Không tìm thấy câu hỏi phù hợp.",
+    "getting_started": {
+      "title": "Bắt đầu sử dụng",
+      "q1": {
+        "q": "Innovation Hub là gì?",
+        "a": "Innovation Hub là nền tảng nội bộ được thiết kế để thúc đẩy đổi mới sáng tạo cộng tác. Bạn có thể chia sẻ những vấn đề gặp phải, brainstorm ý tưởng cùng đồng nghiệp trong các phòng chuyên biệt, và tham gia các sự kiện/cuộc thi đổi mới. Nền tảng theo quy trình: nhận diện vấn đề → brainstorm giải pháp → thi đấu trong sự kiện."
+      },
+      "q2": {
+        "q": "Làm thế nào để tạo tài khoản?",
+        "a": "Nhấn \"Tạo tài khoản\" trên trang đăng nhập. Điền tên đăng nhập (tối thiểu 3 ký tự), mật khẩu (tối thiểu 6 ký tự), và tùy chọn email, họ tên, nhóm. Sau khi đăng ký, bạn có thể đăng nhập và bắt đầu sử dụng ngay."
+      },
+      "q3": {
+        "q": "Làm thế nào để đổi ngôn ngữ?",
+        "a": "Vào Cài đặt (nhấn vào ảnh đại diện ở cuối thanh bên) → phần Ngôn ngữ. Chọn Tiếng Anh hoặc Tiếng Việt. Giao diện sẽ cập nhật ngay lập tức."
+      },
+      "q4": {
+        "q": "Tôi có thể làm gì trên Innovation Hub?",
+        "a": "Bạn có thể: 1) Chia sẻ và duyệt vấn đề trên Bảng Vấn Đề, 2) Tạo hoặc tham gia phòng brainstorm trong Phòng Ý Tưởng, 3) Gửi ý tưởng và bỏ phiếu, 4) Tham gia Sự kiện đổi mới với đội, thi đấu và được chấm điểm, 5) Bình luận, thả cảm xúc và cộng tác với đồng nghiệp trên mọi nội dung."
+      }
+    },
+    "problems": {
+      "title": "Bảng Vấn Đề",
+      "q1": {
+        "q": "Bảng Vấn Đề là gì?",
+        "a": "Bảng Vấn Đề là nơi bạn chia sẻ những thách thức hoặc vấn đề gặp phải. Mọi đổi mới đều bắt đầu từ việc nhận diện vấn đề. Bạn có thể duyệt vấn đề từ tất cả các nhóm, lọc theo danh mục và trạng thái, và sắp xếp theo mức độ liên quan."
+      },
+      "q2": {
+        "q": "Làm thế nào để chia sẻ vấn đề?",
+        "a": "Nhấn \"Chia sẻ vấn đề\" trên trang Bảng Vấn Đề. Điền: Tiêu đề (tối thiểu 5 ký tự), Mô tả chi tiết với định dạng văn bản phong phú (tối thiểu 20 ký tự), Danh mục (Quy trình, Kỹ thuật, Con người, Công cụ, hoặc Bằng sáng chế), và Tóm tắt tùy chọn. Bạn cũng có thể đặt quyền xem là Công khai hoặc Riêng tư."
+      },
+      "q3": {
+        "q": "Các danh mục vấn đề là gì?",
+        "a": "Có 5 danh mục: Quy trình (vấn đề về quy trình hoặc quy trình làm việc), Kỹ thuật (thách thức kỹ thuật hoặc lỗi), Con người (vấn đề về con người hoặc tổ chức), Công cụ (vấn đề về công cụ hoặc thiết bị), Bằng sáng chế (liên quan đến bằng sáng chế hoặc sở hữu trí tuệ)."
+      },
+      "q4": {
+        "q": "Trạng thái vấn đề hoạt động như thế nào?",
+        "a": "Vấn đề theo quy trình: Mở → Đang thảo luận (tự động: khi có người bình luận) → Đang Brainstorm (tự động: khi tạo phòng brainstorm) → Đã giải quyết hoặc Đã đóng (thủ công: bởi tác giả hoặc quản trị viên). Trạng thái tự động cập nhật dựa trên mức độ tương tác của cộng đồng."
+      },
+      "q5": {
+        "q": "Làm thế nào để tương tác với vấn đề?",
+        "a": "Bạn có thể: Thích hoặc đánh dấu Insight bằng nút cảm xúc, Bình luận để thảo luận, Tạo Phòng Brainstorm liên kết với vấn đề, và Chia sẻ vấn đề với người dùng cụ thể nếu ở chế độ riêng tư."
+      }
+    },
+    "rooms": {
+      "title": "Phòng Ý Tưởng (Brainstorm)",
+      "q1": {
+        "q": "Phòng Ý Tưởng là gì?",
+        "a": "Phòng Ý Tưởng chứa các Phòng Brainstorm — không gian cộng tác nơi bạn và đồng nghiệp có thể brainstorm giải pháp cho vấn đề. Mỗi phòng có thể liên kết với một vấn đề cụ thể và chứa nhiều ý tưởng."
+      },
+      "q2": {
+        "q": "Làm thế nào để tạo phòng brainstorm?",
+        "a": "Nhấn \"Tạo phòng\" trên trang Phòng Ý Tưởng. Nhập Tên phòng (tối thiểu 3 ký tự), Mô tả tùy chọn, tùy chọn liên kết với vấn đề hiện có, và đặt quyền xem (Công khai hoặc Riêng tư). Phòng của bạn sẽ xuất hiện trong phần Phòng hoạt động."
+      },
+      "q3": {
+        "q": "Làm thế nào để thêm ý tưởng vào phòng?",
+        "a": "Mở phòng brainstorm và nhấn \"Thêm ý tưởng\". Nhập Tiêu đề (tối thiểu 3 ký tự), Mô tả chi tiết với định dạng văn bản phong phú (tối thiểu 10 ký tự), và Tóm tắt tùy chọn. Ý tưởng có thể được bỏ phiếu và bình luận bởi người dùng khác."
+      },
+      "q4": {
+        "q": "Chế độ Bảng (Board) là gì?",
+        "a": "Chế độ Bảng hiển thị ý tưởng dưới dạng thẻ trong các cột theo trạng thái: Nháp, Đang hoàn thiện, Đang xem xét, Đã nộp, và Đã đóng. Bạn có thể kéo thả ý tưởng giữa các trạng thái không phải trạng thái cuối. Chỉ tác giả ý tưởng hoặc quản trị viên mới có thể thay đổi trạng thái."
+      },
+      "q5": {
+        "q": "Bỏ phiếu hoạt động như thế nào?",
+        "a": "Nhấn vào đánh giá sao trên bất kỳ ý tưởng nào để bỏ phiếu từ 1-5 sao. Bạn có thể thay đổi phiếu bất cứ lúc nào. Ý tưởng hiển thị điểm trung bình và tổng số phiếu. Bỏ phiếu giúp nổi bật các ý tưởng tốt nhất."
+      }
+    },
+    "events": {
+      "title": "Sự kiện & Cuộc thi",
+      "q1": {
+        "q": "Sự kiện là gì?",
+        "a": "Sự kiện là các cuộc thi đổi mới sáng tạo có cấu trúc do quản trị viên tạo. Mỗi sự kiện có các tab: Giới thiệu, Đội, Ý tưởng, Bảng xếp hạng, và FAQ. Sự kiện trải qua 3 giai đoạn: Nháp (đang chuẩn bị), Đang diễn ra (đội có thể tham gia), và Đã kết thúc (chỉ xem)."
+      },
+      "q2": {
+        "q": "Làm thế nào để tham gia đội sự kiện?",
+        "a": "Vào tab Đội của sự kiện đang hoạt động. Bạn có thể: 1) Nhấn \"Tạo Đội\" để tạo đội mới (bạn tự động trở thành Đội trưởng), hoặc 2) Nhấn \"Tham gia\" trên đội hiện có để gửi yêu cầu (Đội trưởng phải phê duyệt)."
+      },
+      "q3": {
+        "q": "Làm thế nào để nộp ý tưởng cho sự kiện?",
+        "a": "Trong tab Ý tưởng của sự kiện đang hoạt động, nhấn \"Nộp ý tưởng\". Điền các trường bắt buộc: Tiêu đề và Giải pháp. Bạn cũng có thể thêm Vấn đề người dùng, Tình huống sử dụng, Kỳ vọng người dùng, và Nghiên cứu — tất cả với định dạng văn bản phong phú. Hoặc nhấn \"Nhập từ Room\" để sao chép ý tưởng từ Phòng Brainstorm."
+      },
+      "q4": {
+        "q": "Chấm điểm sự kiện hoạt động như thế nào?",
+        "a": "Ý tưởng được đánh giá theo 8 tiêu chí (4 Bài toán + 4 Giải pháp) sử dụng thang Likert 5 mức (Hoàn toàn đồng ý = 12.5 điểm đến Hoàn toàn không đồng ý = 2.5 điểm), với tổng điểm tối đa 100 điểm. Các đội được gán để chấm ý tưởng của đội khác (chấm chéo). Chỉ Đội trưởng của đội được gán mới có thể chấm điểm. Xem kết quả trong tab Bảng xếp hạng."
+      },
+      "q5": {
+        "q": "Trách nhiệm của Đội trưởng là gì?",
+        "a": "Đội trưởng có thể: Phê duyệt hoặc từ chối yêu cầu tham gia, Chuyển quyền đội trưởng cho thành viên khác, Giải tán đội (ý tưởng được giữ lại), Chấm điểm ý tưởng của đội khác (nếu được gán làm người chấm). Thành viên thường có thể rời đội bất cứ lúc nào."
+      }
+    },
+    "notifications": {
+      "title": "Thông báo",
+      "q1": {
+        "q": "Tôi sẽ nhận được thông báo gì?",
+        "a": "Bạn sẽ được thông báo khi: Có người bình luận trên nội dung của bạn, Có người thả cảm xúc trên nội dung của bạn, Có người bỏ phiếu cho ý tưởng của bạn, Trạng thái nội dung thay đổi, Có người yêu cầu tham gia đội sự kiện của bạn, Yêu cầu tham gia đội của bạn được duyệt/từ chối, Có ý tưởng mới được nộp trong sự kiện, Ý tưởng của đội bạn được chấm điểm."
+      },
+      "q2": {
+        "q": "Làm thế nào để quản lý thông báo?",
+        "a": "Nhấn biểu tượng chuông ở thanh tiêu đề để xem thông báo gần đây. Nhấn vào thông báo để đến nội dung liên quan (sẽ được đánh dấu đã đọc). Dùng \"Đánh dấu tất cả đã đọc\" để xóa số thông báo chưa đọc. Cuộn xuống và nhấn \"Xem thêm\" để tải thông báo cũ hơn."
+      }
+    },
+    "privacy": {
+      "title": "Quyền riêng tư & Phân quyền",
+      "q1": {
+        "q": "Sự khác biệt giữa Công khai và Riêng tư?",
+        "a": "Nội dung Công khai hiển thị với tất cả người dùng đã đăng nhập. Nội dung Riêng tư chỉ hiển thị với người tạo, người được chia sẻ, và quản trị viên. Vấn đề, Phòng, và Sự kiện có cài đặt quyền xem độc lập."
+      },
+      "q2": {
+        "q": "Làm thế nào để chia sẻ nội dung riêng tư?",
+        "a": "Khi tạo hoặc chỉnh sửa vấn đề/phòng, đặt Quyền xem thành \"Riêng tư\". Trường \"Chia sẻ với người dùng cụ thể\" sẽ xuất hiện — tìm kiếm người dùng theo tên và chọn họ. Chỉ bạn, người được chia sẻ, và quản trị viên mới có thể xem nội dung."
+      },
+      "q3": {
+        "q": "Ai có thể sửa hoặc xóa nội dung của tôi?",
+        "a": "Bạn luôn có thể sửa và xóa nội dung của mình. Quản trị viên có thể sửa và xóa mọi nội dung. Trong Sự kiện, Đội trưởng cũng có thể sửa và xóa ý tưởng của thành viên trong đội."
+      }
+    },
+    "profile": {
+      "title": "Hồ sơ & Cài đặt",
+      "q1": {
+        "q": "Làm thế nào để cập nhật hồ sơ?",
+        "a": "Nhấn vào ảnh đại diện trong thanh bên hoặc vào Cài đặt. Bạn có thể cập nhật họ tên, email, và nhóm. Tên đăng nhập không thể thay đổi. Bạn cũng có thể tải lên ảnh đại diện (JPG, PNG, hoặc WebP, tối đa 10MB)."
+      },
+      "q2": {
+        "q": "Làm thế nào để đổi mật khẩu?",
+        "a": "Vào Cài đặt → phần Mật khẩu. Nhập mật khẩu hiện tại, sau đó nhập mật khẩu mới (tối thiểu 8 ký tự). Xác nhận mật khẩu mới và nhấn \"Lưu thay đổi\". Mật khẩu mới phải khác mật khẩu hiện tại."
+      }
     }
   }
 }
