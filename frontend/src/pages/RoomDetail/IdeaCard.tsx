@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,6 +19,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
+import { Popover } from '@/components/ui/Popover';
 import { Select } from '@/components/ui/Select';
 import type { Idea, IdeaStatus, EventObject } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
@@ -42,6 +43,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [voteStars, setVoteStars] = useState(idea.user_vote?.stars || 3);
   const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLButtonElement>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Submit to Event state
@@ -131,7 +133,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
   return (
     <>
-      <Card className={classNames('overflow-visible', idea.is_pinned && 'border-warning-300 ring-1 ring-warning-200')}>
+      <Card className={classNames(idea.is_pinned && 'border-warning-300 ring-1 ring-warning-200')}>
         <CardContent className={classNames('p-4', detailed && 'p-6')}>
           {/* Header: Status */}
           <div className="flex items-center justify-between mb-3">
@@ -146,53 +148,52 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
             <div className="flex items-center gap-2">
               {canModify && (
-                <div className="relative">
+                <>
                   <button
+                    ref={actionsRef}
                     onClick={() => setShowActions(!showActions)}
                     className="p-1 hover:bg-gray-100 rounded"
                   >
                     <MoreVertical className="h-4 w-4 text-gray-500" />
                   </button>
 
-                  {showActions && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowActions(false)}
-                      />
-                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                        {isAdmin && (
-                          <button
-                            onClick={() => {
-                              handlePinToggle();
-                              setShowActions(false);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                          >
-                            {idea.is_pinned ? t('ideas.unpin_idea') : t('ideas.pin_idea')}
-                          </button>
-                        )}
-                        <button
-                          onClick={handleOpenSubmitToEvent}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <Send className="h-4 w-4" />
-                          {t('ideas.submit_to_event')}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowActions(false);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {t('ideas.delete_idea')}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
+                  <Popover
+                    triggerRef={actionsRef}
+                    open={showActions}
+                    onClose={() => setShowActions(false)}
+                    align="right"
+                    className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                  >
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          handlePinToggle();
+                          setShowActions(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      >
+                        {idea.is_pinned ? t('ideas.unpin_idea') : t('ideas.pin_idea')}
+                      </button>
+                    )}
+                    <button
+                      onClick={handleOpenSubmitToEvent}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Send className="h-4 w-4" />
+                      {t('ideas.submit_to_event')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowActions(false);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t('ideas.delete_idea')}
+                    </button>
+                  </Popover>
+                </>
               )}
             </div>
           </div>

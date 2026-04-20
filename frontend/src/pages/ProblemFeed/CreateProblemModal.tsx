@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
+import { Popover } from '@/components/ui/Popover';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
@@ -37,6 +38,7 @@ export const CreateProblemModal: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userSearch, setUserSearch] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userSearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -213,7 +215,7 @@ export const CreateProblemModal: React.FC = () => {
             )}
 
             {/* Search and add users */}
-            <div className="relative">
+            <div ref={userSearchRef}>
               <Input
                 placeholder={t('problems.search_users_placeholder', 'Search users to share with...')}
                 value={userSearch}
@@ -221,24 +223,28 @@ export const CreateProblemModal: React.FC = () => {
                 onFocus={() => setShowUserDropdown(true)}
                 onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
               />
-              {showUserDropdown && filteredUsers.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                  {filteredUsers.slice(0, 10).map((user) => (
-                    <button
-                      key={user.id}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { addSharedUser(user.id); setShowUserDropdown(false); }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
-                    >
-                      <span className="font-medium">{user.username}</span>
-                      {user.full_name && (
-                        <span className="text-gray-500">({user.full_name})</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <Popover
+                triggerRef={userSearchRef}
+                open={showUserDropdown && filteredUsers.length > 0}
+                onClose={() => setShowUserDropdown(false)}
+                matchWidth
+                className="bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+              >
+                {filteredUsers.slice(0, 10).map((user) => (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { addSharedUser(user.id); setShowUserDropdown(false); }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                  >
+                    <span className="font-medium">{user.username}</span>
+                    {user.full_name && (
+                      <span className="text-gray-500">({user.full_name})</span>
+                    )}
+                  </button>
+                ))}
+              </Popover>
             </div>
           </div>
         )}

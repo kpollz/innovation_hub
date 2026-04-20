@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Popover } from '@/components/ui/Popover';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { IDEA_STATUSES } from '@/utils/constants';
@@ -43,6 +44,7 @@ export const IdeaDetailPage: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -236,63 +238,65 @@ export const IdeaDetailPage: React.FC = () => {
           <div className="flex items-start justify-between">
             <h1 className="text-2xl font-bold text-gray-900">{idea.title}</h1>
             {canModify && (
-              <div className="relative">
+              <>
                 <button
+                  ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
                   className="p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <MoreVertical className="h-5 w-5 text-gray-500" />
                 </button>
-                {showActions && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowActions(false)} />
-                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                      <button
-                        onClick={openEditModal}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t('ideas.edit_idea')}
-                      </button>
+                <Popover
+                  triggerRef={actionsRef}
+                  open={showActions}
+                  onClose={() => setShowActions(false)}
+                  align="right"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                >
+                  <button
+                    onClick={openEditModal}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('ideas.edit_idea')}
+                  </button>
 
-                      {user?.role === 'admin' && (
+                  {user?.role === 'admin' && (
+                    <button
+                      onClick={handlePin}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <Pin className="h-4 w-4" />
+                      {idea.is_pinned ? t('ideas.unpin') : t('ideas.pin_to_top')}
+                    </button>
+                  )}
+
+                  {!isTerminal && (
+                    <>
+                      <div className="border-t border-gray-200 my-1" />
+                      <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('ideas.change_status')}</p>
+                      {IDEA_STATUSES.filter((s) => s.value !== idea.status).map((s) => (
                         <button
-                          onClick={handlePin}
+                          key={s.value}
+                          onClick={() => handleStatusChange(s.value as IdeaStatus)}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
-                          <Pin className="h-4 w-4" />
-                          {idea.is_pinned ? t('ideas.unpin') : t('ideas.pin_to_top')}
+                          <Badge className={classNames(s.color, 'text-xs')}>{s.label}</Badge>
                         </button>
-                      )}
+                      ))}
+                    </>
+                  )}
 
-                      {!isTerminal && (
-                        <>
-                          <div className="border-t border-gray-200 my-1" />
-                          <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('ideas.change_status')}</p>
-                          {IDEA_STATUSES.filter((s) => s.value !== idea.status).map((s) => (
-                            <button
-                              key={s.value}
-                              onClick={() => handleStatusChange(s.value as IdeaStatus)}
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                            >
-                              <Badge className={classNames(s.color, 'text-xs')}>{s.label}</Badge>
-                            </button>
-                          ))}
-                        </>
-                      )}
-
-                      <div className="border-t border-gray-200 my-1" />
-                      <button
-                        onClick={() => { setShowActions(false); setIsDeleteModalOpen(true); }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t('ideas.delete_idea')}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                  <div className="border-t border-gray-200 my-1" />
+                  <button
+                    onClick={() => { setShowActions(false); setIsDeleteModalOpen(true); }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t('ideas.delete_idea')}
+                  </button>
+                </Popover>
+              </>
             )}
           </div>
         </CardHeader>

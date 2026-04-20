@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { classNames } from '@/utils/helpers';
+import { Popover } from '@/components/ui/Popover';
 
 interface DatePickerProps {
   value: string;            // YYYY-MM-DD or ''
@@ -61,18 +62,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(value ? parseInt(value.split('-')[0]) : today.getFullYear());
   const [viewMonth, setViewMonth] = useState(value ? parseInt(value.split('-')[1]) - 1 : today.getMonth());
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Close on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [isOpen]);
+  // Close on outside click is handled by Popover
 
   // Sync view when value changes externally
   useEffect(() => {
@@ -124,9 +116,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div ref={containerRef} className={classNames('relative', className)}>
+    <div className={classNames('relative', className)}>
       {/* Trigger */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={classNames(
@@ -139,58 +132,62 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         <span className="truncate">{value ? formatDisplay(value, lang) : (placeholder || 'Select date')}</span>
       </button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <div className={classNames('absolute top-full mt-1 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-3 w-[280px]', align === 'right' ? 'right-0' : 'left-0')}>
-          {/* Month/Year nav */}
-          <div className="flex items-center justify-between mb-2">
-            <button type="button" onClick={goToPrevMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-              <ChevronLeft className="h-4 w-4 text-gray-600" />
-            </button>
-            <span className="text-sm font-semibold text-gray-900">
-              {monthNames[viewMonth]} {viewYear}
-            </span>
-            <button type="button" onClick={goToNextMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-              <ChevronRight className="h-4 w-4 text-gray-600" />
-            </button>
-          </div>
-
-          {/* Day headers */}
-          <div className="grid grid-cols-7 mb-1">
-            {dayNames.map((d) => (
-              <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
-            ))}
-          </div>
-
-          {/* Day grid */}
-          <div className="grid grid-cols-7">
-            {cells.map((day, i) => (
-              <div key={i} className="flex items-center justify-center">
-                {day ? (
-                  <button
-                    type="button"
-                    onClick={() => !isDisabled(day) && handleDayClick(day)}
-                    disabled={isDisabled(day)}
-                    className={classNames(
-                      'w-8 h-8 rounded-lg text-sm transition-colors',
-                      isSelected(day)
-                        ? 'bg-primary-600 text-white font-semibold'
-                        : isToday(day)
-                        ? 'bg-primary-50 text-primary-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100',
-                      isDisabled(day) && 'text-gray-300 cursor-not-allowed hover:bg-transparent',
-                    )}
-                  >
-                    {day}
-                  </button>
-                ) : (
-                  <div className="w-8 h-8" />
-                )}
-              </div>
-            ))}
-          </div>
+      {/* Dropdown via Popover (Portal) */}
+      <Popover
+        triggerRef={triggerRef}
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        align={align}
+        className="w-[280px] bg-white rounded-xl shadow-lg border border-gray-200 p-3"
+      >
+        {/* Month/Year nav */}
+        <div className="flex items-center justify-between mb-2">
+          <button type="button" onClick={goToPrevMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronLeft className="h-4 w-4 text-gray-600" />
+          </button>
+          <span className="text-sm font-semibold text-gray-900">
+            {monthNames[viewMonth]} {viewYear}
+          </span>
+          <button type="button" onClick={goToNextMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronRight className="h-4 w-4 text-gray-600" />
+          </button>
         </div>
-      )}
+
+        {/* Day headers */}
+        <div className="grid grid-cols-7 mb-1">
+          {dayNames.map((d) => (
+            <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
+          ))}
+        </div>
+
+        {/* Day grid */}
+        <div className="grid grid-cols-7">
+          {cells.map((day, i) => (
+            <div key={i} className="flex items-center justify-center">
+              {day ? (
+                <button
+                  type="button"
+                  onClick={() => !isDisabled(day) && handleDayClick(day)}
+                  disabled={isDisabled(day)}
+                  className={classNames(
+                    'w-8 h-8 rounded-lg text-sm transition-colors',
+                    isSelected(day)
+                      ? 'bg-primary-600 text-white font-semibold'
+                      : isToday(day)
+                      ? 'bg-primary-50 text-primary-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100',
+                    isDisabled(day) && 'text-gray-300 cursor-not-allowed hover:bg-transparent',
+                  )}
+                >
+                  {day}
+                </button>
+              ) : (
+                <div className="w-8 h-8" />
+              )}
+            </div>
+          ))}
+        </div>
+      </Popover>
     </div>
   );
 };

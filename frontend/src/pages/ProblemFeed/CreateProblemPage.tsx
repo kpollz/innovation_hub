@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProblemStore } from '@/stores/problemStore';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { Popover } from '@/components/ui/Popover';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
 import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
@@ -28,6 +29,7 @@ export const CreateProblemPage: React.FC = () => {
   const [userSearch, setUserSearch] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const userSearchRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleUserSearch = useCallback(async (query: string) => {
@@ -233,36 +235,40 @@ export const CreateProblemPage: React.FC = () => {
                   )}
 
                   {/* User search input */}
-                  <div className="relative">
-                    <Input
-                      placeholder={t('problems.search_users_placeholder')}
-                      value={userSearch}
-                      onChange={(e) => handleUserSearch(e.target.value)}
-                    />
-                    {isSearching && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
-                      </div>
-                    )}
-
-                    {/* Search results dropdown */}
-                    {userSearchResults.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {userSearchResults
-                          .filter(u => !sharedUserIds.includes(u.id))
-                          .map((user) => (
-                            <button
-                              key={user.id}
-                              type="button"
-                              onClick={() => addSharedUser(user.id)}
-                              className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                            >
-                              <span className="font-medium">{user.full_name}</span>
-                              <span className="text-gray-500 ml-2">{user.email}</span>
-                            </button>
-                          ))}
-                      </div>
-                    )}
+                  <div ref={userSearchRef}>
+                    <div className="relative">
+                      <Input
+                        placeholder={t('problems.search_users_placeholder')}
+                        value={userSearch}
+                        onChange={(e) => handleUserSearch(e.target.value)}
+                      />
+                      {isSearching && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                    <Popover
+                      triggerRef={userSearchRef}
+                      open={userSearchResults.length > 0}
+                      onClose={() => setUserSearchResults([])}
+                      matchWidth
+                      className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                    >
+                      {userSearchResults
+                        .filter(u => !sharedUserIds.includes(u.id))
+                        .map((user) => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => addSharedUser(user.id)}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                          >
+                            <span className="font-medium">{user.full_name}</span>
+                            <span className="text-gray-500 ml-2">{user.email}</span>
+                          </button>
+                        ))}
+                    </Popover>
                   </div>
                 </div>
               )}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { Avatar } from '@/components/ui/Avatar';
+import { Popover } from '@/components/ui/Popover';
 import type { Notification } from '@/types';
 
 const NotificationItem: React.FC<{
@@ -123,7 +124,7 @@ function getTimeAgo(dateStr: string): string {
 export const NotificationDropdown: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
 
   const {
     notifications,
@@ -145,19 +146,6 @@ export const NotificationDropdown: React.FC = () => {
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
-
-  // Click outside to close
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        closeDropdown();
-      }
-    };
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isDropdownOpen, closeDropdown]);
 
   const handleNotificationClick = async (n: Notification) => {
     if (!n.is_read) {
@@ -181,9 +169,10 @@ export const NotificationDropdown: React.FC = () => {
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <>
       {/* Bell Button */}
       <button
+        ref={bellRef}
         onClick={toggleDropdown}
         className="p-2 hover:bg-gray-100 rounded-lg relative transition-colors"
       >
@@ -195,58 +184,63 @@ export const NotificationDropdown: React.FC = () => {
         )}
       </button>
 
-      {/* Dropdown */}
-      {isDropdownOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-            <h3 className="font-semibold text-gray-900 text-sm">
-              {t('notifications.title')}
-            </h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium"
-              >
-                <CheckCheck className="h-3.5 w-3.5" />
-                {t('notifications.mark_all_read')}
-              </button>
-            )}
-          </div>
-
-          {/* Notification List */}
-          <div className="max-h-96 overflow-y-auto">
-            {isLoading && notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm text-gray-500">
-                {t('common.loading')}
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm text-gray-500">
-                {t('notifications.no_notifications')}
-              </div>
-            ) : (
-              <>
-                {notifications.map((n) => (
-                  <NotificationItem
-                    key={n.id}
-                    notification={n}
-                    onClick={handleNotificationClick}
-                  />
-                ))}
-                {notifications.length < total && (
-                  <button
-                    onClick={handleViewMore}
-                    disabled={isLoading}
-                    className="w-full py-3 text-sm text-primary-600 hover:text-primary-700 hover:bg-gray-50 font-medium transition-colors"
-                  >
-                    {isLoading ? t('common.loading') : t('notifications.view_more')}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
+      {/* Dropdown via Popover (Portal) */}
+      <Popover
+        triggerRef={bellRef}
+        open={isDropdownOpen}
+        onClose={closeDropdown}
+        align="right"
+        gap={8}
+        className="w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 className="font-semibold text-gray-900 text-sm">
+            {t('notifications.title')}
+          </h3>
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium"
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              {t('notifications.mark_all_read')}
+            </button>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Notification List */}
+        <div className="max-h-96 overflow-y-auto">
+          {isLoading && notifications.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-500">
+              {t('common.loading')}
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-500">
+              {t('notifications.no_notifications')}
+            </div>
+          ) : (
+            <>
+              {notifications.map((n) => (
+                <NotificationItem
+                  key={n.id}
+                  notification={n}
+                  onClick={handleNotificationClick}
+                />
+              ))}
+              {notifications.length < total && (
+                <button
+                  onClick={handleViewMore}
+                  disabled={isLoading}
+                  className="w-full py-3 text-sm text-primary-600 hover:text-primary-700 hover:bg-gray-50 font-medium transition-colors"
+                >
+                  {isLoading ? t('common.loading') : t('notifications.view_more')}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </Popover>
+    </>
   );
 };

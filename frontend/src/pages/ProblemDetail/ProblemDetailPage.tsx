@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Popover } from '@/components/ui/Popover';
 import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
@@ -49,6 +50,7 @@ export const ProblemDetailPage: React.FC = () => {
 
   // Edit/Delete states
   const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBrainstormModalOpen, setIsBrainstormModalOpen] = useState(false);
@@ -70,7 +72,9 @@ export const ProblemDetailPage: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userSearch, setUserSearch] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userSearchRef = useRef<HTMLDivElement>(null);
   const [showBrainstormUserDropdown, setShowBrainstormUserDropdown] = useState(false);
+  const brainstormUserSearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -295,73 +299,71 @@ export const ProblemDetailPage: React.FC = () => {
             </h1>
             {/* Actions Dropdown for Owner/Admin */}
             {canModify && (
-              <div className="relative">
+              <>
                 <button
+                  ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <MoreVertical className="h-5 w-5 text-gray-500" />
                 </button>
+                <Popover
+                  triggerRef={actionsRef}
+                  open={showActions}
+                  onClose={() => setShowActions(false)}
+                  align="right"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                >
+                  <button
+                    onClick={openEditModal}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('problems.edit_problem')}
+                  </button>
 
-                {showActions && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowActions(false)}
-                    />
-                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                      <button
-                        onClick={openEditModal}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t('problems.edit_problem')}
-                      </button>
+                  <div className="border-t border-gray-200 my-1" />
 
-                      <div className="border-t border-gray-200 my-1" />
+                  {(() => {
+                    const current = selectedProblem.status;
+                    const terminal = ['solved', 'closed'];
+                    if (terminal.includes(current)) return null;
+                    const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
+                    const currentIdx = order.indexOf(current);
+                    const options = PROBLEM_STATUSES.filter((s) => {
+                      const targetIdx = order.indexOf(s.value);
+                      return targetIdx > currentIdx && terminal.includes(s.value);
+                    });
+                    if (options.length === 0) return null;
+                    return (<>
+                  <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
+                  {options.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => handleStatusChange(s.value as ProblemStatus)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <Circle className="h-4 w-4" />
+                      {s.label}
+                    </button>
+                  ))}
+                    </>);
+                  })()}
 
-                      {(() => {
-                        const current = selectedProblem.status;
-                        const terminal = ['solved', 'closed'];
-                        if (terminal.includes(current)) return null;
-                        const order = ['open', 'discussing', 'brainstorming', 'solved', 'closed'];
-                        const currentIdx = order.indexOf(current);
-                        const options = PROBLEM_STATUSES.filter((s) => {
-                          const targetIdx = order.indexOf(s.value);
-                          return targetIdx > currentIdx && terminal.includes(s.value);
-                        });
-                        if (options.length === 0) return null;
-                        return (<>
-                      <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
-                      {options.map((s) => (
-                        <button
-                          key={s.value}
-                          onClick={() => handleStatusChange(s.value as ProblemStatus)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <Circle className="h-4 w-4" />
-                          {s.label}
-                        </button>
-                      ))}
-                        </>);
-                      })()}
+                  <div className="border-t border-gray-200 my-1" />
 
-                      <div className="border-t border-gray-200 my-1" />
-
-                      <button
-                        onClick={() => {
-                          setShowActions(false);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t('problems.delete_problem')}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                  <button
+                    onClick={() => {
+                      setShowActions(false);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t('problems.delete_problem')}
+                  </button>
+                </Popover>
+              </>
             )}
           </div>
         </CardHeader>
@@ -652,7 +654,7 @@ export const ProblemDetailPage: React.FC = () => {
                   })}
                 </div>
               )}
-              <div className="relative">
+              <div ref={userSearchRef}>
                 <Input
                   placeholder={t('problems.search_users_placeholder')}
                   value={userSearch}
@@ -660,32 +662,36 @@ export const ProblemDetailPage: React.FC = () => {
                   onFocus={() => setShowUserDropdown(true)}
                   onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
                 />
-                {showUserDropdown && allUsers.filter((u) =>
-                  !editSharedUserIds.includes(u.id) &&
-                  (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-                    (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
-                ).length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                    {allUsers
-                      .filter((u) =>
-                        !editSharedUserIds.includes(u.id) &&
-                        (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-                          (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
-                      )
-                      .slice(0, 10)
-                      .map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => { setEditSharedUserIds([...editSharedUserIds, u.id]); setUserSearch(''); setShowUserDropdown(false); }}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
-                        >
-                          <span className="font-medium">{u.username}</span>
-                          {u.full_name && <span className="text-gray-500">({u.full_name})</span>}
-                        </button>
-                      ))}
-                  </div>
-                )}
+                <Popover
+                  triggerRef={userSearchRef}
+                  open={showUserDropdown && allUsers.filter((u) =>
+                    !editSharedUserIds.includes(u.id) &&
+                    (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+                      (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
+                  ).length > 0}
+                  onClose={() => setShowUserDropdown(false)}
+                  matchWidth
+                  className="bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+                >
+                  {allUsers
+                    .filter((u) =>
+                      !editSharedUserIds.includes(u.id) &&
+                      (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+                        (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
+                    )
+                    .slice(0, 10)
+                    .map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => { setEditSharedUserIds([...editSharedUserIds, u.id]); setUserSearch(''); setShowUserDropdown(false); }}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                      >
+                        <span className="font-medium">{u.username}</span>
+                        {u.full_name && <span className="text-gray-500">({u.full_name})</span>}
+                      </button>
+                    ))}
+                </Popover>
               </div>
             </div>
           )}
@@ -798,7 +804,7 @@ export const ProblemDetailPage: React.FC = () => {
                     })}
                   </div>
                 )}
-                <div className="relative">
+                <div ref={brainstormUserSearchRef}>
                   <input
                     type="text"
                     value={brainstormUserSearch}
@@ -808,34 +814,38 @@ export const ProblemDetailPage: React.FC = () => {
                     placeholder={t('rooms.search_users_placeholder')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                   />
-                  {showBrainstormUserDropdown && brainstormUsers.filter((u) =>
-                    u.id !== user?.id &&
-                    !brainstormSharedUserIds.includes(u.id) &&
-                    (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
-                      (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
-                  ).length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                      {brainstormUsers
-                        .filter((u) =>
-                          u.id !== user?.id &&
-                          !brainstormSharedUserIds.includes(u.id) &&
-                          (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
-                            (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
-                        )
-                        .slice(0, 10)
-                        .map((u) => (
-                          <button
-                            key={u.id}
-                            type="button"
-                            onClick={() => { setBrainstormSharedUserIds([...brainstormSharedUserIds, u.id]); setBrainstormUserSearch(''); setShowBrainstormUserDropdown(false); }}
-                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
-                          >
-                            <span className="font-medium">{u.full_name || u.username}</span>
-                            {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <Popover
+                    triggerRef={brainstormUserSearchRef}
+                    open={showBrainstormUserDropdown && brainstormUsers.filter((u) =>
+                      u.id !== user?.id &&
+                      !brainstormSharedUserIds.includes(u.id) &&
+                      (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
+                        (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
+                    ).length > 0}
+                    onClose={() => setShowBrainstormUserDropdown(false)}
+                    matchWidth
+                    className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
+                  >
+                    {brainstormUsers
+                      .filter((u) =>
+                        u.id !== user?.id &&
+                        !brainstormSharedUserIds.includes(u.id) &&
+                        (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
+                          (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
+                      )
+                      .slice(0, 10)
+                      .map((u) => (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onClick={() => { setBrainstormSharedUserIds([...brainstormSharedUserIds, u.id]); setBrainstormUserSearch(''); setShowBrainstormUserDropdown(false); }}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                        >
+                          <span className="font-medium">{u.full_name || u.username}</span>
+                          {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                        </button>
+                      ))}
+                  </Popover>
                 </div>
               </div>
             )}

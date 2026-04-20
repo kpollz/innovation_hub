@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, X, ShieldAlert, Lock } from 'lucide-react';
@@ -10,6 +10,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
+import { Popover } from '@/components/ui/Popover';
 import { Avatar } from '@/components/ui/Avatar';
 import { IdeaCard } from './IdeaCard';
 import type { Room, Idea, IdeaStatus, ProblemVisibility, User } from '@/types';
@@ -44,6 +45,7 @@ export const RoomDetailPage: React.FC = () => {
 
   // Edit/Delete states
   const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
@@ -56,6 +58,7 @@ export const RoomDetailPage: React.FC = () => {
   const [editSharedUserIds, setEditSharedUserIds] = useState<string[]>([]);
   const [editUserSearch, setEditUserSearch] = useState('');
   const [showEditUserDropdown, setShowEditUserDropdown] = useState(false);
+  const editUserSearchRef = useRef<HTMLDivElement>(null);
 
   const canModify = user && room && (
     user.id === room.created_by || user.role === 'admin'
@@ -326,42 +329,41 @@ export const RoomDetailPage: React.FC = () => {
             </Button>
 
             {canModify && (
-              <div className="relative">
+              <>
                 <button
+                  ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <MoreVertical className="h-5 w-5 text-gray-500" />
                 </button>
-                {showActions && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowActions(false)}
-                    />
-                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                      <button
-                        onClick={openEditModal}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t('rooms.edit_room')}
-                      </button>
-                      <div className="border-t border-gray-200 my-1" />
-                      <button
-                        onClick={() => {
-                          setShowActions(false);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t('rooms.delete_room')}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                <Popover
+                  triggerRef={actionsRef}
+                  open={showActions}
+                  onClose={() => setShowActions(false)}
+                  align="right"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                >
+                  <button
+                    onClick={openEditModal}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('rooms.edit_room')}
+                  </button>
+                  <div className="border-t border-gray-200 my-1" />
+                  <button
+                    onClick={() => {
+                      setShowActions(false);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t('rooms.delete_room')}
+                  </button>
+                </Popover>
+              </>
             )}
           </div>
         </div>
@@ -541,7 +543,7 @@ export const RoomDetailPage: React.FC = () => {
                     })}
                   </div>
                 )}
-                <div className="relative">
+                <div ref={editUserSearchRef}>
                   <input
                     type="text"
                     value={editUserSearch}
@@ -550,28 +552,29 @@ export const RoomDetailPage: React.FC = () => {
                     placeholder={t('rooms.search_users_placeholder')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                   />
-                  {showEditUserDropdown && filteredEditUsers.length > 0 && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setShowEditUserDropdown(false)} />
-                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {filteredEditUsers.map((u) => (
-                          <button
-                            key={u.id}
-                            type="button"
-                            onClick={() => { toggleEditUser(u.id); setEditUserSearch(''); }}
-                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
-                              editSharedUserIds.includes(u.id) ? 'bg-primary-50' : ''
-                            }`}
-                          >
-                            <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
-                            <span className="font-medium">{u.full_name || u.username}</span>
-                            {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
-                            {editSharedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  <Popover
+                    triggerRef={editUserSearchRef}
+                    open={showEditUserDropdown && filteredEditUsers.length > 0}
+                    onClose={() => setShowEditUserDropdown(false)}
+                    matchWidth
+                    className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                  >
+                    {filteredEditUsers.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => { toggleEditUser(u.id); setEditUserSearch(''); }}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                          editSharedUserIds.includes(u.id) ? 'bg-primary-50' : ''
+                        }`}
+                      >
+                        <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
+                        <span className="font-medium">{u.full_name || u.username}</span>
+                        {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                        {editSharedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
+                      </button>
+                    ))}
+                  </Popover>
                 </div>
               </div>
             )}
