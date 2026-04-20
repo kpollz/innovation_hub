@@ -21,7 +21,9 @@ const NotificationItem: React.FC<{
       ? t('notifications.target_problem')
       : notification.target_type === 'idea'
         ? t('notifications.target_idea')
-        : t('notifications.target_event');
+        : notification.target_type === 'event_idea'
+          ? t('notifications.target_event_idea')
+          : t('notifications.target_event');
     const baseParams = {
       actor: actorName,
       title: notification.target_title,
@@ -164,6 +166,8 @@ export const NotificationDropdown: React.FC = () => {
     closeDropdown();
     if (n.target_type === 'problem') {
       navigate(`/problems/${n.target_id}`);
+    } else if (n.target_type === 'event_idea') {
+      navigate(`/events/${n.reference_id}/ideas/${n.target_id}`);
     } else if (n.target_type === 'event') {
       navigate(`/events/${n.target_id}`);
     } else {

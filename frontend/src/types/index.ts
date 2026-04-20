@@ -279,9 +279,10 @@ export interface Notification {
   actor: NotificationActor | null;
   type: NotificationType;
   target_id: string;
-  target_type: 'problem' | 'idea' | 'event';
+  target_type: 'problem' | 'idea' | 'event' | 'event_idea';
   target_title: string;
   action_detail: string | null;
+  reference_id: string | null;
   is_read: boolean;
   created_at: string;
 }

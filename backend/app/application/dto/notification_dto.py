@@ -29,6 +29,7 @@ class NotificationResponseDTO(BaseModel):
     target_type: str
     target_title: str
     action_detail: Optional[str] = None
+    reference_id: Optional[UUID] = None
     is_read: bool
     created_at: datetime
 

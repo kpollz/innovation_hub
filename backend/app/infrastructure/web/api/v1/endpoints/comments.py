@@ -14,6 +14,7 @@ from app.application.use_cases.comment.add_comment import AddCommentUseCase
 from app.application.use_cases.comment.delete_comment import DeleteCommentUseCase
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
+from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
 from app.infrastructure.database.repositories.notification_repository_impl import (
     SQLNotificationRepository,
 )
@@ -81,6 +82,7 @@ async def create_comment(
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    event_idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
@@ -92,6 +94,7 @@ async def create_comment(
     # Auto-transition: open → discussing when non-author comments on a problem
     target_title = ""
     owner_id = None
+    event_idea = None
     if data.target_type == "problem":
         from app.domain.value_objects.status import ProblemStatus
 
@@ -110,6 +113,11 @@ async def create_comment(
         if idea:
             target_title = idea.title
             owner_id = idea.author_id
+    elif data.target_type == "event_idea":
+        event_idea = await event_idea_repo.get_by_id(data.target_id)
+        if event_idea:
+            target_title = event_idea.title
+            owner_id = event_idea.author_id
 
     # Create notification with truncated comment content
     if owner_id:
@@ -123,6 +131,7 @@ async def create_comment(
             notification_type="comment_added",
             owner_id=owner_id,
             action_detail=action_detail,
+            reference_id=event_idea.event_id if data.target_type == "event_idea" and event_idea else None,
         )
 
     return await enrich_comment(comment, user_repo)

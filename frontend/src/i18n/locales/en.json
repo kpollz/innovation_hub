@@ -384,6 +384,7 @@
     "target_problem": "problem",
     "target_idea": "idea",
     "target_event": "event",
+    "target_event_idea": "event idea",
     "comment_added": "{{actor}} commented on {{target_type}} \"{{title}}\": \"{{detail}}\"",
     "reaction_added": "{{actor}} reacted {{emoji}} on {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} voted {{stars}} stars on {{target_type}} \"{{title}}\"",

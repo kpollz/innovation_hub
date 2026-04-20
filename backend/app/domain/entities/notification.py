@@ -16,6 +16,7 @@ class Notification:
     target_type: str  # 'problem' or 'idea'
     target_title: str  # Denormalized for display
     action_detail: Optional[str] = None  # Detail about the action (comment content, reaction type, vote stars, status change)
+    reference_id: Optional[UUID] = None  # Parent entity ID (e.g. event_id for event_idea notifications)
     id: UUID = field(default_factory=uuid4)
     is_read: bool = False
     created_at: datetime = field(default_factory=datetime.utcnow)

@@ -378,6 +378,7 @@
     "target_problem": "vấn đề",
     "target_idea": "ý tưởng",
     "target_event": "sự kiện",
+    "target_event_idea": "ý tưởng sự kiện",
     "comment_added": "{{actor}} đã bình luận trên {{target_type}} \"{{title}}\": \"{{detail}}\"",
     "reaction_added": "{{actor}} đã thả {{emoji}} trên {{target_type}} \"{{title}}\"",
     "vote_added": "{{actor}} đã vote {{stars}} sao cho {{target_type}} \"{{title}}\"",

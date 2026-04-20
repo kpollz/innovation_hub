@@ -626,7 +626,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "target_id": "uuid (bắt buộc)",
-  "target_type": "problem | idea (bắt buộc)",
+  "target_type": "problem | idea | event_idea (bắt buộc)",
   "content": "string (1-5000 ký tự, bắt buộc)",
   "parent_id": "uuid (tùy chọn - reply comment)"
 }
@@ -735,11 +735,12 @@ Authorization: Bearer <access_token>
         "full_name": "string | null",
         "avatar_url": "string | null"
       },
-      "type": "comment_added | reaction_added | vote_added | status_changed",
+      "type": "comment_added | reaction_added | vote_added | status_changed | event_join_request | event_join_approved | event_join_rejected | event_idea_submitted | event_scored",
       "target_id": "uuid",
-      "target_type": "problem | idea",
+      "target_type": "problem | idea | event | event_idea",
       "target_title": "string",
       "action_detail": "string | null  ← Chi tiết hành động (nội dung comment, loại reaction, số sao vote, status change)",
+      "reference_id": "uuid | null  ← Parent entity ID (e.g. event_id khi target_type=event_idea)",
       "is_read": false,
       "created_at": "datetime"
     }

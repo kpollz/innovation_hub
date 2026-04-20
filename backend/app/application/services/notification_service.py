@@ -61,17 +61,19 @@ class NotificationService:
         notification_type: str,
         owner_id: UUID,
         action_detail: Optional[str] = None,
+        reference_id: Optional[UUID] = None,
     ) -> None:
         """Create notifications for the owner and all interactors of a target.
 
         Args:
             actor_id: The user who performed the action.
             target_id: The problem or idea ID.
-            target_type: 'problem' or 'idea'.
+            target_type: 'problem', 'idea', or 'event_idea'.
             target_title: Title for display.
             notification_type: comment_added, reaction_added, vote_added, status_changed.
             owner_id: The author_id of the target problem/idea.
             action_detail: Optional detail about the action (comment content, reaction type, etc.)
+            reference_id: Optional parent entity ID (e.g. event_id for event_idea notifications).
         """
         try:
             recipients: set[UUID] = set()
@@ -98,6 +100,7 @@ class NotificationService:
                     target_type=target_type,
                     target_title=target_title,
                     action_detail=action_detail,
+                    reference_id=reference_id,
                 )
                 for user_id in recipients
             ]
