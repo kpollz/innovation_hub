@@ -185,25 +185,19 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
               const currentScore = scores[criterion.id] || 0;
               return (
                 <div key={criterion.id}>
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800">{getCriteriaName(criterion)}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{getCriteriaDesc(criterion)}</p>
                     </div>
                     {currentScore > 0 && (
-                      <span className="text-sm font-semibold text-primary-600 flex-shrink-0">
-                        {currentScore}
+                      <span className="text-sm font-semibold text-primary-600 flex-shrink-0 whitespace-nowrap">
+                        {currentScore} <span className="font-normal text-gray-400">({getLikertLabel(currentScore)})</span>
                       </span>
                     )}
                   </div>
 
-                  {readOnly ? (
-                    currentScore > 0 ? (
-                      <p className="text-xs text-gray-500">
-                        {currentScore} ({getLikertLabel(currentScore)})
-                      </p>
-                    ) : null
-                  ) : (
+                  {!readOnly && (
                     <div className="flex gap-1 mt-2">
                       {LIKERT_OPTIONS.map(opt => (
                         <button

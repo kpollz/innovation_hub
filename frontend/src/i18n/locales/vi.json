@@ -555,7 +555,9 @@
         "research": "Nghiên cứu",
         "research_placeholder": "Nền tảng nghiên cứu và tài liệu tham khảo...",
         "solution": "Giải pháp",
-        "solution_placeholder": "Mô tả chi tiết giải pháp đề xuất..."
+        "solution_placeholder": "Mô tả chi tiết giải pháp đề xuất...",
+        "empty": "Trống",
+        "no_content": "Chưa có nội dung."
       },
       "form": {
         "create_title": "Nộp ý tưởng mới",

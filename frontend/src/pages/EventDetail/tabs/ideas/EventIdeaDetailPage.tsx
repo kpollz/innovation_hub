@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Edit2, Star, Trophy, Link as LinkIcon, Trash2,
-  MessageCircle,
+  MessageCircle, ChevronDown, ChevronRight,
+  AlertCircle, BookOpen, Target, FlaskConical, Lightbulb,
 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { commentsApi } from '@/api/comments';
@@ -43,6 +44,15 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Collapsible fields
+  const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({
+    user_problem: true,
+    user_scenarios: true,
+    user_expectation: true,
+    research: true,
+    solution: true,
+  });
 
   const fetchIdea = useCallback(async () => {
     if (!ideaId) return;
@@ -101,14 +111,60 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
     finally { setDeleting(false); }
   };
 
-  const renderField = (label: string, content: unknown) => {
-    if (!content) return null;
+  const toggleField = (key: string) => {
+    setExpandedFields(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const FIELD_META: {
+    key: keyof Pick<EventIdeaObject, 'user_problem' | 'user_scenarios' | 'user_expectation' | 'research' | 'solution'>;
+    icon: React.ElementType;
+    color: string;
+    borderColor: string;
+    bgColor: string;
+  }[] = [
+    { key: 'user_problem', icon: AlertCircle, color: 'text-red-600', borderColor: 'border-red-200', bgColor: 'bg-red-50' },
+    { key: 'user_scenarios', icon: BookOpen, color: 'text-blue-600', borderColor: 'border-blue-200', bgColor: 'bg-blue-50' },
+    { key: 'user_expectation', icon: Target, color: 'text-purple-600', borderColor: 'border-purple-200', bgColor: 'bg-purple-50' },
+    { key: 'research', icon: FlaskConical, color: 'text-teal-600', borderColor: 'border-teal-200', bgColor: 'bg-teal-50' },
+    { key: 'solution', icon: Lightbulb, color: 'text-amber-600', borderColor: 'border-amber-200', bgColor: 'bg-amber-50' },
+  ];
+
+  const renderCollapsibleField = (
+    fieldKey: string,
+    meta: typeof FIELD_META[number],
+    content: unknown,
+  ) => {
+    const isExpanded = expandedFields[fieldKey] !== false;
+    const Icon = meta.icon;
+    const label = t(`events.ideas.fields.${fieldKey}`);
+
     return (
-      <div className="mb-6">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">{label}</h4>
-        <div className="bg-gray-50 rounded-lg p-4">
-          <TipTapRenderer content={content as Parameters<typeof TipTapRenderer>[0]['content']} />
-        </div>
+      <div key={fieldKey} className={`border ${meta.borderColor} rounded-lg overflow-hidden mb-4`}>
+        <button
+          type="button"
+          onClick={() => toggleField(fieldKey)}
+          className={`w-full flex items-center justify-between px-4 py-3 ${meta.bgColor} hover:opacity-80 transition-opacity`}
+        >
+          <div className="flex items-center gap-2">
+            {isExpanded
+              ? <ChevronDown className="h-4 w-4 text-gray-500" />
+              : <ChevronRight className="h-4 w-4 text-gray-500" />
+            }
+            <Icon className={`h-4.5 w-4.5 ${meta.color}`} />
+            <h4 className={`text-sm font-bold ${meta.color}`}>{label}</h4>
+          </div>
+          {!content && (
+            <span className="text-xs text-gray-400 italic">{t('events.ideas.fields.empty')}</span>
+          )}
+        </button>
+        {isExpanded && (
+          <div className="p-4">
+            {content
+              ? <TipTapRenderer content={content as Parameters<typeof TipTapRenderer>[0]['content']} />
+              : <p className="text-sm text-gray-400 italic">{t('events.ideas.fields.no_content')}</p>
+            }
+          </div>
+        )}
       </div>
     );
   };
@@ -229,11 +285,7 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       )}
 
       {/* Content fields */}
-      {renderField(t('events.ideas.fields.user_problem'), idea.user_problem)}
-      {renderField(t('events.ideas.fields.user_scenarios'), idea.user_scenarios)}
-      {renderField(t('events.ideas.fields.user_expectation'), idea.user_expectation)}
-      {renderField(t('events.ideas.fields.research'), idea.research)}
-      {renderField(t('events.ideas.fields.solution'), idea.solution)}
+      {FIELD_META.map(meta => renderCollapsibleField(meta.key, meta, idea[meta.key]))}
 
       {/* Scoring panel — editable for reviewers, read-only for viewers */}
       <ScoringPanel

@@ -561,7 +561,9 @@
         "research": "Research",
         "research_placeholder": "Background research and references...",
         "solution": "Solution",
-        "solution_placeholder": "Describe your proposed solution in detail..."
+        "solution_placeholder": "Describe your proposed solution in detail...",
+        "empty": "Empty",
+        "no_content": "No content provided."
       },
       "form": {
         "create_title": "Submit New Idea",
