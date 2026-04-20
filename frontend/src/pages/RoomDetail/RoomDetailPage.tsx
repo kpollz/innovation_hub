@@ -368,22 +368,20 @@ export const RoomDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Creator info — bottom right */}
-        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {room.creator?.full_name || room.creator?.username || t('common.unknown')}
-              </p>
-              <p className="text-xs text-gray-500">
-                {t('rooms.created_time', { time: timeAgo(room.created_at) })}
-              </p>
-            </div>
-            <Avatar
-              src={room.creator?.avatar_url}
-              name={room.creator?.full_name || room.creator?.username}
-              size="md"
-            />
+        {/* Creator info */}
+        <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-3">
+          <Avatar
+            src={room.creator?.avatar_url}
+            name={room.creator?.full_name || room.creator?.username}
+            size="md"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-900">
+              {room.creator?.full_name || room.creator?.username || t('common.unknown')}
+            </p>
+            <p className="text-xs text-gray-500">
+              {t('rooms.created_time', { time: timeAgo(room.created_at) })}
+            </p>
           </div>
         </div>
       </div>

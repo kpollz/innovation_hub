@@ -70,7 +70,7 @@
   },
   "landing": {
     "welcome": "Chào mừng đến Innovation Hub",
-    "hero_title": "Nơi Ý tưởng Gặp Giải Pháp",
+    "hero_title": "Nơi Ý Tưởng Gặp Giải Pháp",
     "hero_desc": "Chia sẻ vấn đề, cùng nhau suy nghĩ và thúc đẩy đổi mới sáng tạo.",
     "hello": "Xin chào, {{name}}!",
     "problem_feed": "Bảng Vấn Đề",
@@ -144,6 +144,7 @@
     "create_problem": "Tạo vấn đề",
     "edit_problem": "Sửa vấn đề",
     "delete_problem": "Xóa vấn đề",
+    "posted_time": "Đăng {{time}}",
     "delete_confirm": "Bạn có chắc chắn muốn xóa vấn đề này? Hành động này không thể hoàn tác.",
     "title_min": "Tiêu đề phải có ít nhất 5 ký tự",
     "title_min_label": "Tiêu đề (tối thiểu 5 ký tự)",

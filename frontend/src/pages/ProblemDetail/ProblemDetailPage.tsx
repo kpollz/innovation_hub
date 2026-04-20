@@ -379,7 +379,7 @@ export const ProblemDetailPage: React.FC = () => {
               <Avatar src={authorAvatar} name={authorName} size="lg" />
               <div>
                 <p className="text-sm font-medium text-gray-900">{authorName}</p>
-                <p className="text-xs text-gray-500">Posted {timeAgo(selectedProblem.created_at)}</p>
+                <p className="text-xs text-gray-500">{t('problems.posted_time', { time: timeAgo(selectedProblem.created_at) })}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

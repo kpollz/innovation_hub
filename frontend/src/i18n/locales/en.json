@@ -150,6 +150,7 @@
     "create_problem": "Create Problem",
     "edit_problem": "Edit Problem",
     "delete_problem": "Delete Problem",
+    "posted_time": "Posted {{time}}",
     "delete_confirm": "Are you sure you want to delete this problem? This action cannot be undone.",
     "title_min": "Title must be at least 5 characters",
     "title_min_label": "Title (min 5 characters)",
