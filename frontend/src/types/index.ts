@@ -552,6 +552,26 @@ export interface AssignmentsResponse {
   }[];
 }
 
+// Event Award Types
+export interface EventAwardTeam {
+  team_id: string;
+  team_name: string;
+  team_slogan: string | null;
+  leader_id: string;
+  leader_name: string | null;
+  leader_avatar_url: string | null;
+}
+
+export interface EventAward {
+  id: string;
+  event_id: string;
+  name: string;
+  rank_order: number;
+  teams: EventAwardTeam[];
+  created_at: string;
+  updated_at: string | null;
+}
+
 // UI Types
 export interface Toast {
   id: string;

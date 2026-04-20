@@ -26,6 +26,7 @@ import type {
   EventDashboardIdea,
   EventDashboardTeam,
   AssignmentsResponse,
+  EventAward,
 } from '@/types';
 
 export const eventsApi = {
@@ -222,5 +223,33 @@ export const eventsApi = {
       `/events/${eventId}/dashboard/teams`
     );
     return response.data;
+  },
+
+  // --- Awards ---
+  getAwards: async (eventId: string): Promise<{ items: EventAward[] }> => {
+    const response = await apiClient.get<{ items: EventAward[] }>(`/events/${eventId}/awards`);
+    return response.data;
+  },
+
+  createAward: async (eventId: string, data: { name: string; rank_order: number }): Promise<EventAward> => {
+    const response = await apiClient.post<EventAward>(`/events/${eventId}/awards`, data);
+    return response.data;
+  },
+
+  updateAward: async (eventId: string, awardId: string, data: { name?: string; rank_order?: number }): Promise<EventAward> => {
+    const response = await apiClient.patch<EventAward>(`/events/${eventId}/awards/${awardId}`, data);
+    return response.data;
+  },
+
+  deleteAward: async (eventId: string, awardId: string): Promise<void> => {
+    await apiClient.delete(`/events/${eventId}/awards/${awardId}`);
+  },
+
+  addTeamToAward: async (eventId: string, awardId: string, teamId: string): Promise<void> => {
+    await apiClient.post(`/events/${eventId}/awards/${awardId}/teams`, { team_id: teamId });
+  },
+
+  removeTeamFromAward: async (eventId: string, awardId: string, teamId: string): Promise<void> => {
+    await apiClient.delete(`/events/${eventId}/awards/${awardId}/teams/${teamId}`);
   },
 };

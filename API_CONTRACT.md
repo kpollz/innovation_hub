@@ -1559,9 +1559,91 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 20. EVENT NOTIFICATIONS — Mở rộng hệ thống thông báo
+## 20. EVENT AWARDS (`/events/{event_id}/awards`) — Bục Vinh Quang
+
+### AwardObject
+```json
+{
+  "id": "uuid",
+  "event_id": "uuid",
+  "name": "string (max 200)",
+  "rank_order": 1,
+  "teams": [AwardTeamObject],
+  "created_at": "datetime",
+  "updated_at": "datetime | null"
+}
+```
+
+### AwardTeamObject
+```json
+{
+  "team_id": "uuid",
+  "team_name": "string",
+  "team_slogan": "string | null",
+  "leader_id": "uuid",
+  "leader_name": "string | null",
+  "leader_avatar_url": "string | null"
+}
+```
+
+### 20.1 GET `/events/{event_id}/awards` — Danh sách giải thưởng 🔒
+- **Status**: 200 OK
+- **Response**: `{ "items": [AwardObject] }`
+- **Sort**: `rank_order` ASC
+
+### 20.2 POST `/events/{event_id}/awards` — Tạo giải thưởng 🔒
+- **Quyền**: Admin only
+- **Body**: `{ "name": "string", "rank_order": 1 }`
+- **Response**: AwardObject (201)
+
+### 20.3 PATCH `/events/{event_id}/awards/{award_id}` — Cập nhật giải thưởng 🔒
+- **Quyền**: Admin only
+- **Body**: `{ "name?": "string", "rank_order?": 1 }`
+- **Response**: AwardObject
+
+### 20.4 DELETE `/events/{event_id}/awards/{award_id}` — Xóa giải thưởng 🔒
+- **Quyền**: Admin only
+- **Status**: 204 No Content
+
+### 20.5 POST `/events/{event_id}/awards/{award_id}/teams` — Thêm đội vào giải 🔒
+- **Quyền**: Admin only
+- **Body**: `{ "team_id": "uuid" }`
+- **Note**: 1 đội chỉ được thuộc 1 giải trong 1 event
+- **Status**: 204 No Content
+
+### 20.6 DELETE `/events/{event_id}/awards/{award_id}/teams/{team_id}` — Gỡ đội khỏi giải 🔒
+- **Quyền**: Admin only
+- **Status**: 204 No Content
+
+---
+
+## 21. EVENT NOTIFICATIONS — Mở rộng hệ thống thông báo
 
 ### Notification Types mới
+
+| Type | Trigger | Recipient |
+|------|---------|-----------|
+| `event_join_request` | User xin tham gia team | Team Lead của team |
+| `event_join_approved` | Team Lead duyệt yêu cầu | User được duyệt |
+| `event_join_rejected` | Team Lead từ chối yêu cầu | User bị từ chối |
+| `event_idea_submitted` | Idea mới được submit trong event | Admin (+ tùy chọn: Team Leads khác) |
+| `event_scored` | Team chấm điểm cho idea | Team Lead của team sở hữu idea |
+
+### Notification detail format
+
+| Type | action_detail | Ví dụ |
+|------|--------------|-------|
+| `event_join_request` | Team name | "Team Alpha" |
+| `event_join_approved` | Team name | "Team Alpha" |
+| `event_join_rejected` | Team name | "Team Alpha" |
+| `event_idea_submitted` | Idea title | "Auto-approval cho nghỉ <1 ngày" |
+| `event_scored` | Score summary | "35.5/40 từ Team Beta" |
+
+> Sử dụng cấu trúc `notifications` table hiện tại với `target_type = "event"`, `target_id = event_id`.
+
+---
+
+## 22. EVENT PERMISSIONS — Phân quyền Sự kiện
 
 | Type | Trigger | Recipient |
 |------|---------|-----------|
@@ -1616,6 +1698,12 @@ event_scores: id, event_idea_id, scorer_team_id,
 | PATCH .../faqs/{id} | Author | Author | ✅ |
 | DELETE .../faqs/{id} | Author | Author | ✅ |
 | GET .../dashboard/* | ✅ | ✅ | ✅ |
+| GET .../awards | ✅ | ✅ | ✅ |
+| POST .../awards | ❌ | ❌ | ✅ |
+| PATCH .../awards/{id} | ❌ | ❌ | ✅ |
+| DELETE .../awards/{id} | ❌ | ❌ | ✅ |
+| POST .../awards/{id}/teams | ❌ | ❌ | ✅ |
+| DELETE .../awards/{id}/teams/{tid} | ❌ | ❌ | ✅ |
 
 ### Event Status Constraints
 
@@ -1631,7 +1719,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 22. EVENT IDEA STATUS WORKFLOW
+## 23. EVENT IDEA STATUS WORKFLOW
 
 Event Ideas không có status workflow phức tạp như Room Ideas. Lifecycle đơn giản:
 
@@ -1646,7 +1734,7 @@ Created (submitted) → Scored → Event Closed
 
 ---
 
-## 23. INTEGRATION: Event ↔ Existing System
+## 24. INTEGRATION: Event ↔ Existing System
 
 ### Luồng kết nối chính
 

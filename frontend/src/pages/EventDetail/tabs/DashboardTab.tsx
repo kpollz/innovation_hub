@@ -1,31 +1,38 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Trophy, Users, BarChart3, ChevronDown, ChevronUp, Filter
+  Trophy, Users, BarChart3, ChevronDown, ChevronUp, Filter, Settings, Medal
 } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { Avatar } from '@/components/ui/Avatar';
-import type { EventObject, EventDashboardIdea, EventDashboardTeam } from '@/types';
+import { AwardPodium } from './AwardPodium';
+import { AwardManager } from './AwardManager';
+import type { EventObject, EventDashboardIdea, EventDashboardTeam, EventAward } from '@/types';
 
 interface DashboardTabProps {
   event: EventObject;
+  isAdmin?: boolean;
 }
 
-export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
+export const DashboardTab: React.FC<DashboardTabProps> = ({ event, isAdmin }) => {
   const { t } = useTranslation();
   const [ideas, setIdeas] = useState<EventDashboardIdea[]>([]);
   const [teams, setTeams] = useState<EventDashboardTeam[]>([]);
+  const [awards, setAwards] = useState<EventAward[]>([]);
   const [loading, setLoading] = useState(true);
   const [teamFilter, setTeamFilter] = useState<string>('');
   const [expandedIdeaId, setExpandedIdeaId] = useState<string | null>(null);
+  const [showAwardManager, setShowAwardManager] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ideasRes, teamsRes] = await Promise.all([
+      const [awardsRes, ideasRes, teamsRes] = await Promise.all([
+        eventsApi.getAwards(event.id),
         eventsApi.getDashboardIdeas(event.id, teamFilter || undefined),
         eventsApi.getDashboardTeams(event.id),
       ]);
+      setAwards(awardsRes.items);
       setIdeas(ideasRes.items);
       setTeams(teamsRes.items);
     } catch {
@@ -56,11 +63,41 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
 
   return (
     <div className="space-y-8">
+      {/* Awards Podium */}
+      {(awards.length > 0 || isAdmin) && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-feature-title font-semibold text-foreground flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              {t('events.dashboard.awards_title')}
+            </h2>
+            {isAdmin && (
+              <button
+                onClick={() => setShowAwardManager(true)}
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary px-3 py-1.5 rounded-standard transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                {t('events.dashboard.manage_awards')}
+              </button>
+            )}
+          </div>
+          {awards.length > 0 ? (
+            <div className="bg-white border border-border rounded-lg py-4">
+              <AwardPodium awards={awards} />
+            </div>
+          ) : (
+            <div className="text-center py-8 bg-secondary/50 rounded-lg border border-dashed border-border">
+              <p className="text-muted-foreground text-sm">{t('events.dashboard.no_awards_desc')}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Ideas Ranking */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-feature-title font-semibold text-foreground flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
+            <Medal className="h-5 w-5 text-yellow-500" />
             {t('events.dashboard.ideas_title')}
           </h2>
           {teams.length > 0 && (
@@ -87,15 +124,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
           </div>
         ) : (
           <div className="bg-white border border-border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
+              <colgroup>
+                <col className="w-[6%]" />
+                <col className="w-[27%]" />
+                <col className="w-[22%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+              </colgroup>
               <thead>
                 <tr className="bg-secondary border-b border-border">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">#</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">#</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('events.dashboard.col_title')}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('events.dashboard.col_team')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('events.dashboard.col_score')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('events.dashboard.col_scores')}</th>
-                  <th className="px-4 py-3 text-center font-medium text-muted-foreground w-10"></th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_score')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_scores')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
@@ -111,16 +156,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
                         <td className="px-4 py-3 font-medium text-muted-foreground">
                           {hasScore ? idx + 1 : '—'}
                         </td>
-                        <td className="px-4 py-3 font-medium text-foreground max-w-xs truncate">
+                        <td className="px-4 py-3 font-medium text-foreground truncate" title={idea.title}>
                           {idea.title}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        <td className="px-4 py-3 text-muted-foreground truncate">
                           {idea.team?.name || '—'}
                         </td>
-                        <td className={`px-4 py-3 text-right font-semibold ${hasScore ? 'text-primary-700' : 'text-muted-foreground'}`}>
+                        <td className={`px-4 py-3 text-center font-semibold ${hasScore ? 'text-primary-700' : 'text-muted-foreground'}`}>
                           {hasScore ? idea.total_score!.toFixed(1) : '—'}
                         </td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">
+                        <td className="px-4 py-3 text-center text-muted-foreground">
                           {idea.score_count}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -166,15 +211,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
           </div>
         ) : (
           <div className="bg-white border border-border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
+              <colgroup>
+                <col className="w-[6%]" />
+                <col className="w-[19%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+                <col className="w-[30%]" />
+              </colgroup>
               <thead>
                 <tr className="bg-secondary border-b border-border">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">#</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">#</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('events.dashboard.col_team_info')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('events.dashboard.col_ideas')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('events.dashboard.col_avg')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('events.dashboard.col_total')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('events.dashboard.col_members')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_ideas')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_avg')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_total')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('events.dashboard.col_members')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,22 +235,22 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
                   <tr key={dt.team.id} className="border-b border-border/50 hover:bg-secondary">
                     <td className="px-4 py-3 font-medium text-muted-foreground">{idx + 1}</td>
                     <td className="px-4 py-3">
-                      <div>
+                      <div className="truncate">
                         <span className="font-medium text-foreground">{dt.team.name}</span>
                         {dt.team.slogan && (
-                          <p className="text-xs text-muted-foreground truncate max-w-xs">{dt.team.slogan}</p>
+                          <p className="text-xs text-muted-foreground truncate">{dt.team.slogan}</p>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-foreground">{dt.idea_count}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">
+                    <td className="px-4 py-3 text-center font-semibold text-foreground">{dt.idea_count}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">
                       {dt.avg_score !== null ? dt.avg_score.toFixed(1) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-primary-700">
+                    <td className="px-4 py-3 text-center font-semibold text-primary-700">
                       {dt.total_score > 0 ? dt.total_score.toFixed(1) : '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex -space-x-2">
+                      <div className="flex -space-x-2 justify-center">
                         {dt.members.slice(0, 5).map(m => (
                           <Avatar key={m.id} src={m.avatar_url} name={m.full_name || m.username} size="sm" />
                         ))}
@@ -215,6 +268,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ event }) => {
           </div>
         )}
       </div>
+
+      {/* Award Manager Modal */}
+      {showAwardManager && (
+        <AwardManager
+          event={event}
+          teams={teams}
+          onClose={() => setShowAwardManager(false)}
+          onChanged={fetchData}
+        />
+      )}
     </div>
   );
 };

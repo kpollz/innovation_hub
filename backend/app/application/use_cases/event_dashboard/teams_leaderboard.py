@@ -45,6 +45,8 @@ class TeamsLeaderboardUseCase:
                 if scores:
                     avg = sum(s.total_score for s in scores) / len(scores)
                     score_values.append(avg)
+                else:
+                    score_values.append(0.0)
 
             avg_score = round(sum(score_values) / len(score_values), 2) if score_values else None
             total_score = round(sum(score_values), 2) if score_values else 0.0

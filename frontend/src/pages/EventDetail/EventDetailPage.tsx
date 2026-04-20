@@ -176,7 +176,7 @@ export const EventDetailPage: React.FC = () => {
         {activeTab === 'introduction' && <IntroductionTab event={event} />}
         {activeTab === 'teams' && <TeamsTab event={event} />}
         {activeTab === 'ideas' && <IdeasTab event={event} />}
-        {activeTab === 'dashboard' && <DashboardTab event={event} />}
+        {activeTab === 'dashboard' && <DashboardTab event={event} isAdmin={isAdmin} />}
         {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
       </div>
 
