@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, ThumbsUp, Lightbulb, BrainCircuit, Lock } from 'lucide-react';
 import type { Problem } from '@/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
@@ -18,9 +18,10 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
   const status = PROBLEM_STATUSES.find((s) => s.value === problem.status);
 
   return (
-    <Card hoverable>
-      <Link to={`/problems/${problem.id}`}>
-        <CardHeader className="pb-3">
+    <Card hoverable className="h-full">
+      <Link to={`/problems/${problem.id}`} className="flex flex-col h-full">
+        {/* Top: Tags & badges */}
+        <div className="px-5 pt-5 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {category && (
@@ -34,16 +35,17 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
                 </span>
               )}
               {problem.visibility === 'private' && (
-                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400" title="Private">
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500" title="Private">
                   <Lock className="h-3 w-3" />
                 </span>
               )}
             </div>
             <span className="text-xs text-gray-500">{timeAgo(problem.created_at)}</span>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="pt-0">
+        {/* Middle: Content (flex-1 fills remaining space) */}
+        <div className="px-5 flex-1">
           <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
             {problem.title}
           </h3>
@@ -74,12 +76,15 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
               </span>
             )}
           </div>
+        </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+        {/* Bottom: Author (pinned to bottom) */}
+        <div className="px-5 pb-5 pt-4 mt-auto border-t border-gray-100">
+          <div className="flex items-center gap-2">
             <Avatar src={problem.author?.avatar_url} name={problem.author?.full_name || problem.author?.username} size="sm" />
             <span className="text-sm text-gray-700">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
           </div>
-        </CardContent>
+        </div>
       </Link>
     </Card>
   );

@@ -10,7 +10,7 @@ export const Card: React.FC<CardProps> = ({ children, hoverable = false, classNa
   return (
     <div
       className={classNames(
-        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden',
+        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col',
         hoverable && 'hover:shadow-md transition-shadow cursor-pointer',
         className
       )}
