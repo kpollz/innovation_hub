@@ -679,7 +679,6 @@ export const ProblemDetailPage: React.FC = () => {
                       (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
                         (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
                     )
-                    .slice(0, 10)
                     .map((u) => (
                       <button
                         key={u.id}
@@ -833,7 +832,6 @@ export const ProblemDetailPage: React.FC = () => {
                         (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
                           (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
                       )
-                      .slice(0, 10)
                       .map((u) => (
                         <button
                           key={u.id}

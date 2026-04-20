@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
+import { Avatar } from '@/components/ui/Avatar';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
@@ -228,20 +229,19 @@ export const CreateProblemModal: React.FC = () => {
                 open={showUserDropdown && filteredUsers.length > 0}
                 onClose={() => setShowUserDropdown(false)}
                 matchWidth
-                className="bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+                className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
               >
-                {filteredUsers.slice(0, 10).map((user) => (
+                {filteredUsers.map((user) => (
                   <button
                     key={user.id}
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { addSharedUser(user.id); setShowUserDropdown(false); }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
                   >
-                    <span className="font-medium">{user.username}</span>
-                    {user.full_name && (
-                      <span className="text-gray-500">({user.full_name})</span>
-                    )}
+                    <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
+                    <span className="font-medium">{user.full_name || user.username}</span>
+                    {user.full_name && <span className="text-gray-400 text-xs">@{user.username}</span>}
                   </button>
                 ))}
               </Popover>

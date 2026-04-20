@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProblemStore } from '@/stores/problemStore';
@@ -9,10 +9,11 @@ import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { Popover } from '@/components/ui/Popover';
+import { Avatar } from '@/components/ui/Avatar';
 import { PROBLEM_CATEGORIES } from '@/utils/constants';
 import { usersApi } from '@/api/users';
 import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
-import type { ProblemCategory, ProblemVisibility } from '@/types';
+import type { ProblemCategory, ProblemVisibility, User } from '@/types';
 
 export const CreateProblemPage: React.FC = () => {
   const { t } = useTranslation();
@@ -26,35 +27,29 @@ export const CreateProblemPage: React.FC = () => {
   const [content, setContent] = useState(EMPTY_TIPTAP_JSON);
   const [visibility, setVisibility] = useState<ProblemVisibility>('public');
   const [sharedUserIds, setSharedUserIds] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userSearch, setUserSearch] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const userSearchRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleUserSearch = useCallback(async (query: string) => {
-    setUserSearch(query);
-    if (query.length < 2) {
-      setUserSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const result = await usersApi.list({ search: query, limit: 10 });
-      setUserSearchResults(result.items.map(u => ({ id: u.id, full_name: u.full_name || '', email: u.email || '' })));
-    } catch {
-      setUserSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
+  useEffect(() => {
+    usersApi.list({ limit: 100 }).then((res) => setAllUsers(res.items)).catch(() => {});
   }, []);
+
+  const filteredUsers = allUsers.filter(
+    (u) =>
+      !sharedUserIds.includes(u.id) &&
+      (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+        (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
+  );
 
   const addSharedUser = (userId: string) => {
     if (!sharedUserIds.includes(userId)) {
       setSharedUserIds([...sharedUserIds, userId]);
     }
     setUserSearch('');
-    setUserSearchResults([]);
+    setShowUserDropdown(false);
   };
 
   const removeSharedUser = (userId: string) => {
@@ -214,17 +209,18 @@ export const CreateProblemPage: React.FC = () => {
                   {sharedUserIds.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {sharedUserIds.map((userId) => {
-                        const user = userSearchResults.find(u => u.id === userId);
+                        const user = allUsers.find(u => u.id === userId);
                         return (
                           <span
                             key={userId}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-sm"
                           >
-                            {user?.full_name || userId.slice(0, 8)}
+                            <Avatar src={user?.avatar_url} name={user?.full_name || user?.username || ''} size="sm" />
+                            {user?.full_name || user?.username || userId.slice(0, 8)}
                             <button
                               type="button"
                               onClick={() => removeSharedUser(userId)}
-                              className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                              className="ml-1 text-primary-600 hover:text-primary-900"
                             >
                               ×
                             </button>
@@ -236,38 +232,32 @@ export const CreateProblemPage: React.FC = () => {
 
                   {/* User search input */}
                   <div ref={userSearchRef}>
-                    <div className="relative">
-                      <Input
-                        placeholder={t('problems.search_users_placeholder')}
-                        value={userSearch}
-                        onChange={(e) => handleUserSearch(e.target.value)}
-                      />
-                      {isSearching && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
-                        </div>
-                      )}
-                    </div>
+                    <Input
+                      placeholder={t('problems.search_users_placeholder')}
+                      value={userSearch}
+                      onChange={(e) => { setUserSearch(e.target.value); setShowUserDropdown(true); }}
+                      onFocus={() => setShowUserDropdown(true)}
+                    />
                     <Popover
                       triggerRef={userSearchRef}
-                      open={userSearchResults.length > 0}
-                      onClose={() => setUserSearchResults([])}
+                      open={showUserDropdown && filteredUsers.length > 0}
+                      onClose={() => setShowUserDropdown(false)}
                       matchWidth
                       className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
                     >
-                      {userSearchResults
-                        .filter(u => !sharedUserIds.includes(u.id))
-                        .map((user) => (
-                          <button
-                            key={user.id}
-                            type="button"
-                            onClick={() => addSharedUser(user.id)}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                          >
-                            <span className="font-medium">{user.full_name}</span>
-                            <span className="text-gray-500 ml-2">{user.email}</span>
-                          </button>
-                        ))}
+                      {filteredUsers.map((user) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => addSharedUser(user.id)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
+                        >
+                          <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
+                          <span className="font-medium">{user.full_name || user.username}</span>
+                          {user.full_name && <span className="text-gray-400 text-xs">@{user.username}</span>}
+                        </button>
+                      ))}
                     </Popover>
                   </div>
                 </div>
