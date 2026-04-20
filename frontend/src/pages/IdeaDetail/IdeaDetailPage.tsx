@@ -226,7 +226,7 @@ export const IdeaDetailPage: React.FC = () => {
       {/* Back link */}
       <Link
         to={`/rooms/${idea.room_id}`}
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('ideas.back_to_room')}
@@ -236,26 +236,26 @@ export const IdeaDetailPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
-            <h1 className="text-section-heading font-bold text-gray-900">{idea.title}</h1>
+            <h1 className="text-section-heading font-bold text-foreground">{idea.title}</h1>
             {canModify && (
               <>
                 <button
                   ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  className="p-2 hover:bg-secondary rounded-lg"
                 >
-                  <MoreVertical className="h-5 w-5 text-gray-500" />
+                  <MoreVertical className="h-5 w-5 text-muted-foreground" />
                 </button>
                 <Popover
                   triggerRef={actionsRef}
                   open={showActions}
                   onClose={() => setShowActions(false)}
                   align="right"
-                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                 >
                   <button
                     onClick={openEditModal}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                   >
                     <Edit className="h-4 w-4" />
                     {t('ideas.edit_idea')}
@@ -264,7 +264,7 @@ export const IdeaDetailPage: React.FC = () => {
                   {user?.role === 'admin' && (
                     <button
                       onClick={handlePin}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                     >
                       <Pin className="h-4 w-4" />
                       {idea.is_pinned ? t('ideas.unpin') : t('ideas.pin_to_top')}
@@ -273,13 +273,13 @@ export const IdeaDetailPage: React.FC = () => {
 
                   {!isTerminal && (
                     <>
-                      <div className="border-t border-gray-200 my-1" />
-                      <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('ideas.change_status')}</p>
+                      <div className="border-t border-border my-1" />
+                      <p className="px-4 py-1 text-xs text-muted-foreground font-medium">{t('ideas.change_status')}</p>
                       {IDEA_STATUSES.filter((s) => s.value !== idea.status).map((s) => (
                         <button
                           key={s.value}
                           onClick={() => handleStatusChange(s.value as IdeaStatus)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                         >
                           <Badge className={classNames(s.color, 'text-xs')}>{s.label}</Badge>
                         </button>
@@ -287,7 +287,7 @@ export const IdeaDetailPage: React.FC = () => {
                     </>
                   )}
 
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-border my-1" />
                   <button
                     onClick={() => { setShowActions(false); setIsDeleteModalOpen(true); }}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
@@ -309,17 +309,17 @@ export const IdeaDetailPage: React.FC = () => {
             </div>
           )}
 
-          <div className="text-gray-700 rich-content">
+          <div className="text-foreground/70 rich-content">
             <TipTapRenderer content={idea.description} />
           </div>
 
           {/* Author + Tags row */}
-          <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+          <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar src={authorAvatar} name={authorName} size="lg" />
               <div>
-                <p className="text-sm font-medium text-gray-900">{authorName}</p>
-                <p className="text-xs text-gray-500">Posted {timeAgo(idea.created_at)}</p>
+                <p className="text-sm font-medium text-foreground">{authorName}</p>
+                <p className="text-xs text-muted-foreground">Posted {timeAgo(idea.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export const IdeaDetailPage: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">{t('ideas.rate_idea')}</span>
+              <span className="text-sm font-medium text-foreground/70">{t('ideas.rate_idea')}</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -360,7 +360,7 @@ export const IdeaDetailPage: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="text-sm text-muted-foreground ml-2">
                 {t('ideas.avg_votes', { avg: idea.vote_avg.toFixed(1), count: idea.vote_count })}
               </span>
             </div>
@@ -371,7 +371,7 @@ export const IdeaDetailPage: React.FC = () => {
                 onClick={() => handleReaction('like')}
                 className={classNames(
                   'flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors',
-                  idea.user_reaction === 'like' ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100 text-gray-600'
+                  idea.user_reaction === 'like' ? 'bg-primary-100 text-primary-700' : 'hover:bg-secondary text-muted-foreground'
                 )}
               >
                 <ThumbsUp className="h-4 w-4" />
@@ -381,7 +381,7 @@ export const IdeaDetailPage: React.FC = () => {
                 onClick={() => handleReaction('insight')}
                 className={classNames(
                   'flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors',
-                  idea.user_reaction === 'insight' ? 'bg-yellow-100 text-yellow-700' : 'hover:bg-gray-100 text-gray-600'
+                  idea.user_reaction === 'insight' ? 'bg-yellow-100 text-yellow-700' : 'hover:bg-secondary text-muted-foreground'
                 )}
               >
                 <Lightbulb className="h-4 w-4" />
@@ -391,7 +391,7 @@ export const IdeaDetailPage: React.FC = () => {
                 onClick={() => handleReaction('dislike')}
                 className={classNames(
                   'flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors',
-                  idea.user_reaction === 'dislike' ? 'bg-red-100 text-red-700' : 'hover:bg-gray-100 text-gray-600'
+                  idea.user_reaction === 'dislike' ? 'bg-red-100 text-red-700' : 'hover:bg-secondary text-muted-foreground'
                 )}
               >
                 <ThumbsDown className="h-4 w-4" />
@@ -406,8 +406,8 @@ export const IdeaDetailPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h2 className="text-feature-title font-semibold text-gray-900">{t('comments.title', { count: comments.length })}</h2>
+            <MessageCircle className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-feature-title font-semibold text-foreground">{t('comments.title', { count: comments.length })}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -425,7 +425,7 @@ export const IdeaDetailPage: React.FC = () => {
 
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">{t('comments.no_comments')}</p>
+              <p className="text-center text-muted-foreground py-4">{t('comments.no_comments')}</p>
             ) : (
               comments.map((comment) => {
                 const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
@@ -434,16 +434,16 @@ export const IdeaDetailPage: React.FC = () => {
                   <div
                     key={comment.id}
                     className={`flex gap-3 p-4 rounded-lg ${
-                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-gray-50'
+                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-secondary'
                     }`}
                   >
                     <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
                     <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
                       <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
-                        <span className="font-medium text-gray-900">{commentAuthorName}</span>
-                        <span className="text-xs text-gray-500">{timeAgo(comment.created_at)}</span>
+                        <span className="font-medium text-foreground">{commentAuthorName}</span>
+                        <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
+                      <p className="text-foreground/70">{comment.content}</p>
                     </div>
                   </div>
                 );
@@ -489,7 +489,7 @@ export const IdeaDetailPage: React.FC = () => {
       {/* Delete Modal */}
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('ideas.delete_idea')}>
         <div className="space-y-4">
-          <p className="text-gray-600">{t('ideas.delete_confirm')}</p>
+          <p className="text-muted-foreground">{t('ideas.delete_confirm')}</p>
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>{t('common.cancel')}</Button>
             <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>

@@ -264,7 +264,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
     return (
       <div className="space-y-4 animate-pulse">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+          <div key={i} className="bg-white rounded-lg border border-border p-5">
             <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
             <div className="h-4 bg-gray-200 rounded w-1/4" />
@@ -278,7 +278,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-feature-title font-semibold text-gray-900">
+        <h2 className="text-feature-title font-semibold text-foreground">
           {t('events.teams.title', { count: teams.length })}
         </h2>
         {canCreateTeam && (
@@ -346,8 +346,8 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       {teams.length === 0 && (
         <div className="text-center py-16">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-600">{t('events.teams.no_teams')}</h3>
-          <p className="text-gray-400 mt-1">{t('events.teams.no_teams_desc')}</p>
+          <h3 className="text-lg font-medium text-muted-foreground">{t('events.teams.no_teams')}</h3>
+          <p className="text-muted-foreground mt-1">{t('events.teams.no_teams_desc')}</p>
           {canCreateTeam && (
             <button
               onClick={() => setShowCreate(true)}
@@ -373,13 +373,13 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
           <div
             key={team.id}
             className={`bg-white rounded-lg border transition-colors ${
-              isMyTeam ? 'border-primary-300 ring-1 ring-primary-100' : 'border-gray-200'
+              isMyTeam ? 'border-primary-300 ring-1 ring-primary-100' : 'border-border'
             }`}
           >
             {/* Team Header */}
             <button
               onClick={() => toggleExpand(team.id)}
-              className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors rounded-lg"
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-secondary transition-colors rounded-lg"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -387,7 +387,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900 truncate">{team.name}</h3>
+                    <h3 className="font-semibold text-foreground truncate">{team.name}</h3>
                     {isMyTeam && (
                       <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-medium rounded-full whitespace-nowrap">
                         {isLeader ? t('events.teams.leader_badge') : t('events.teams.member_badge')}
@@ -400,34 +400,34 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                     )}
                   </div>
                   {team.slogan && (
-                    <p className="text-sm text-gray-500 truncate">{team.slogan}</p>
+                    <p className="text-sm text-muted-foreground truncate">{team.slogan}</p>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                <div className="flex items-center gap-3 text-sm text-gray-500">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span>{t('events.teams.member_count', { count: team.member_count })}</span>
                   <span>{t('events.teams.idea_count', { count: team.idea_count })}</span>
                 </div>
                 {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-gray-400" />
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
             </button>
 
             {/* Expanded Content */}
             {isExpanded && (
-              <div className="border-t border-gray-100 p-5 space-y-4">
+              <div className="border-t border-border/50 p-5 space-y-4">
                 {/* Leader info */}
                 {team.leader && (
                   <div className="flex items-center gap-2 text-sm">
                     <Crown className="h-4 w-4 text-yellow-500" />
-                    <span className="text-gray-600">{t('events.teams.leader')}:</span>
+                    <span className="text-muted-foreground">{t('events.teams.leader')}:</span>
                     <div className="flex items-center gap-1.5">
                       <Avatar src={team.leader.avatar_url} name={team.leader.full_name || team.leader.username} size="sm" />
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-foreground">
                         {team.leader.full_name || team.leader.username}
                       </span>
                     </div>
@@ -440,11 +440,11 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                     <Shield className="h-4 w-4 text-indigo-500 flex-shrink-0" />
                     {team.assigned_to_team ? (
                       <>
-                        <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
-                        <span className="font-medium text-gray-900">{team.assigned_to_team.name}</span>
+                        <span className="text-muted-foreground">{t('events.teams.reviews_team')}:</span>
+                        <span className="font-medium text-foreground">{team.assigned_to_team.name}</span>
                       </>
                     ) : (
-                      <span className="text-gray-600">{t('events.teams.reviews_team')}:</span>
+                      <span className="text-muted-foreground">{t('events.teams.reviews_team')}:</span>
                     )}
                     {isAdmin && isActive && (
                       <Button
@@ -469,27 +469,27 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
                 {/* Members loading */}
                 {isLoadingMembers && (
                   <div className="flex items-center gap-2 py-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                    <span className="text-sm text-gray-400">{t('common.loading')}</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{t('common.loading')}</span>
                   </div>
                 )}
 
                 {/* Members list */}
                 {!isLoadingMembers && members.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">{t('events.teams.members')}</h4>
+                    <h4 className="text-sm font-medium text-foreground/70">{t('events.teams.members')}</h4>
                     <div className="space-y-1.5">
                       {members.map(member => (
                         <div
                           key={member.id}
                           className={`flex items-center justify-between p-2.5 rounded-lg ${
-                            member.status === 'pending' ? 'bg-yellow-50 border border-yellow-100' : 'bg-gray-50'
+                            member.status === 'pending' ? 'bg-yellow-50 border border-yellow-100' : 'bg-secondary'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <Avatar src={member.user?.avatar_url} name={member.user?.full_name || member.user?.username} size="sm" />
                             <div>
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-foreground">
                                 {member.user?.full_name || member.user?.username || '...'}
                               </span>
                               {member.user_id === team.leader_id && (
@@ -543,12 +543,12 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
 
                 {/* No members shown yet */}
                 {!isLoadingMembers && members.length === 0 && (
-                  <p className="text-sm text-gray-400">{t('events.teams.no_members')}</p>
+                  <p className="text-sm text-muted-foreground">{t('events.teams.no_members')}</p>
                 )}
 
                 {/* Action buttons for non-members */}
                 {canJoinTeam && (
-                  <div className="pt-2 border-t border-gray-100">
+                  <div className="pt-2 border-t border-border/50">
                     <button
                       onClick={() => handleJoinTeam(team.id)}
                       disabled={!!joiningTeamId}
@@ -588,7 +588,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground/70 mb-1">
               {t('events.teams.name_label')} <span className="text-red-500">*</span>
             </label>
             <input
@@ -605,7 +605,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground/70 mb-1">
               {t('events.teams.slogan_label')}
             </label>
             <input
@@ -617,7 +617,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
               maxLength={255}
             />
           </div>
-          <p className="text-xs text-gray-500">{t('events.teams.create_notice')}</p>
+          <p className="text-xs text-muted-foreground">{t('events.teams.create_notice')}</p>
         </div>
       </Modal>
 
@@ -635,7 +635,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
           </>
         }
       >
-        <p className="text-sm text-gray-600">{t('events.teams.leave_confirm')}</p>
+        <p className="text-sm text-muted-foreground">{t('events.teams.leave_confirm')}</p>
       </Modal>
 
       {/* --- Disband Team Confirmation --- */}
@@ -655,8 +655,8 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-gray-600">{t('events.teams.disband_confirm')}</p>
-            <p className="text-xs text-gray-500 mt-2">{t('events.teams.disband_warning')}</p>
+            <p className="text-sm text-muted-foreground">{t('events.teams.disband_confirm')}</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('events.teams.disband_warning')}</p>
           </div>
         </div>
       </Modal>
@@ -677,7 +677,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
           </>
         }
       >
-        <p className="text-sm text-gray-600 mb-3">{t('events.teams.transfer_desc')}</p>
+        <p className="text-sm text-muted-foreground mb-3">{t('events.teams.transfer_desc')}</p>
         <select
           value={transferToId}
           onChange={e => setTransferToId(e.target.value)}
@@ -715,7 +715,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
           </>
         }
       >
-        <p className="text-sm text-gray-600 mb-3">{t('events.teams.assign_review_desc')}</p>
+        <p className="text-sm text-muted-foreground mb-3">{t('events.teams.assign_review_desc')}</p>
         <select
           value={assignTargetTeamId}
           onChange={e => setAssignTargetTeamId(e.target.value)}

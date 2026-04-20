@@ -252,11 +252,11 @@ export const ProblemDetailPage: React.FC = () => {
   if (accessError) {
     return (
       <div className="text-center py-12">
-        <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-gray-400'}`} />
-        <h2 className="text-card-heading font-semibold text-gray-700 mb-2">
+        <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-muted-foreground'}`} />
+        <h2 className="text-card-heading font-semibold text-foreground/70 mb-2">
           {accessError === 'forbidden' ? t('errors.forbidden_title') : t('errors.not_found_title')}
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-muted-foreground mb-4">
           {accessError === 'forbidden' ? t('errors.forbidden_desc') : t('errors.not_found_desc')}
         </p>
         <Link to="/problems" className="text-primary-600 hover:text-primary-700">
@@ -284,7 +284,7 @@ export const ProblemDetailPage: React.FC = () => {
       {/* Back Button */}
       <Link
         to="/problems"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('problems.back_to_problems')}
@@ -294,7 +294,7 @@ export const ProblemDetailPage: React.FC = () => {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between flex-wrap gap-3">
-            <h1 className="text-section-heading font-bold text-gray-900">
+            <h1 className="text-section-heading font-bold text-foreground">
               {selectedProblem.title}
             </h1>
             {/* Actions Dropdown for Owner/Admin */}
@@ -303,26 +303,26 @@ export const ProblemDetailPage: React.FC = () => {
                 <button
                   ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-secondary rounded-lg transition-colors"
                 >
-                  <MoreVertical className="h-5 w-5 text-gray-500" />
+                  <MoreVertical className="h-5 w-5 text-muted-foreground" />
                 </button>
                 <Popover
                   triggerRef={actionsRef}
                   open={showActions}
                   onClose={() => setShowActions(false)}
                   align="right"
-                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                 >
                   <button
                     onClick={openEditModal}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                   >
                     <Edit className="h-4 w-4" />
                     {t('problems.edit_problem')}
                   </button>
 
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-border my-1" />
 
                   {(() => {
                     const current = selectedProblem.status;
@@ -336,12 +336,12 @@ export const ProblemDetailPage: React.FC = () => {
                     });
                     if (options.length === 0) return null;
                     return (<>
-                  <p className="px-4 py-1 text-xs text-gray-500 font-medium">{t('problems.change_status')}</p>
+                  <p className="px-4 py-1 text-xs text-muted-foreground font-medium">{t('problems.change_status')}</p>
                   {options.map((s) => (
                     <button
                       key={s.value}
                       onClick={() => handleStatusChange(s.value as ProblemStatus)}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                     >
                       <Circle className="h-4 w-4" />
                       {s.label}
@@ -350,7 +350,7 @@ export const ProblemDetailPage: React.FC = () => {
                     </>);
                   })()}
 
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-border my-1" />
 
                   <button
                     onClick={() => {
@@ -369,17 +369,17 @@ export const ProblemDetailPage: React.FC = () => {
         </CardHeader>
 
         <CardContent className="pt-4">
-          <div className="text-gray-700 rich-content">
+          <div className="text-foreground/70 rich-content">
             <TipTapRenderer content={selectedProblem.content} />
           </div>
 
           {/* Author + Tags row */}
-          <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+          <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar src={authorAvatar} name={authorName} size="lg" />
               <div>
-                <p className="text-sm font-medium text-gray-900">{authorName}</p>
-                <p className="text-xs text-gray-500">{t('problems.posted_time', { time: timeAgo(selectedProblem.created_at) })}</p>
+                <p className="text-sm font-medium text-foreground">{authorName}</p>
+                <p className="text-xs text-muted-foreground">{t('problems.posted_time', { time: timeAgo(selectedProblem.created_at) })}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -403,11 +403,11 @@ export const ProblemDetailPage: React.FC = () => {
       </Card>
 
       {/* Brainstorming Rooms Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white rounded-xl border border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BrainCircuit className="h-5 w-5 text-primary-600" />
-            <h3 className="font-semibold text-gray-900">{t('problems.brainstorming_rooms')}</h3>
+            <h3 className="font-semibold text-foreground">{t('problems.brainstorming_rooms')}</h3>
             {selectedProblem.rooms?.length > 0 && (
               <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
                 {selectedProblem.rooms.length}
@@ -437,13 +437,13 @@ export const ProblemDetailPage: React.FC = () => {
               <Link
                 key={room.id}
                 to={`/rooms/${room.id}`}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-secondary transition-colors"
               >
                 <BrainCircuit className="h-4 w-4 text-primary-600 shrink-0" />
-                <span className="text-sm font-medium text-gray-800 truncate">{room.name}</span>
+                <span className="text-sm font-medium text-foreground/80 truncate">{room.name}</span>
                 <span className={classNames(
                   'ml-auto text-xs px-2 py-0.5 rounded-full shrink-0',
-                  room.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                  room.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
                 )}>
                   {room.status}
                 </span>
@@ -451,7 +451,7 @@ export const ProblemDetailPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-gray-500">{t('problems.no_rooms')}</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t('problems.no_rooms')}</p>
         )}
       </div>
 
@@ -465,7 +465,7 @@ export const ProblemDetailPage: React.FC = () => {
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
                 selectedProblem.user_reaction === 'like'
                   ? 'bg-primary-100 text-primary-700'
-                  : 'hover:bg-gray-100 text-gray-600'
+                  : 'hover:bg-secondary text-muted-foreground'
               )}
             >
               <ThumbsUp className="h-5 w-5" />
@@ -477,7 +477,7 @@ export const ProblemDetailPage: React.FC = () => {
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
                 selectedProblem.user_reaction === 'insight'
                   ? 'bg-yellow-100 text-yellow-700'
-                  : 'hover:bg-gray-100 text-gray-600'
+                  : 'hover:bg-secondary text-muted-foreground'
               )}
             >
               <Lightbulb className="h-5 w-5" />
@@ -489,7 +489,7 @@ export const ProblemDetailPage: React.FC = () => {
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
                 selectedProblem.user_reaction === 'dislike'
                   ? 'bg-red-100 text-red-700'
-                  : 'hover:bg-gray-100 text-gray-600'
+                  : 'hover:bg-secondary text-muted-foreground'
               )}
             >
               <ThumbsDown className="h-5 w-5" />
@@ -503,8 +503,8 @@ export const ProblemDetailPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h2 className="text-feature-title font-semibold text-gray-900">
+            <MessageCircle className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-feature-title font-semibold text-foreground">
               {t('comments.title', { count: comments.length })}
             </h2>
           </div>
@@ -529,7 +529,7 @@ export const ProblemDetailPage: React.FC = () => {
           {/* Comments List */}
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">
+              <p className="text-center text-muted-foreground py-4">
                 {t('comments.no_comments')}
               </p>
             ) : (
@@ -540,20 +540,20 @@ export const ProblemDetailPage: React.FC = () => {
                   <div
                     key={comment.id}
                     className={`flex gap-3 p-4 rounded-lg ${
-                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-gray-50'
+                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-secondary'
                     }`}
                   >
                     <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
                     <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
                       <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-foreground">
                           {commentAuthorName}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {timeAgo(comment.created_at)}
                         </span>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
+                      <p className="text-foreground/70">{comment.content}</p>
                     </div>
                   </div>
                 );
@@ -601,7 +601,7 @@ export const ProblemDetailPage: React.FC = () => {
 
           {/* Privacy / Visibility */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-foreground/70">
               {t('problems.visibility_label')}
             </label>
             <div className="flex gap-4">
@@ -628,7 +628,7 @@ export const ProblemDetailPage: React.FC = () => {
                 <span className="text-sm">{t('problems.visibility_private')}</span>
               </label>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {editVisibility === 'public'
                 ? t('problems.visibility_public_desc')
                 : t('problems.visibility_private_desc')}
@@ -638,7 +638,7 @@ export const ProblemDetailPage: React.FC = () => {
           {/* Shared Users (only when private) */}
           {editVisibility === 'private' && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground/70">
                 {t('problems.share_with_label')}
               </label>
               {editSharedUserIds.length > 0 && (
@@ -671,7 +671,7 @@ export const ProblemDetailPage: React.FC = () => {
                   ).length > 0}
                   onClose={() => setShowUserDropdown(false)}
                   matchWidth
-                  className="bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+                  className="bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto"
                 >
                   {allUsers
                     .filter((u) =>
@@ -684,10 +684,10 @@ export const ProblemDetailPage: React.FC = () => {
                         key={u.id}
                         type="button"
                         onClick={() => { setEditSharedUserIds([...editSharedUserIds, u.id]); setUserSearch(''); setShowUserDropdown(false); }}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
                       >
                         <span className="font-medium">{u.username}</span>
-                        {u.full_name && <span className="text-gray-500">({u.full_name})</span>}
+                        {u.full_name && <span className="text-muted-foreground">({u.full_name})</span>}
                       </button>
                     ))}
                 </Popover>
@@ -713,7 +713,7 @@ export const ProblemDetailPage: React.FC = () => {
         title={t('problems.delete_problem')}
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {t('problems.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3 pt-4">
@@ -751,7 +751,7 @@ export const ProblemDetailPage: React.FC = () => {
 
           {/* Visibility Toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground/70 mb-2">
               {t('rooms.visibility_label')}
             </label>
             <div className="flex gap-3">
@@ -761,7 +761,7 @@ export const ProblemDetailPage: React.FC = () => {
                 className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                   brainstormVisibility === 'public'
                     ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    : 'border-border text-muted-foreground hover:border-border/70'
                 }`}
               >
                 {t('rooms.visibility_public')}
@@ -773,7 +773,7 @@ export const ProblemDetailPage: React.FC = () => {
                 className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                   brainstormVisibility === 'private'
                     ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    : 'border-border text-muted-foreground hover:border-border/70'
                 }`}
               >
                 {t('rooms.visibility_private')}
@@ -784,7 +784,7 @@ export const ProblemDetailPage: React.FC = () => {
             {/* Share with users when private */}
             {brainstormVisibility === 'private' && (
               <div className="mt-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
                   {t('rooms.share_with_label')}
                 </label>
                 {brainstormSharedUserIds.length > 0 && (
@@ -811,7 +811,7 @@ export const ProblemDetailPage: React.FC = () => {
                     onFocus={() => setShowBrainstormUserDropdown(true)}
                     onBlur={() => setTimeout(() => setShowBrainstormUserDropdown(false), 200)}
                     placeholder={t('rooms.search_users_placeholder')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                   />
                   <Popover
                     triggerRef={brainstormUserSearchRef}
@@ -823,7 +823,7 @@ export const ProblemDetailPage: React.FC = () => {
                     ).length > 0}
                     onClose={() => setShowBrainstormUserDropdown(false)}
                     matchWidth
-                    className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
+                    className="bg-white border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto"
                   >
                     {brainstormUsers
                       .filter((u) =>
@@ -837,10 +837,10 @@ export const ProblemDetailPage: React.FC = () => {
                           key={u.id}
                           type="button"
                           onClick={() => { setBrainstormSharedUserIds([...brainstormSharedUserIds, u.id]); setBrainstormUserSearch(''); setShowBrainstormUserDropdown(false); }}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
                         >
                           <span className="font-medium">{u.full_name || u.username}</span>
-                          {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                          {u.full_name && <span className="text-muted-foreground text-xs">@{u.username}</span>}
                         </button>
                       ))}
                   </Popover>

@@ -138,7 +138,7 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
       size="xl"
       footer={footer}
     >
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="space-y-4">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
             {error}
@@ -147,17 +147,17 @@ export const IdeaFormModal: React.FC<IdeaFormModalProps> = ({
 
         {!isEditing && myTeam && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground/70 mb-1">
               {t('events.ideas.fields.inventor')}
             </label>
-            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+            <div className="px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-muted-foreground">
               {myTeam.name}
             </div>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground/70 mb-1">
             {t('events.ideas.fields.title')} <span className="text-red-500">*</span>
           </label>
           <input

@@ -122,9 +122,9 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+          <div key={i} className="bg-white rounded-lg border border-border p-5">
             <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
-            <div className="h-4 bg-gray-100 rounded w-1/2" />
+            <div className="h-4 bg-muted rounded w-1/2" />
           </div>
         ))}
       </div>
@@ -135,7 +135,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-feature-title font-semibold text-gray-900 flex items-center gap-2">
+        <h2 className="text-feature-title font-semibold text-foreground flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-indigo-500" />
           {t('events.faq.title', { count: faqs.length })}
         </h2>
@@ -154,8 +154,8 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
       {faqs.length === 0 && (
         <div className="text-center py-16">
           <HelpCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-600">{t('events.faq.no_faqs')}</h3>
-          <p className="text-gray-400 mt-1">{t('events.faq.no_faqs_desc')}</p>
+          <h3 className="text-lg font-medium text-muted-foreground">{t('events.faq.no_faqs')}</h3>
+          <p className="text-muted-foreground mt-1">{t('events.faq.no_faqs_desc')}</p>
         </div>
       )}
 
@@ -166,7 +166,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
         const canEdit = canEditFaq(faq);
 
         return (
-          <div key={faq.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div key={faq.id} className="bg-white rounded-lg border border-border overflow-hidden">
             {isEditing ? (
               <div className="p-4 space-y-3">
                 <input
@@ -196,27 +196,27 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
               <>
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : faq.id)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">
                       {idx + 1}
                     </span>
-                    <span className="font-medium text-gray-900 text-sm">{faq.question}</span>
+                    <span className="font-medium text-foreground text-sm">{faq.question}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                     {canEdit && (
                       <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => openEdit(faq)}
-                          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          className="p-1 text-muted-foreground hover:text-muted-foreground hover:bg-secondary rounded transition-colors"
                           title={t('events.faq.edit')}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setShowDelete(faq.id)}
-                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                           title={t('events.faq.delete')}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -224,20 +224,20 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
                       </div>
                     )}
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t border-gray-100 px-4 py-3">
+                  <div className="border-t border-border/50 px-4 py-3">
                     <div className="ml-9">
                       {hasContent(faq.answer) ? (
                         <TipTapRenderer content={faq.answer} />
                       ) : (
-                        <p className="text-sm text-gray-400 italic">{t('events.faq.no_answer')}</p>
+                        <p className="text-sm text-muted-foreground italic">{t('events.faq.no_answer')}</p>
                       )}
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground/70 mb-1">
               {t('events.faq.question_label')} <span className="text-red-500">*</span>
             </label>
             <input
@@ -279,7 +279,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground/70 mb-1">
               {t('events.faq.answer_label')}
             </label>
             <RichTextEditor
@@ -307,7 +307,7 @@ export const FAQTab: React.FC<FAQTabProps> = ({ event, myTeam }) => {
           </>
         }
       >
-        <p className="text-sm text-gray-600">{t('events.faq.delete_confirm')}</p>
+        <p className="text-sm text-muted-foreground">{t('events.faq.delete_confirm')}</p>
       </Modal>
     </div>
   );

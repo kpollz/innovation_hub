@@ -149,9 +149,9 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
     <div>
       {/* Header with actions */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-feature-title font-semibold text-gray-900">
+        <h2 className="text-feature-title font-semibold text-foreground">
           {t('events.ideas.title')}
-          {!loading && <span className="text-gray-400 font-normal ml-2">({total})</span>}
+          {!loading && <span className="text-muted-foreground font-normal ml-2">({total})</span>}
         </h2>
         <div className="flex items-center gap-2">
           {canSubmitIdea && (
@@ -189,7 +189,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
                   ? 'bg-primary-100 text-primary-700'
                   : ft.disabled
                     ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground/70'
               }`}
             >
               {ft.icon}
@@ -199,7 +199,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
         </div>
         <button
           onClick={() => setSort(s => s === 'newest' ? 'score' : 'newest')}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/70 transition-colors"
         >
           {sort === 'newest' ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
           {t(`events.ideas.sort_${sort}`)}
@@ -214,14 +214,14 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
       ) : ideas.length === 0 ? (
         <div className="text-center py-12">
           <Lightbulb className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-500">
+          <h3 className="text-lg font-medium text-muted-foreground">
             {filterTab === 'all'
               ? t('events.ideas.no_ideas')
               : t('events.ideas.no_ideas_filter')
             }
           </h3>
           {canSubmitIdea && filterTab === 'all' && (
-            <p className="text-sm text-gray-400 mt-1">{t('events.ideas.no_ideas_submit')}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t('events.ideas.no_ideas_submit')}</p>
           )}
         </div>
       ) : (
@@ -253,7 +253,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
               >
                 {t('common.prev')}
               </Button>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {page} / {totalPages}
               </span>
               <Button

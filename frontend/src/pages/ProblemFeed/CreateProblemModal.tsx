@@ -155,7 +155,7 @@ export const CreateProblemModal: React.FC = () => {
 
         {/* Privacy / Visibility */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-sm font-medium text-foreground/70 dark:text-gray-300">
             {t('problems.visibility_label', 'Visibility')}
           </label>
           <div className="flex gap-4">
@@ -187,7 +187,7 @@ export const CreateProblemModal: React.FC = () => {
         {/* Shared Users (only when private) */}
         {visibility === 'private' && (
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-foreground/70 dark:text-gray-300">
               {t('problems.share_with_label', 'Share with specific users')}
             </label>
 
@@ -229,7 +229,7 @@ export const CreateProblemModal: React.FC = () => {
                 open={showUserDropdown && filteredUsers.length > 0}
                 onClose={() => setShowUserDropdown(false)}
                 matchWidth
-                className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                className="bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
               >
                 {filteredUsers.map((user) => (
                   <button
@@ -237,11 +237,11 @@ export const CreateProblemModal: React.FC = () => {
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { addSharedUser(user.id); setShowUserDropdown(false); }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
                   >
                     <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
                     <span className="font-medium">{user.full_name || user.username}</span>
-                    {user.full_name && <span className="text-gray-400 text-xs">@{user.username}</span>}
+                    {user.full_name && <span className="text-muted-foreground text-xs">@{user.username}</span>}
                   </button>
                 ))}
               </Popover>

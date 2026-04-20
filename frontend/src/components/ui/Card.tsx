@@ -1,20 +1,41 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps {
   children: React.ReactNode;
   hoverable?: boolean;
+  className?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  style?: React.CSSProperties;
 }
 
-export const Card: React.FC<CardProps> = ({ children, hoverable = false, className, ...props }) => {
+export const Card: React.FC<CardProps> = ({ children, hoverable = false, className, onClick, style }) => {
+  if (hoverable) {
+    return (
+      <motion.div
+        className={cn(
+          'rounded-feature border border-border bg-card text-card-foreground shadow-clay-sm overflow-hidden flex flex-col cursor-pointer',
+          className
+        )}
+        whileHover={{ y: -2, boxShadow: '3px 3px 0 0 hsl(var(--foreground) / 0.1), 6px 6px 0 0 hsl(var(--foreground) / 0.05)' }}
+        transition={{ duration: 0.15 }}
+        onClick={onClick}
+        style={style}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
   return (
     <div
       className={cn(
         'rounded-feature border border-border bg-card text-card-foreground shadow-clay-sm overflow-hidden flex flex-col',
-        hoverable && 'hover:shadow-clay hover:-translate-y-0.5 transition-all duration-200 cursor-pointer',
         className
       )}
-      {...props}
+      onClick={onClick}
+      style={style}
     >
       {children}
     </div>

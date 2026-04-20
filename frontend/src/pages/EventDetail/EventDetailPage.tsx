@@ -16,7 +16,7 @@ import { EventIdeaDetailPage } from './tabs/ideas/EventIdeaDetailPage';
 import type { EventObject, EventTeamObject } from '@/types';
 
 const statusStyles: Record<string, { bg: string; text: string }> = {
-  draft: { bg: 'bg-gray-100', text: 'text-gray-700' },
+  draft: { bg: 'bg-muted', text: 'text-foreground/70' },
   active: { bg: 'bg-green-100', text: 'text-green-700' },
   closed: { bg: 'bg-red-100', text: 'text-red-700' },
 };
@@ -86,7 +86,7 @@ export const EventDetailPage: React.FC = () => {
       <div className="px-4 py-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
         <div className="h-4 bg-gray-200 rounded w-1/4 mb-6" />
-        <div className="h-64 bg-gray-100 rounded-lg" />
+        <div className="h-64 bg-muted rounded-lg" />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export const EventDetailPage: React.FC = () => {
       <div className="px-4 py-6">
         <div className="text-center py-16">
           <AlertTriangle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-600">{t('events.not_found')}</h3>
+          <h3 className="text-lg font-medium text-muted-foreground">{t('events.not_found')}</h3>
           <button
             onClick={() => navigate('/events')}
             className="mt-4 text-primary-600 hover:text-primary-700 text-sm font-medium"
@@ -121,7 +121,7 @@ export const EventDetailPage: React.FC = () => {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <h1 className="text-section-heading font-bold text-gray-900">{event.title}</h1>
+            <h1 className="text-section-heading font-bold text-foreground">{event.title}</h1>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
               {t(`events.status_${event.status}`)}
             </span>
@@ -129,7 +129,7 @@ export const EventDetailPage: React.FC = () => {
           {isAdmin && (
             <button
               onClick={() => showModal({ type: 'editEvent' })}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/70 bg-white border border-border rounded-lg hover:bg-secondary transition-colors flex-shrink-0"
             >
               <Edit2 className="h-3.5 w-3.5" />
               {t('events.edit.button')}
@@ -137,7 +137,7 @@ export const EventDetailPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
           {(event.start_date || event.end_date) && (
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />

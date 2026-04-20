@@ -150,8 +150,8 @@ export const AdminUsersPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-section-heading font-bold text-gray-900">{t('admin.users_title')}</h1>
-        <p className="text-gray-500 mt-1">{t('admin.users_count', { count: total })}</p>
+        <h1 className="text-section-heading font-bold text-foreground">{t('admin.users_title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('admin.users_count', { count: total })}</p>
       </div>
 
       {/* Filters */}
@@ -168,7 +168,7 @@ export const AdminUsersPage: React.FC = () => {
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-              className="rounded-lg border border-gray-300 px-4 py-2.5 text-base text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm transition-colors"
+              className="rounded-lg border border-gray-300 px-4 py-2.5 text-base text-foreground focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm transition-colors"
             >
               <option value="">{t('admin.all_roles')}</option>
               <option value="admin">{t('common.administrator')}</option>
@@ -187,22 +187,22 @@ export const AdminUsersPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('admin.user_column')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.team_column')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.role_column')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.status_column')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('admin.actions_column')}</th>
+              <tr className="border-b border-border bg-secondary">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('admin.user_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('admin.team_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('admin.role_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('admin.status_column')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('admin.actions_column')}</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-400">{t('common.loading')}</td>
+                  <td colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.loading')}</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-400">{t('admin.no_users')}</td>
+                  <td colSpan={5} className="text-center py-8 text-muted-foreground">{t('admin.no_users')}</td>
                 </tr>
               ) : (
                 users.map((u) => {
@@ -210,7 +210,7 @@ export const AdminUsersPage: React.FC = () => {
                   return (
                     <tr
                       key={u.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="border-b border-border/50 hover:bg-secondary transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -220,21 +220,21 @@ export const AdminUsersPage: React.FC = () => {
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-foreground">
                               {u.full_name || u.username}
                               {isSelf && <span className="ml-1 text-xs text-primary-600">({t('admin.you')})</span>}
                             </p>
-                            <p className="text-xs text-gray-500">@{u.username}</p>
+                            <p className="text-xs text-muted-foreground">@{u.username}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-600">{u.team || '—'}</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{u.team || '—'}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={classNames(
                           'text-xs px-2 py-0.5 rounded-full',
                           u.role === 'admin'
                             ? 'bg-purple-100 text-purple-700'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-muted text-muted-foreground'
                         )}>
                           {u.role === 'admin' ? t('common.administrator') : t('common.member')}
                         </span>
@@ -253,7 +253,7 @@ export const AdminUsersPage: React.FC = () => {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => openEdit(u)}
-                            className="p-1.5 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-700"
+                            className="p-1.5 rounded hover:bg-border text-muted-foreground hover:text-foreground/70"
                             title={t('admin.edit_user')}
                           >
                             <Shield className="h-4 w-4" />
@@ -262,14 +262,14 @@ export const AdminUsersPage: React.FC = () => {
                             <>
                               <button
                                 onClick={() => handleResetPassword(u)}
-                                className="p-1.5 rounded hover:bg-amber-100 text-gray-500 hover:text-amber-600"
+                                className="p-1.5 rounded hover:bg-amber-100 text-muted-foreground hover:text-amber-600"
                                 title={t('admin.reset_password')}
                               >
                                 <KeyRound className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => setDeleteUser(u)}
-                                className="p-1.5 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
+                                className="p-1.5 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600"
                                 title={t('admin.delete_user')}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -288,8 +288,8 @@ export const AdminUsersPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-sm text-muted-foreground">
               {t('common.page_of', { current: page, total: totalPages })}
             </p>
             <div className="flex gap-1">
@@ -323,7 +323,7 @@ export const AdminUsersPage: React.FC = () => {
         {editUser && (
           <div className="space-y-5">
             {/* User info */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg">
               <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
                 <span className="text-sm font-semibold text-primary-700">
                   {editUser.full_name?.charAt(0).toUpperCase() || editUser.username.charAt(0).toUpperCase()}
@@ -331,7 +331,7 @@ export const AdminUsersPage: React.FC = () => {
               </div>
               <div>
                 <p className="font-medium">{editUser.full_name || editUser.username}</p>
-                <p className="text-xs text-gray-500">@{editUser.username} · {editUser.email || t('admin.no_email')}</p>
+                <p className="text-xs text-muted-foreground">@{editUser.username} · {editUser.email || t('admin.no_email')}</p>
               </div>
             </div>
 
@@ -363,7 +363,7 @@ export const AdminUsersPage: React.FC = () => {
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.role_label')}</label>
+              <label className="block text-sm font-medium text-foreground/70 mb-2">{t('admin.role_label')}</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -372,7 +372,7 @@ export const AdminUsersPage: React.FC = () => {
                     'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                     editRole === 'member'
                       ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 text-muted-foreground hover:bg-secondary'
                   )}
                 >
                   <ShieldOff className="h-4 w-4" />
@@ -385,7 +385,7 @@ export const AdminUsersPage: React.FC = () => {
                     'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                     editRole === 'admin'
                       ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 text-muted-foreground hover:bg-secondary'
                   )}
                 >
                   <Shield className="h-4 w-4" />
@@ -396,7 +396,7 @@ export const AdminUsersPage: React.FC = () => {
 
             {/* Active status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.account_status')}</label>
+              <label className="block text-sm font-medium text-foreground/70 mb-2">{t('admin.account_status')}</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -405,7 +405,7 @@ export const AdminUsersPage: React.FC = () => {
                     'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                     editActive
                       ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 text-muted-foreground hover:bg-secondary'
                   )}
                 >
                   <UserCheck className="h-4 w-4" />
@@ -418,7 +418,7 @@ export const AdminUsersPage: React.FC = () => {
                     'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                     !editActive
                       ? 'border-red-500 bg-red-50 text-red-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 text-muted-foreground hover:bg-secondary'
                   )}
                 >
                   <UserX className="h-4 w-4" />
@@ -442,7 +442,7 @@ export const AdminUsersPage: React.FC = () => {
         title={t('admin.delete_user')}
       >
         <div className="space-y-4">
-          <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: t('admin.delete_user_confirm', { name: deleteUser?.full_name || deleteUser?.username }) }} />
+          <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('admin.delete_user_confirm', { name: deleteUser?.full_name || deleteUser?.username }) }} />
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={() => setDeleteUser(null)}>{t('common.cancel')}</Button>
             <Button variant="danger" onClick={handleDelete}>{t('admin.delete_user')}</Button>
@@ -460,26 +460,26 @@ export const AdminUsersPage: React.FC = () => {
           {!newPassword ? (
             <div className="flex items-center justify-center py-6">
               <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full" />
-              <span className="ml-3 text-gray-500">{t('admin.generating_password')}</span>
+              <span className="ml-3 text-muted-foreground">{t('admin.generating_password')}</span>
             </div>
           ) : (
             <>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {t('admin.password_reset_msg')}
               </p>
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <code className="flex-1 text-lg font-mono font-semibold text-gray-900 select-all">
+              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
+                <code className="flex-1 text-lg font-mono font-semibold text-foreground select-all">
                   {newPassword}
                 </code>
                 <button
                   onClick={handleCopyPassword}
-                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-border transition-colors"
                   title={t('admin.copy_clipboard')}
                 >
                   {copied ? (
                     <Check className="h-5 w-5 text-green-600" />
                   ) : (
-                    <Copy className="h-5 w-5 text-gray-500" />
+                    <Copy className="h-5 w-5 text-muted-foreground" />
                   )}
                 </button>
               </div>

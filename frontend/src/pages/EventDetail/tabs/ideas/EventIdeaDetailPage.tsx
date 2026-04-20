@@ -147,21 +147,21 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
         >
           <div className="flex items-center gap-2">
             {isExpanded
-              ? <ChevronDown className="h-4 w-4 text-gray-500" />
-              : <ChevronRight className="h-4 w-4 text-gray-500" />
+              ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              : <ChevronRight className="h-4 w-4 text-muted-foreground" />
             }
             <Icon className={`h-4.5 w-4.5 ${meta.color}`} />
             <h4 className={`text-sm font-bold ${meta.color}`}>{label}</h4>
           </div>
           {!content && (
-            <span className="text-xs text-gray-400 italic">{t('events.ideas.fields.empty')}</span>
+            <span className="text-xs text-muted-foreground italic">{t('events.ideas.fields.empty')}</span>
           )}
         </button>
         {isExpanded && (
           <div className="p-4">
             {content
               ? <TipTapRenderer content={content as Parameters<typeof TipTapRenderer>[0]['content']} />
-              : <p className="text-sm text-gray-400 italic">{t('events.ideas.fields.no_content')}</p>
+              : <p className="text-sm text-muted-foreground italic">{t('events.ideas.fields.no_content')}</p>
             }
           </div>
         )}
@@ -174,8 +174,8 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       <div className="px-4 py-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
         <div className="h-4 bg-gray-200 rounded w-1/4 mb-6" />
-        <div className="h-40 bg-gray-100 rounded-lg mb-4" />
-        <div className="h-40 bg-gray-100 rounded-lg" />
+        <div className="h-40 bg-muted rounded-lg mb-4" />
+        <div className="h-40 bg-muted rounded-lg" />
       </div>
     );
   }
@@ -187,7 +187,7 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       {/* Back button */}
       <button
         onClick={() => navigate(`/events/${event.id}?tab=ideas`)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground/70 mb-4 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('events.ideas.back_to_list')}
@@ -196,8 +196,8 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-section-heading font-bold text-gray-900">{idea.title}</h1>
-          <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
+          <h1 className="text-section-heading font-bold text-foreground">{idea.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Avatar
                 src={idea.author?.avatar_url}
@@ -207,11 +207,11 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
               {idea.author?.full_name || idea.author?.username}
             </span>
             {idea.team && (
-              <span className="flex items-center gap-1 bg-gray-100 px-2.5 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 bg-muted px-2.5 py-0.5 rounded-full">
                 <Trophy className="h-3 w-3" />
                 {idea.team.name}
                 {idea.team.slogan && (
-                  <span className="text-gray-400 italic ml-1">"{idea.team.slogan}"</span>
+                  <span className="text-muted-foreground italic ml-1">"{idea.team.slogan}"</span>
                 )}
               </span>
             )}
@@ -299,8 +299,8 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-gray-500" />
-            <h3 className="text-feature-title font-semibold text-gray-900">
+            <MessageCircle className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-feature-title font-semibold text-foreground">
               {t('comments.title', { count: comments.length })}
             </h3>
           </div>
@@ -322,7 +322,7 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
 
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">{t('comments.no_comments')}</p>
+              <p className="text-center text-muted-foreground py-4">{t('comments.no_comments')}</p>
             ) : (
               comments.map((comment) => {
                 const commentAuthorName = comment.author?.full_name || comment.author?.username || 'Unknown';
@@ -331,16 +331,16 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
                   <div
                     key={comment.id}
                     className={`flex gap-3 p-4 rounded-lg ${
-                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-gray-50'
+                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-secondary'
                     }`}
                   >
                     <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
                     <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
                       <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
-                        <span className="font-medium text-gray-900">{commentAuthorName}</span>
-                        <span className="text-xs text-gray-500">{timeAgo(comment.created_at)}</span>
+                        <span className="font-medium text-foreground">{commentAuthorName}</span>
+                        <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
+                      <p className="text-foreground/70">{comment.content}</p>
                     </div>
                   </div>
                 );

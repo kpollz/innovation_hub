@@ -152,9 +152,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                   <button
                     ref={actionsRef}
                     onClick={() => setShowActions(!showActions)}
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1 hover:bg-secondary rounded"
                   >
-                    <MoreVertical className="h-4 w-4 text-gray-500" />
+                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
                   </button>
 
                   <Popover
@@ -162,7 +162,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                     open={showActions}
                     onClose={() => setShowActions(false)}
                     align="right"
-                    className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                    className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                   >
                     {isAdmin && (
                       <button
@@ -170,14 +170,14 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                           handlePinToggle();
                           setShowActions(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-secondary"
                       >
                         {idea.is_pinned ? t('ideas.unpin_idea') : t('ideas.pin_idea')}
                       </button>
                     )}
                     <button
                       onClick={handleOpenSubmitToEvent}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-secondary flex items-center gap-2"
                     >
                       <Send className="h-4 w-4" />
                       {t('ideas.submit_to_event')}
@@ -201,7 +201,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* Content */}
           <Link to={`/ideas/${idea.id}`}>
             <h3 className={classNames(
-              'font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors',
+              'font-semibold text-foreground mb-2 hover:text-primary-600 transition-colors',
               detailed ? 'text-xl' : 'text-sm line-clamp-2'
             )}>
               {idea.title}
@@ -210,7 +210,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
           {idea.summary && (
             <p className={classNames(
-              'text-gray-600 mb-3',
+              'text-muted-foreground mb-3',
               detailed ? 'text-base' : 'text-xs line-clamp-3'
             )}>
               {detailed ? idea.summary : truncateText(idea.summary, 100)}
@@ -218,7 +218,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
 
           {/* Footer: Vote + Comments + Avatar */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-sm text-gray-500">
+          <div className="flex items-center justify-between pt-3 border-t border-border/50 text-sm text-muted-foreground">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowVoteModal(true)}
@@ -249,7 +249,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
           {/* Status Change (for author or admin) */}
           {canModify && detailed && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border/50">
               <Select
                 label={t('ideas.change_status')}
                 value={idea.status}
@@ -269,8 +269,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       >
         {activeEvents.length === 0 ? (
           <div className="text-center py-8">
-            <Send className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-gray-500">{t('ideas.no_active_events')}</p>
+            <Send className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground">{t('ideas.no_active_events')}</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -279,13 +279,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                 key={ev.id}
                 onClick={() => handleSubmitToEvent(ev.id)}
                 disabled={!!submittingEventId}
-                className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:border-primary-300 hover:bg-primary-50 transition-colors text-left disabled:opacity-50"
               >
-                <span className="font-medium text-gray-900 text-sm truncate">{ev.title}</span>
+                <span className="font-medium text-foreground text-sm truncate">{ev.title}</span>
                 {submittingEventId === ev.id ? (
                   <Loader2 className="h-4 w-4 animate-spin text-primary-500 flex-shrink-0" />
                 ) : (
-                  <Send className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                  <Send className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 )}
               </button>
             ))}
@@ -310,7 +310,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         }
       >
         <div className="space-y-4">
-          <p className="text-gray-600">{t('ideas.vote_desc')}</p>
+          <p className="text-muted-foreground">{t('ideas.vote_desc')}</p>
           <div className="flex items-center justify-center gap-3">
             {[1, 2, 3, 4, 5].map((stars) => (
               <button
@@ -320,7 +320,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
                   'w-12 h-12 rounded-lg font-semibold transition-colors flex items-center justify-center',
                   voteStars >= stars
                     ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-muted text-foreground/70 hover:bg-muted/80'
                 )}
               >
                 <Star className={classNames(
@@ -330,7 +330,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               </button>
             ))}
           </div>
-          <div className="flex justify-between text-sm text-gray-500">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{t('ideas.vote_poor')}</span>
             <span>{t('ideas.vote_excellent')}</span>
           </div>
@@ -349,7 +349,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         title={t('ideas.delete_idea')}
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {t('ideas.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3 pt-4">

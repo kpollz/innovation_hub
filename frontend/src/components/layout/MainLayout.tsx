@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
@@ -16,8 +16,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <div className="flex-1 p-4 sm:p-6 lg:p-8">
             {children}
           </div>
-          {/* Footer - always at bottom of content */}
-          <footer className="bg-white border-t border-gray-200 h-14 px-6 flex items-center justify-center text-sm text-gray-500 flex-shrink-0">
+          <footer className="bg-card border-t border-border h-14 px-6 flex items-center justify-center text-sm text-muted-foreground flex-shrink-0">
             © {new Date().getFullYear()} Innovation Hub. All rights reserved.
           </footer>
         </main>

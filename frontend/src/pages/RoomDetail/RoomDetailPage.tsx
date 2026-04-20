@@ -238,11 +238,11 @@ export const RoomDetailPage: React.FC = () => {
   if (accessError || !room) {
     return (
       <div className="text-center py-12">
-        <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-gray-400'}`} />
-        <h2 className="text-card-heading font-semibold text-gray-700 mb-2">
+        <ShieldAlert className={`h-12 w-12 mx-auto mb-4 ${accessError === 'forbidden' ? 'text-amber-500' : 'text-muted-foreground'}`} />
+        <h2 className="text-card-heading font-semibold text-foreground/70 mb-2">
           {accessError === 'forbidden' ? t('errors.forbidden_title') : t('errors.not_found_title')}
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-muted-foreground mb-4">
           {accessError === 'forbidden' ? t('errors.forbidden_desc') : t('errors.not_found_desc')}
         </p>
         <Link to="/rooms" className="text-primary-600 hover:text-primary-700">
@@ -257,30 +257,21 @@ export const RoomDetailPage: React.FC = () => {
       {/* Back Button */}
       <Link
         to="/rooms"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('rooms.back_to_rooms')}
       </Link>
 
       {/* Room Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-border p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-section-heading font-bold text-gray-900">{room.name}</h1>
-              <Badge variant={room.status === 'active' ? 'success' : 'default'}>
-                {room.status}
-              </Badge>
-              {room.visibility === 'private' && (
-                <Badge variant="warning">
-                  <Lock className="h-3 w-3 mr-1" />
-                  {t('rooms.private_badge')}
-                </Badge>
-              )}
+              <h1 className="text-section-heading font-bold text-foreground">{room.name}</h1>
             </div>
             {room.description && (
-              <p className="text-gray-600">{room.description}</p>
+              <p className="text-muted-foreground">{room.description}</p>
             )}
 
             {room.problem_id && (
@@ -300,14 +291,14 @@ export const RoomDetailPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex bg-muted rounded-lg p-1">
               <button
                 onClick={() => setViewMode('board')}
                 className={classNames(
                   'p-2 rounded-md transition-colors',
                   viewMode === 'board'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -317,8 +308,8 @@ export const RoomDetailPage: React.FC = () => {
                 className={classNames(
                   'p-2 rounded-md transition-colors',
                   viewMode === 'list'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <List className="h-4 w-4" />
@@ -333,25 +324,25 @@ export const RoomDetailPage: React.FC = () => {
                 <button
                   ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-secondary rounded-lg transition-colors"
                 >
-                  <MoreVertical className="h-5 w-5 text-gray-500" />
+                  <MoreVertical className="h-5 w-5 text-muted-foreground" />
                 </button>
                 <Popover
                   triggerRef={actionsRef}
                   open={showActions}
                   onClose={() => setShowActions(false)}
                   align="right"
-                  className="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                  className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                 >
                   <button
                     onClick={openEditModal}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                   >
                     <Edit className="h-4 w-4" />
                     {t('rooms.edit_room')}
                   </button>
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-border my-1" />
                   <button
                     onClick={() => {
                       setShowActions(false);
@@ -368,20 +359,33 @@ export const RoomDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Creator info */}
-        <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-3">
-          <Avatar
-            src={room.creator?.avatar_url}
-            name={room.creator?.full_name || room.creator?.username}
-            size="md"
-          />
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              {room.creator?.full_name || room.creator?.username || t('common.unknown')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('rooms.created_time', { time: timeAgo(room.created_at) })}
-            </p>
+        {/* Creator info + Badges */}
+        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={room.creator?.avatar_url}
+              name={room.creator?.full_name || room.creator?.username}
+              size="md"
+            />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {room.creator?.full_name || room.creator?.username || t('common.unknown')}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('rooms.created_time', { time: timeAgo(room.created_at) })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={room.status === 'active' ? 'success' : 'default'}>
+              {room.status}
+            </Badge>
+            {room.visibility === 'private' && (
+              <Badge variant="warning">
+                <Lock className="h-3 w-3 mr-1" />
+                {t('rooms.private_badge')}
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -398,7 +402,7 @@ export const RoomDetailPage: React.FC = () => {
               <div
                 key={column.status}
                 className={classNames(
-                  'bg-gray-100 rounded-xl p-3 transition-colors',
+                  'bg-muted rounded-xl p-3 transition-colors',
                   isOver && 'bg-primary-50 ring-2 ring-primary-300'
                 )}
                 onDragOver={(e) => handleDragOver(e, column.status)}
@@ -406,7 +410,7 @@ export const RoomDetailPage: React.FC = () => {
                 onDrop={(e) => handleDrop(e, column.status)}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-700">{column.title}</h3>
+                  <h3 className="font-semibold text-foreground/70">{column.title}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
                     {columnIdeas.length}
                   </span>
@@ -430,7 +434,7 @@ export const RoomDetailPage: React.FC = () => {
                     </div>
                   ))}
                   {columnIdeas.length === 0 && (
-                    <p className="text-center text-sm text-gray-400 py-4">
+                    <p className="text-center text-sm text-muted-foreground py-4">
                       {t('rooms.no_ideas')}
                     </p>
                   )}
@@ -442,8 +446,8 @@ export const RoomDetailPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {ideas.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <p className="text-gray-500">{t('rooms.no_ideas_yet')}</p>
+            <div className="text-center py-12 bg-white rounded-xl border border-border">
+              <p className="text-muted-foreground">{t('rooms.no_ideas_yet')}</p>
               <Button variant="secondary" className="mt-4" onClick={openCreateIdeaPage}>
                 {t('rooms.add_first_idea')}
               </Button>
@@ -465,30 +469,30 @@ export const RoomDetailPage: React.FC = () => {
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t('rooms.edit_room')}>
         <form onSubmit={handleEdit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('rooms.name_label')}</label>
+            <label className="block text-sm font-medium text-foreground/70 mb-1">{t('rooms.name_label')}</label>
             <input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               required
               minLength={3}
               maxLength={255}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('rooms.desc_label')}</label>
+            <label className="block text-sm font-medium text-foreground/70 mb-1">{t('rooms.desc_label')}</label>
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               rows={3}
             />
           </div>
 
           {/* Visibility Toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground/70 mb-2">
               {t('rooms.visibility_label')}
             </label>
             <div className="flex gap-3">
@@ -498,7 +502,7 @@ export const RoomDetailPage: React.FC = () => {
                 className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                   editVisibility === 'public'
                     ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    : 'border-border text-muted-foreground hover:border-border/70'
                 }`}
               >
                 {t('rooms.visibility_public')}
@@ -510,7 +514,7 @@ export const RoomDetailPage: React.FC = () => {
                 className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                   editVisibility === 'private'
                     ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    : 'border-border text-muted-foreground hover:border-border/70'
                 }`}
               >
                 {t('rooms.visibility_private')}
@@ -521,7 +525,7 @@ export const RoomDetailPage: React.FC = () => {
             {/* Share with users - shown when private */}
             {editVisibility === 'private' && (
               <div className="mt-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
                   {t('rooms.share_with_label')}
                 </label>
                 {editSharedUserIds.length > 0 && (
@@ -548,27 +552,27 @@ export const RoomDetailPage: React.FC = () => {
                     onChange={(e) => { setEditUserSearch(e.target.value); setShowEditUserDropdown(true); }}
                     onFocus={() => setShowEditUserDropdown(true)}
                     placeholder={t('rooms.search_users_placeholder')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                   />
                   <Popover
                     triggerRef={editUserSearchRef}
                     open={showEditUserDropdown && filteredEditUsers.length > 0}
                     onClose={() => setShowEditUserDropdown(false)}
                     matchWidth
-                    className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                    className="bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
                   >
                     {filteredEditUsers.map((u) => (
                       <button
                         key={u.id}
                         type="button"
                         onClick={() => { toggleEditUser(u.id); setEditUserSearch(''); }}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2 ${
                           editSharedUserIds.includes(u.id) ? 'bg-primary-50' : ''
                         }`}
                       >
                         <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
                         <span className="font-medium">{u.full_name || u.username}</span>
-                        {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                        {u.full_name && <span className="text-muted-foreground text-xs">@{u.username}</span>}
                         {editSharedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
                       </button>
                     ))}
@@ -592,7 +596,7 @@ export const RoomDetailPage: React.FC = () => {
       {/* Delete Confirmation Modal */}
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('rooms.delete_room')}>
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {t('rooms.delete_confirm')}
           </p>
           <div className="flex justify-end gap-3">

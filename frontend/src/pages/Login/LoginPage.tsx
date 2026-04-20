@@ -53,14 +53,14 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-secondary py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-3">
             <div className="bg-primary-600 p-3 rounded-xl">
               <Lightbulb className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-card-heading font-bold text-gray-900">Innovation Hub</h1>
+            <h1 className="text-card-heading font-bold text-foreground">Innovation Hub</h1>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ export const LoginPage: React.FC = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {t('auth.no_account')}{' '}
                 <Link
                   to="/register"

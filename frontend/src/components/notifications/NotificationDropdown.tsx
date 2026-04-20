@@ -81,7 +81,7 @@ const NotificationItem: React.FC<{
   return (
     <button
       onClick={() => onClick(notification)}
-      className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+      className={`w-full text-left px-4 py-3 hover:bg-secondary transition-colors border-b border-border/50 last:border-b-0 ${
         !notification.is_read ? 'bg-primary-50/50' : ''
       }`}
     >
@@ -94,12 +94,12 @@ const NotificationItem: React.FC<{
         <div className="flex-1 min-w-0">
           <p
             className={`text-sm leading-snug ${
-              !notification.is_read ? 'font-semibold text-gray-900' : 'text-gray-600'
+              !notification.is_read ? 'font-semibold text-foreground' : 'text-muted-foreground'
             }`}
           >
             {message}
           </p>
-          <p className="text-xs text-gray-400 mt-1">{timeAgo}</p>
+          <p className="text-xs text-muted-foreground mt-1">{timeAgo}</p>
         </div>
         {!notification.is_read && (
           <span className="mt-1 h-2 w-2 rounded-full bg-primary-500 flex-shrink-0" />
@@ -174,9 +174,9 @@ export const NotificationDropdown: React.FC = () => {
       <button
         ref={bellRef}
         onClick={toggleDropdown}
-        className="p-2 hover:bg-gray-100 rounded-lg relative transition-colors"
+        className="p-2 hover:bg-secondary rounded-lg relative transition-colors"
       >
-        <Bell className="h-5 w-5 text-gray-600" />
+        <Bell className="h-5 w-5 text-muted-foreground" />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center bg-danger-500 text-white text-[10px] font-bold rounded-full">
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -191,11 +191,11 @@ export const NotificationDropdown: React.FC = () => {
         onClose={closeDropdown}
         align="right"
         gap={8}
-        className="w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+        className="w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-border overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-semibold text-gray-900 text-sm">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary">
+          <h3 className="font-semibold text-foreground text-sm">
             {t('notifications.title')}
           </h3>
           {unreadCount > 0 && (
@@ -212,11 +212,11 @@ export const NotificationDropdown: React.FC = () => {
         {/* Notification List */}
         <div className="max-h-96 overflow-y-auto">
           {isLoading && notifications.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">
+            <div className="py-8 text-center text-sm text-muted-foreground">
               {t('common.loading')}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">
+            <div className="py-8 text-center text-sm text-muted-foreground">
               {t('notifications.no_notifications')}
             </div>
           ) : (
@@ -232,7 +232,7 @@ export const NotificationDropdown: React.FC = () => {
                 <button
                   onClick={handleViewMore}
                   disabled={isLoading}
-                  className="w-full py-3 text-sm text-primary-600 hover:text-primary-700 hover:bg-gray-50 font-medium transition-colors"
+                  className="w-full py-3 text-sm text-primary-600 hover:text-primary-700 hover:bg-secondary font-medium transition-colors"
                 >
                   {isLoading ? t('common.loading') : t('notifications.view_more')}
                 </button>

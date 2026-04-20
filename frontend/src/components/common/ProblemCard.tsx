@@ -35,26 +35,26 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
                 </span>
               )}
               {problem.visibility === 'private' && (
-                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500" title="Private">
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground" title="Private">
                   <Lock className="h-3 w-3" />
                 </span>
               )}
             </div>
-            <span className="text-xs text-gray-500">{timeAgo(problem.created_at)}</span>
+            <span className="text-xs text-muted-foreground">{timeAgo(problem.created_at)}</span>
           </div>
         </div>
 
         {/* Middle: Content (flex-1 fills remaining space) */}
         <div className="px-5 flex-1">
-          <h3 className="text-feature-title font-semibold text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-feature-title font-semibold text-foreground mb-2 line-clamp-2">
             {problem.title}
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
             {problem.summary || extractTextFromTipTap(problem.content)}
           </p>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <ThumbsUp className="h-4 w-4" />
                 {problem.likes_count || 0}
@@ -79,10 +79,10 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
         </div>
 
         {/* Bottom: Author (pinned to bottom) */}
-        <div className="px-5 pb-5 pt-4 mt-auto border-t border-gray-100">
+        <div className="px-5 pb-5 pt-4 mt-auto border-t border-border/50">
           <div className="flex items-center gap-2">
             <Avatar src={problem.author?.avatar_url} name={problem.author?.full_name || problem.author?.username} size="sm" />
-            <span className="text-sm text-gray-700">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
+            <span className="text-sm text-foreground/70">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
           </div>
         </div>
       </Link>

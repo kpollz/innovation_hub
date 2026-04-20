@@ -18,15 +18,15 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onClick, canEdit, onEd
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group"
+      className="bg-white border border-border rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 truncate group-hover:text-primary-700 transition-colors">
+          <h3 className="font-semibold text-foreground truncate group-hover:text-primary-700 transition-colors">
             {idea.title}
           </h3>
-          <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
             {idea.team && (
               <span className="flex items-center gap-1">
                 <Trophy className="h-3 w-3" />
@@ -50,33 +50,33 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onClick, canEdit, onEd
               <span className="text-sm font-bold text-yellow-700">{idea.total_score.toFixed(1)}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1">
+            <div className="flex items-center gap-1 bg-secondary border border-border rounded-lg px-2.5 py-1">
               <Star className="h-3.5 w-3.5 text-gray-300" />
-              <span className="text-sm text-gray-400">—</span>
+              <span className="text-sm text-muted-foreground">—</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
         <div className="flex items-center gap-2">
           <Avatar
             src={idea.author?.avatar_url}
             name={idea.author?.full_name || idea.author?.username}
             size="sm"
           />
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {idea.author?.full_name || idea.author?.username}
           </span>
         </div>
         <div className="flex items-center gap-3">
           {idea.score_count > 0 && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted-foreground">
               {t('events.ideas.score_count', { count: idea.score_count })}
             </span>
           )}
-          <span className="text-xs text-gray-400">{timeAgo(idea.created_at)}</span>
+          <span className="text-xs text-muted-foreground">{timeAgo(idea.created_at)}</span>
           {canEdit && (
             <Button
               variant="ghost"

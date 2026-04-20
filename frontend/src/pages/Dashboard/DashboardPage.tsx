@@ -27,8 +27,8 @@ const StatCard: React.FC<{
     <CardContent className="p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-card-heading font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-card-heading font-bold text-foreground mt-2">{value}</p>
         </div>
         <div className={`p-4 rounded-xl ${color}`}>
           <Icon className="h-6 w-6 text-white" />
@@ -81,8 +81,8 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-section-heading font-bold text-gray-900">{t('dashboard.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('dashboard.welcome')}</p>
+          <h1 className="text-section-heading font-bold text-foreground">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('dashboard.welcome')}</p>
         </div>
         <div className="flex items-center gap-2">
           <DatePicker
@@ -92,7 +92,7 @@ export const DashboardPage: React.FC = () => {
             placeholder={t('dashboard.date_from')}
             className="w-[180px]"
           />
-          <span className="text-gray-400">→</span>
+          <span className="text-muted-foreground">→</span>
           <DatePicker
             value={dateTo}
             onChange={setDateTo}
@@ -104,7 +104,7 @@ export const DashboardPage: React.FC = () => {
           {hasDateFilter && (
             <button
               onClick={handleClearDates}
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
               title={t('dashboard.clear_filter')}
             >
               <X className="h-4 w-4" />
@@ -150,8 +150,8 @@ export const DashboardPage: React.FC = () => {
                 <Activity className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t('dashboard.interaction_rate')}</p>
-                <p className="text-feature-title font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">{t('dashboard.interaction_rate')}</p>
+                <p className="text-feature-title font-bold text-foreground">
                   {stats.interaction_rate?.toFixed(1) || 0}%
                 </p>
               </div>
@@ -163,8 +163,8 @@ export const DashboardPage: React.FC = () => {
                 <Rocket className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t('dashboard.resolved_problems')}</p>
-                <p className="text-feature-title font-bold text-gray-900">{stats.resolved_problems || 0}</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.resolved_problems')}</p>
+                <p className="text-feature-title font-bold text-foreground">{stats.resolved_problems || 0}</p>
               </div>
             </CardContent>
           </Card>
@@ -191,7 +191,7 @@ export const DashboardPage: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-4 flex-1 ml-4">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary-600 rounded-full"
                         style={{
@@ -199,13 +199,13 @@ export const DashboardPage: React.FC = () => {
                         }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
+                    <span className="text-sm font-medium text-foreground w-8">{count as number}</span>
                   </div>
                 </div>
                 );
               })}
               {!stats?.problems_by_status && (
-                <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
+                <p className="text-muted-foreground text-sm text-center py-4">{t('common.no_data')}</p>
               )}
             </div>
           </CardContent>
@@ -229,7 +229,7 @@ export const DashboardPage: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-4 flex-1 ml-4">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-success-500 rounded-full"
                         style={{
@@ -237,13 +237,13 @@ export const DashboardPage: React.FC = () => {
                         }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-900 w-8">{count as number}</span>
+                    <span className="text-sm font-medium text-foreground w-8">{count as number}</span>
                   </div>
                 </div>
                 );
               })}
               {!stats?.ideas_by_status && (
-                <p className="text-gray-500 text-sm text-center py-4">{t('common.no_data')}</p>
+                <p className="text-muted-foreground text-sm text-center py-4">{t('common.no_data')}</p>
               )}
             </div>
           </CardContent>
@@ -257,7 +257,7 @@ export const DashboardPage: React.FC = () => {
             <CardTitle>{t('dashboard.top_contributors')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-border">
               {contributors.map((contributor, index) => (
                 <div key={contributor.user.id} className="flex items-center justify-between py-4">
                   <div className="flex items-center gap-4">
@@ -266,13 +266,13 @@ export const DashboardPage: React.FC = () => {
                     </div>
                     <Avatar src={contributor.user.avatar_url} name={contributor.user.full_name || contributor.user.username} size="lg" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-foreground">
                         {contributor.user.full_name || contributor.user.username}
                       </p>
-                      <p className="text-xs text-gray-500">{contributor.user.team || 'N/A'}</p>
+                      <p className="text-xs text-muted-foreground">{contributor.user.team || 'N/A'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 text-sm text-gray-600">
+                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Lightbulb className="h-4 w-4" />
                       {contributor.ideas_count} {t('dashboard.ideas')}

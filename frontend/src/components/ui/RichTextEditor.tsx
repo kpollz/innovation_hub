@@ -178,30 +178,30 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onClick={onClick}
       title={title}
       className={classNames(
-        'p-1.5 rounded hover:bg-gray-200 transition-colors',
-        isActive && 'bg-gray-200 text-primary-700'
+        'p-1.5 rounded hover:bg-muted transition-colors',
+        isActive && 'bg-muted text-primary-700'
       )}
     >
       {children}
     </button>
   );
 
-  const Separator = () => <div className="w-px h-6 bg-gray-300 mx-1" />;
+  const Separator = () => <div className="w-px h-6 bg-border mx-1" />;
   const iconSize = 'h-4 w-4';
 
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <label className="block text-sm font-medium text-foreground/70 mb-1">{label}</label>
       )}
       <div
         className={classNames(
           'border rounded-lg overflow-hidden transition-colors',
-          error ? 'border-danger-500' : 'border-gray-300 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500'
+          error ? 'border-danger-500' : 'border-border focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500'
         )}
       >
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-gray-200">
+        <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-secondary border-b border-border">
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
             <Undo className={iconSize} />
           </ToolbarButton>
@@ -289,7 +289,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               </div>
             </ToolbarButton>
             {showColorPicker && (
-              <div className="absolute left-0 top-full mt-1 p-3 bg-white rounded-lg shadow-lg border border-gray-200 z-30 w-[184px]">
+              <div className="absolute left-0 top-full mt-1 p-3 bg-card rounded-lg shadow-lg border border-border z-30 w-[184px]">
                 <div className="grid grid-cols-4 gap-2 mb-3">
                   {COLORS.map((color) => (
                     <button
@@ -299,14 +299,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                         editor.chain().focus().setColor(color).run();
                         setShowColorPicker(false);
                       }}
-                      className="w-8 h-8 rounded-md border-2 border-gray-200 hover:border-gray-400 hover:scale-110 transition-all cursor-pointer"
+                      className="w-8 h-8 rounded-md border-2 border-border hover:border-muted-foreground hover:scale-110 transition-all cursor-pointer"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
                 </div>
-                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                  <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-foreground/70">
                     <input
                       type="color"
                       className="w-7 h-7 rounded cursor-pointer border-0 p-0"
@@ -323,7 +323,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       editor.chain().focus().unsetColor().run();
                       setShowColorPicker(false);
                     }}
-                    className="ml-auto px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                    className="ml-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground/70 hover:bg-secondary rounded"
                     title="Reset color"
                   >
                     Reset

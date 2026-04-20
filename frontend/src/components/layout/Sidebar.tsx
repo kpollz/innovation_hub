@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
-import { classNames } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
 import { eventsApi } from '@/api/events';
 import type { EventObject } from '@/types';
 
@@ -77,7 +77,6 @@ export const Sidebar: React.FC = () => {
     fetchEvents();
   }, []);
 
-  // Auto-expand if current path is an event page
   useEffect(() => {
     if (isEventsActive && !eventsOpen) {
       setEventsOpen(true);
@@ -89,29 +88,29 @@ export const Sidebar: React.FC = () => {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-foreground/40 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={classNames(
+        className={cn(
           'fixed lg:static inset-y-0 left-0 z-50',
-          'w-64 bg-white border-r border-gray-200',
+          'w-64 bg-card border-r border-border shadow-clay-sm',
           'transform transition-transform duration-300 ease-in-out',
           'lg:transform-none',
           'flex flex-col',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 lg:hidden flex-shrink-0">
-          <span className="text-feature-title font-semibold text-gray-900">{t('common.menu')}</span>
+        <div className="flex items-center justify-between h-16 px-4 border-b border-border lg:hidden flex-shrink-0">
+          <span className="text-feature-title font-semibold text-foreground">{t('common.menu')}</span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-secondary rounded-standard transition-colors"
           >
-            <X className="h-5 w-5 text-gray-600" />
+            <X className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -126,14 +125,14 @@ export const Sidebar: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={classNames(
-                  'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                className={cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-standard text-sm font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )}
               >
-                <Icon className={classNames('h-5 w-5', isActive ? 'text-primary-600' : 'text-gray-500')} />
+                <Icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-muted-foreground')} />
                 {t(item.label)}
               </NavLink>
             );
@@ -145,23 +144,23 @@ export const Sidebar: React.FC = () => {
               <NavLink
                 to="/events"
                 onClick={() => setSidebarOpen(false)}
-                className={classNames(
-                  'flex-1 flex items-center gap-3 px-4 py-3 rounded-l-lg text-sm font-medium transition-colors',
+                className={cn(
+                  'flex-1 flex items-center gap-3 px-4 py-3 rounded-l-standard text-sm font-medium transition-all duration-150',
                   isEventsActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )}
               >
-                <Trophy className={classNames('h-5 w-5', isEventsActive ? 'text-primary-600' : 'text-gray-500')} />
+                <Trophy className={cn('h-5 w-5', isEventsActive ? 'text-primary' : 'text-muted-foreground')} />
                 <span>{t('nav.events')}</span>
               </NavLink>
               <button
                 onClick={() => setEventsOpen(!eventsOpen)}
-                className={classNames(
-                  'flex items-center px-2 rounded-r-lg transition-colors min-h-[44px]',
+                className={cn(
+                  'flex items-center px-2 rounded-r-standard transition-colors min-h-[44px]',
                   isEventsActive
-                    ? 'bg-primary-50 text-primary-600 hover:bg-primary-100'
-                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                    ? 'bg-primary/10 text-primary hover:bg-primary/15'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )}
               >
                 {eventsOpen ? (
@@ -172,7 +171,6 @@ export const Sidebar: React.FC = () => {
               </button>
             </div>
 
-            {/* Events dropdown */}
             {eventsOpen && events.length > 0 && (
               <div className="ml-4 mt-1 space-y-0.5">
                 {events.map((event) => {
@@ -182,18 +180,17 @@ export const Sidebar: React.FC = () => {
                       <NavLink
                         to={`/events/${event.id}`}
                         onClick={() => setSidebarOpen(false)}
-                        className={classNames(
-                          'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-2 rounded-standard text-sm transition-all duration-150',
                           isCurrentEvent
-                            ? 'bg-primary-50 text-primary-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                         )}
                       >
-                        <span className={classNames('w-2 h-2 rounded-full flex-shrink-0', statusDot[event.status] || 'bg-gray-300')} />
+                        <span className={cn('w-2 h-2 rounded-full flex-shrink-0', statusDot[event.status] || 'bg-gray-300')} />
                         <span className="truncate">{event.title}</span>
                       </NavLink>
 
-                      {/* Tab sub-items for current event */}
                       {isCurrentEvent && (
                         <div className="ml-4 mt-0.5 space-y-0.5">
                           {tabItems.map((tab) => {
@@ -204,11 +201,11 @@ export const Sidebar: React.FC = () => {
                                 key={tab.key}
                                 to={`/events/${event.id}?tab=${tab.key}`}
                                 onClick={() => setSidebarOpen(false)}
-                                className={classNames(
-                                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors',
+                                className={cn(
+                                  'flex items-center gap-2 px-3 py-1.5 rounded-standard text-xs transition-all duration-150',
                                   isTabActive
-                                    ? 'text-primary-700 font-medium bg-primary-50'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'text-primary font-medium bg-primary/10'
+                                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                                 )}
                               >
                                 <TabIcon className="h-3.5 w-3.5" />
@@ -226,42 +223,40 @@ export const Sidebar: React.FC = () => {
           </div>
 
           {isAdmin && (
-            <>
-              <div className="pt-4 mt-4 border-t border-gray-200">
-                <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  {t('nav.admin')}
-                </p>
-                {adminNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = item.path === '/admin'
-                    ? location.pathname === '/admin'
-                    : location.pathname.startsWith(item.path);
+            <div className="pt-4 mt-4 border-t border-border">
+              <p className="px-4 text-label-uppercase font-semibold text-muted-foreground uppercase mb-2">
+                {t('nav.admin')}
+              </p>
+              {adminNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.path === '/admin'
+                  ? location.pathname === '/admin'
+                  : location.pathname.startsWith(item.path);
 
-                  return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      className={classNames(
-                        'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-primary-50 text-primary-700'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      )}
-                    >
-                      <Icon className={classNames('h-5 w-5', isActive ? 'text-primary-600' : 'text-gray-500')} />
-                      {t(item.label)}
-                    </NavLink>
-                  );
-                })}
-              </div>
-            </>
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-standard text-sm font-medium transition-all duration-150',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    )}
+                  >
+                    <Icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-muted-foreground')} />
+                    {t(item.label)}
+                  </NavLink>
+                );
+              })}
+            </div>
           )}
         </nav>
 
-        {/* User info at bottom - clickable to settings */}
+        {/* User info at bottom */}
         <div
-          className="flex-shrink-0 h-14 px-4 border-t border-gray-200 bg-white flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
+          className="flex-shrink-0 h-14 px-4 border-t border-border bg-card flex items-center cursor-pointer hover:bg-secondary transition-colors"
           onClick={() => { navigate('/settings'); setSidebarOpen(false); }}
           title={t('settings.title')}
         >
@@ -269,17 +264,17 @@ export const Sidebar: React.FC = () => {
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="Avatar" className="h-8 w-8 rounded-full object-cover flex-shrink-0" />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-primary-700">
+              <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-medium text-primary">
                   {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate leading-tight">
+              <p className="text-sm font-medium text-foreground truncate leading-tight">
                 {user?.full_name || user?.username || 'User'}
               </p>
-              <p className="text-xs text-gray-500 truncate leading-tight">
+              <p className="text-xs text-muted-foreground truncate leading-tight">
                 {user?.role === 'admin' ? t('common.administrator') : t('common.member')}
               </p>
             </div>

@@ -100,22 +100,22 @@ export const CreateProblemPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <Link to="/problems" className="text-sm text-gray-600 hover:text-gray-900 mb-4 inline-block">
+        <Link to="/problems" className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-block">
           ← {t('problems.back_to_problems')}
         </Link>
-        <h1 className="text-section-heading font-bold text-gray-900">{t('problems.create_title')}</h1>
-        <p className="text-gray-600 mt-1">{t('problems.create_desc')}</p>
+        <h1 className="text-section-heading font-bold text-foreground">{t('problems.create_title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('problems.create_desc')}</p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
-          <CardHeader className="border-b border-gray-200">
-            <h2 className="text-feature-title font-semibold text-gray-900">{t('problems.problem_details')}</h2>
+          <CardHeader className="border-b border-border">
+            <h2 className="text-feature-title font-semibold text-foreground">{t('problems.problem_details')}</h2>
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground/70 mb-1">
                 {t('problems.title_label')} <span className="text-red-500">*</span>
               </label>
               <Input
@@ -127,7 +127,7 @@ export const CreateProblemPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground/70 mb-1">
                 {t('problems.summary_label')}
               </label>
               <Input
@@ -136,11 +136,11 @@ export const CreateProblemPage: React.FC = () => {
                 onChange={(e) => setSummary(e.target.value)}
                 error={errors.summary}
               />
-              <p className="text-xs text-gray-500 mt-1">{summary.length}/200</p>
+              <p className="text-xs text-muted-foreground mt-1">{summary.length}/200</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground/70 mb-1">
                 {t('problems.category_label')} <span className="text-red-500">*</span>
               </label>
               <Select
@@ -162,8 +162,8 @@ export const CreateProblemPage: React.FC = () => {
             />
 
             {/* Privacy / Visibility Section */}
-            <div className="border-t border-gray-200 pt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+            <div className="border-t border-border pt-6">
+              <label className="block text-sm font-medium text-foreground/70 mb-3">
                 {t('problems.visibility_label')}
               </label>
               <div className="flex gap-4 mb-2">
@@ -173,7 +173,7 @@ export const CreateProblemPage: React.FC = () => {
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     visibility === 'public'
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 bg-white text-muted-foreground hover:bg-secondary'
                   }`}
                 >
                   <span>🌐</span>
@@ -185,14 +185,14 @@ export const CreateProblemPage: React.FC = () => {
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     visibility === 'private'
                       ? 'border-amber-500 bg-amber-50 text-amber-700'
-                      : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 bg-white text-muted-foreground hover:bg-secondary'
                   }`}
                 >
                   <span>🔒</span>
                   <span>{t('problems.visibility_private')}</span>
                 </button>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {visibility === 'public'
                   ? t('problems.visibility_public_desc')
                   : t('problems.visibility_private_desc')}
@@ -201,7 +201,7 @@ export const CreateProblemPage: React.FC = () => {
               {/* Shared users section - only visible when private */}
               {visibility === 'private' && (
                 <div className="mt-4 space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-foreground/70">
                     {t('problems.share_with_label')}
                   </label>
 
@@ -243,7 +243,7 @@ export const CreateProblemPage: React.FC = () => {
                       open={showUserDropdown && filteredUsers.length > 0}
                       onClose={() => setShowUserDropdown(false)}
                       matchWidth
-                      className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                      className="bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
                     >
                       {filteredUsers.map((user) => (
                         <button
@@ -251,11 +251,11 @@ export const CreateProblemPage: React.FC = () => {
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => addSharedUser(user.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
                         >
                           <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
                           <span className="font-medium">{user.full_name || user.username}</span>
-                          {user.full_name && <span className="text-gray-400 text-xs">@{user.username}</span>}
+                          {user.full_name && <span className="text-muted-foreground text-xs">@{user.username}</span>}
                         </button>
                       ))}
                     </Popover>

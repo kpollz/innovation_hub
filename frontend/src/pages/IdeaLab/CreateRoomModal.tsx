@@ -150,7 +150,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
 
         {/* Visibility Toggle */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground/70 mb-2">
             {t('rooms.visibility_label')}
           </label>
           <div className="flex gap-3">
@@ -160,7 +160,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
               className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                 visibility === 'public'
                   ? 'border-primary-500 bg-primary-50 text-primary-700'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  : 'border-border text-muted-foreground hover:border-gray-300'
               }`}
             >
               {t('rooms.visibility_public')}
@@ -172,7 +172,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
               className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                 visibility === 'private'
                   ? 'border-primary-500 bg-primary-50 text-primary-700'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  : 'border-border text-muted-foreground hover:border-gray-300'
               }`}
             >
               {t('rooms.visibility_private')}
@@ -183,7 +183,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
           {/* Share with users - shown when private */}
           {visibility === 'private' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground/70 mb-2">
                 {t('rooms.share_with_label')}
               </label>
               {/* Selected user chips */}
@@ -220,20 +220,20 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onSuccess }) =
                   onClose={() => setShowUserDropdown(false)}
                   align="left"
                   matchWidth
-                  className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                  className="bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredUsers.map((u) => (
                     <button
                       key={u.id}
                       type="button"
                       onClick={() => { toggleUser(u.id); setUserSearch(''); }}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2 ${
                         selectedUserIds.includes(u.id) ? 'bg-primary-50' : ''
                       }`}
                     >
                       <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
                       <span className="font-medium">{u.full_name || u.username}</span>
-                      {u.full_name && <span className="text-gray-400 text-xs">@{u.username}</span>}
+                      {u.full_name && <span className="text-muted-foreground text-xs">@{u.username}</span>}
                       {selectedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
                     </button>
                   ))}

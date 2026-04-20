@@ -31,7 +31,7 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
                   {room.status}
                 </Badge>
                 {room.visibility === 'private' && (
-                  <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500" title="Private">
+                  <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground" title="Private">
                     <Lock className="h-3 w-3" />
                   </span>
                 )}
@@ -46,14 +46,14 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
 
           {/* Middle: Content (flex-1 fills remaining space) */}
           <div className="px-5 flex-1">
-            <h3 className="text-feature-title font-semibold text-gray-900 mb-2 line-clamp-1">
+            <h3 className="text-feature-title font-semibold text-foreground mb-2 line-clamp-1">
               {room.name}
             </h3>
-            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
               {room.description}
             </p>
 
-            <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Lightbulb className="h-4 w-4" />
                 {t('rooms.ideas_count', { count: room.idea_count })}
@@ -62,11 +62,11 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
           </div>
 
           {/* Bottom: Creator (pinned to bottom) */}
-          <div className="px-5 pb-5 pt-4 mt-auto border-t border-gray-100">
+          <div className="px-5 pb-5 pt-4 mt-auto border-t border-border/50">
             <div className="flex items-center gap-2">
               <Avatar src={room.creator?.avatar_url} name={creatorName} size="sm" />
-              <span className="text-sm text-gray-700">{creatorName}</span>
-              <span className="text-xs text-gray-400 ml-auto">
+              <span className="text-sm text-foreground/70">{creatorName}</span>
+              <span className="text-xs text-muted-foreground ml-auto">
                 {timeAgo(room.created_at)}
               </span>
             </div>
@@ -130,22 +130,22 @@ export const IdeaLabPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-section-heading font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-section-heading font-bold text-foreground flex items-center gap-2">
             <BrainCircuit className="h-7 w-7 text-primary-600" />
             {t('rooms.title')}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {t('rooms.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-muted rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <List className="h-4 w-4" />
@@ -154,8 +154,8 @@ export const IdeaLabPage: React.FC = () => {
               onClick={() => setViewMode('board')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'board'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -177,7 +177,7 @@ export const IdeaLabPage: React.FC = () => {
 
       {/* Date Filters */}
       {showFilters && (
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 rounded-xl border border-border">
           <div className="flex items-end gap-3">
             <DatePicker
               value={dateFrom}
@@ -186,7 +186,7 @@ export const IdeaLabPage: React.FC = () => {
               placeholder={t('common.date_from')}
               className="w-[180px]"
             />
-            <span className="text-gray-400 pb-2">→</span>
+            <span className="text-muted-foreground pb-2">→</span>
             <DatePicker
               value={dateTo}
               onChange={(val) => handleDateChange('to', val)}
@@ -200,7 +200,7 @@ export const IdeaLabPage: React.FC = () => {
 
       {/* Active Rooms */}
       <div>
-        <h2 className="text-feature-title font-semibold text-gray-900 mb-4">
+        <h2 className="text-feature-title font-semibold text-foreground mb-4">
           {t('rooms.active_rooms', { count: activeRooms.length })}
         </h2>
         {isLoading ? (
@@ -208,8 +208,8 @@ export const IdeaLabPage: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
           </div>
         ) : activeRooms.length === 0 ? (
-          <div className="text-center py-8 bg-white rounded-xl border border-gray-200">
-            <p className="text-gray-500">{t('rooms.no_active')}</p>
+          <div className="text-center py-8 bg-white rounded-xl border border-border">
+            <p className="text-muted-foreground">{t('rooms.no_active')}</p>
             <Button variant="secondary" className="mt-4" onClick={openCreateModal}>
               {t('rooms.create_first')}
             </Button>
@@ -226,7 +226,7 @@ export const IdeaLabPage: React.FC = () => {
       {/* Archived Rooms */}
       {archivedRooms.length > 0 && (
         <div>
-          <h2 className="text-feature-title font-semibold text-gray-900 mb-4">
+          <h2 className="text-feature-title font-semibold text-foreground mb-4">
             {t('rooms.archived_rooms', { count: archivedRooms.length })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">

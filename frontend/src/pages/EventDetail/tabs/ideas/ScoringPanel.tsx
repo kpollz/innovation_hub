@@ -162,21 +162,21 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
     const groupTotal = groupCriteria.reduce((sum, c) => sum + (scores[c.id] || 0) * c.weight, 0);
 
     return (
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         <button
           type="button"
           onClick={() => toggleGroup(groupKey)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 bg-secondary hover:bg-secondary transition-colors"
         >
           <div className="flex items-center gap-2">
             {isExpanded
-              ? <ChevronDown className="h-4 w-4 text-gray-500" />
-              : <ChevronRight className="h-4 w-4 text-gray-500" />
+              ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              : <ChevronRight className="h-4 w-4 text-muted-foreground" />
             }
-            <h4 className="text-sm font-semibold text-gray-700">{groupLabel}</h4>
-            <span className="text-xs text-gray-400">({groupCriteria.length})</span>
+            <h4 className="text-sm font-semibold text-foreground/70">{groupLabel}</h4>
+            <span className="text-xs text-muted-foreground">({groupCriteria.length})</span>
           </div>
-          <span className="text-sm font-bold text-gray-600">{groupTotal.toFixed(1)}</span>
+          <span className="text-sm font-bold text-muted-foreground">{groupTotal.toFixed(1)}</span>
         </button>
 
         {isExpanded && (
@@ -188,11 +188,11 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800">{getCriteriaName(criterion)}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{getCriteriaDesc(criterion)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{getCriteriaDesc(criterion)}</p>
                     </div>
                     {currentScore > 0 && (
                       <span className="text-sm font-semibold text-primary-600 flex-shrink-0 whitespace-nowrap">
-                        {currentScore} <span className="font-normal text-gray-400">({getLikertLabel(currentScore)})</span>
+                        {currentScore} <span className="font-normal text-muted-foreground">({getLikertLabel(currentScore)})</span>
                       </span>
                     )}
                   </div>
@@ -207,7 +207,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
                           className={`flex-1 py-1.5 px-1 text-xs rounded-md border transition-colors font-medium ${
                             scores[criterion.id] === opt.value
                               ? 'bg-primary-600 text-white border-primary-600'
-                              : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:bg-primary-50'
+                              : 'bg-white text-muted-foreground border-border hover:border-primary-300 hover:bg-primary-50'
                           }`}
                           title={t(`events.ideas.scoring.${opt.label}`)}
                         >
@@ -229,9 +229,9 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
   };
 
   return (
-    <div className="border-t border-gray-200 pt-6 mt-6">
+    <div className="border-t border-border pt-6 mt-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Star className="h-5 w-5 text-yellow-500" />
           {t('events.ideas.scoring.title')}
         </h3>
@@ -259,7 +259,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
 
       {!readOnly && (
         <div className="flex items-center justify-between mt-6">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground">
             {isComplete
               ? t('events.ideas.scoring.ready_submit')
               : t('events.ideas.scoring.fill_all', {

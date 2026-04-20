@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -22,17 +23,14 @@ import { AdminUsersPage } from '@/pages/Admin/AdminUsersPage';
 import { EventsPage } from '@/pages/Events/EventsPage';
 import { EventDetailPage } from '@/pages/EventDetail/EventDetailPage';
 import { HelpPage } from '@/pages/Help/HelpPage';
+import { PageTransition } from '@/components/ui/PageTransition';
 
-function App() {
-  const { fetchCurrentUser } = useAuthStore();
-
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
+function AnimatedRoutes() {
+  const location = useLocation();
 
   return (
-    <>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -44,21 +42,21 @@ function App() {
             <AuthGuard>
               <MainLayout>
                 <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/admin" element={<DashboardPage />} />
-                  <Route path="/problems" element={<ProblemFeedPage />} />
-                  <Route path="/problems/new" element={<CreateProblemPage />} />
-                  <Route path="/problems/:id" element={<ProblemDetailPage />} />
-                  <Route path="/rooms" element={<IdeaLabPage />} />
-                  <Route path="/rooms/:id" element={<RoomDetailPage />} />
-                  <Route path="/rooms/:roomId/ideas/new" element={<CreateIdeaPage />} />
-                  <Route path="/ideas/:id" element={<IdeaDetailPage />} />
-                  <Route path="/settings" element={<UserSettingsPage />} />
-                  <Route path="/admin/users" element={<AdminUsersPage />} />
-                  <Route path="/events" element={<EventsPage />} />
-                  <Route path="/events/:id/ideas/:ideaId" element={<EventDetailPage />} />
-                  <Route path="/events/:id" element={<EventDetailPage />} />
-                  <Route path="/help" element={<HelpPage />} />
+                  <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+                  <Route path="/admin" element={<PageTransition><DashboardPage /></PageTransition>} />
+                  <Route path="/problems" element={<PageTransition><ProblemFeedPage /></PageTransition>} />
+                  <Route path="/problems/new" element={<PageTransition><CreateProblemPage /></PageTransition>} />
+                  <Route path="/problems/:id" element={<PageTransition><ProblemDetailPage /></PageTransition>} />
+                  <Route path="/rooms" element={<PageTransition><IdeaLabPage /></PageTransition>} />
+                  <Route path="/rooms/:id" element={<PageTransition><RoomDetailPage /></PageTransition>} />
+                  <Route path="/rooms/:roomId/ideas/new" element={<PageTransition><CreateIdeaPage /></PageTransition>} />
+                  <Route path="/ideas/:id" element={<PageTransition><IdeaDetailPage /></PageTransition>} />
+                  <Route path="/settings" element={<PageTransition><UserSettingsPage /></PageTransition>} />
+                  <Route path="/admin/users" element={<PageTransition><AdminUsersPage /></PageTransition>} />
+                  <Route path="/events" element={<PageTransition><EventsPage /></PageTransition>} />
+                  <Route path="/events/:id/ideas/:ideaId" element={<PageTransition><EventDetailPage /></PageTransition>} />
+                  <Route path="/events/:id" element={<PageTransition><EventDetailPage /></PageTransition>} />
+                  <Route path="/help" element={<PageTransition><HelpPage /></PageTransition>} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </MainLayout>
@@ -66,6 +64,20 @@ function App() {
           }
         />
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  const { fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
+  return (
+    <>
+      <AnimatedRoutes />
       <Toast />
     </>
   );

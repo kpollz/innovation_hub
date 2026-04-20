@@ -142,7 +142,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
 
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-foreground/70 mb-1.5">
             {t('events.edit.status_label')}
           </label>
           <div className="flex gap-2">
@@ -157,8 +157,8 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
                       ? 'bg-green-100 text-green-700 border-green-300'
                       : opt.value === 'closed'
                       ? 'bg-red-100 text-red-700 border-red-300'
-                      : 'bg-gray-100 text-gray-700 border-gray-300'
-                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                      : 'bg-muted text-foreground/70 border-gray-300'
+                    : 'bg-white text-muted-foreground border-border hover:bg-secondary'
                 }`}
               >
                 {t(opt.labelKey)}
@@ -169,7 +169,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
 
         {/* Introduction Type Toggle */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-foreground/70 mb-1.5">
             {t('events.create.introduction_type_label')}
           </label>
           <div className="flex gap-4">
@@ -218,7 +218,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground/70 mb-1.5">
               {t('events.create.start_date_label')}
             </label>
             <DatePicker
@@ -228,7 +228,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSaved }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground/70 mb-1.5">
               {t('events.create.end_date_label')}
             </label>
             <DatePicker

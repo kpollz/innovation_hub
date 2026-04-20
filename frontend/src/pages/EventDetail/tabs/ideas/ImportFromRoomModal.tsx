@@ -142,21 +142,21 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
           </div>
         ) : !selectedRoom ? (
           <div>
-            <p className="text-sm text-gray-500 mb-4">{t('events.ideas.import.select_room')}</p>
+            <p className="text-sm text-muted-foreground mb-4">{t('events.ideas.import.select_room')}</p>
             {rooms.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">{t('events.ideas.import.no_rooms')}</p>
+              <p className="text-center text-muted-foreground py-8">{t('events.ideas.import.no_rooms')}</p>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {rooms.map(room => (
                   <button
                     key={room.id}
                     onClick={() => handleSelectRoom(room)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary-300 hover:bg-primary-50 transition-colors text-left"
                   >
-                    <FolderOpen className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <FolderOpen className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">{room.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-foreground truncate">{room.name}</p>
+                      <p className="text-xs text-muted-foreground">
                         {t('events.ideas.import.idea_count', { count: room.idea_count })}
                       </p>
                     </div>
@@ -173,7 +173,7 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
             >
               &larr; {t('events.ideas.import.back_rooms')}
             </button>
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               {t('events.ideas.import.room_label')}: <strong>{selectedRoom.name}</strong>
             </p>
 
@@ -182,17 +182,17 @@ export const ImportFromRoomModal: React.FC<ImportFromRoomModalProps> = ({
                 <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
               </div>
             ) : roomIdeas.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">{t('events.ideas.import.no_ideas')}</p>
+              <p className="text-center text-muted-foreground py-8">{t('events.ideas.import.no_ideas')}</p>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {roomIdeas.map(idea => (
                   <div
                     key={idea.id}
-                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-200"
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border"
                   >
                     <div className="min-w-0 flex-1 flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                      <p className="text-sm font-medium text-gray-900 truncate">{idea.title}</p>
+                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <p className="text-sm font-medium text-foreground truncate">{idea.title}</p>
                     </div>
                     <Button
                       size="sm"

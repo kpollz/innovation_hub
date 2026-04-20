@@ -70,11 +70,11 @@ export const ProblemFeedPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-section-heading font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-section-heading font-bold text-foreground flex items-center gap-2">
             <BookOpen className="h-7 w-7 text-primary-600" />
             {t('problems.title')}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {t('problems.count', { count: totalProblems })}
           </p>
         </div>
@@ -84,10 +84,10 @@ export const ProblemFeedPage: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+      <div className="bg-white p-4 rounded-xl border border-border space-y-4">
         <form onSubmit={handleSearch} className="flex gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
               placeholder={t('problems.search_placeholder')}
@@ -118,7 +118,7 @@ export const ProblemFeedPage: React.FC = () => {
         </form>
 
         {showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-border">
             <Select
               label={t('problems.category')}
               value={filters.category || ''}
@@ -138,7 +138,7 @@ export const ProblemFeedPage: React.FC = () => {
               options={sortOptions}
             />
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.date_range')}</label>
+              <label className="block text-sm font-medium text-foreground/70 mb-1">{t('common.date_range')}</label>
               <div className="flex items-center gap-2">
                 <DatePicker
                   value={filters.date_from || ''}
@@ -147,7 +147,7 @@ export const ProblemFeedPage: React.FC = () => {
                   placeholder={t('common.date_from')}
                   className="flex-1"
                 />
-                <span className="text-gray-400 shrink-0">→</span>
+                <span className="text-muted-foreground shrink-0">→</span>
                 <DatePicker
                   value={filters.date_to || ''}
                   onChange={(val) => handleFilterChange('date_to', val)}
@@ -167,8 +167,8 @@ export const ProblemFeedPage: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
         </div>
       ) : problems.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <p className="text-gray-500">{t('problems.no_problems')}</p>
+        <div className="text-center py-12 bg-white rounded-xl border border-border">
+          <p className="text-muted-foreground">{t('problems.no_problems')}</p>
           <Button variant="secondary" className="mt-4" onClick={() => navigate('/problems/new')}>
             {t('problems.share_first')}
           </Button>
@@ -192,7 +192,7 @@ export const ProblemFeedPage: React.FC = () => {
           >
             {t('common.previous')}
           </Button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             {t('common.page_of', { current: currentPage, total: totalPages })}
           </span>
           <Button
