@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
-import { classNames } from '@/utils/helpers';
-import { Button } from './Button';
+import { cn } from '@/lib/utils';
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,6 +12,13 @@ interface ModalProps {
   footer?: React.ReactNode;
 }
 
+const sizeMap = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+};
+
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -20,66 +27,45 @@ export const Modal: React.FC<ModalProps> = ({
   size = 'md',
   footer,
 }) => {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-  };
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={onClose}
+    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay
+          className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
         />
-        <div
-          className={classNames(
-            'relative transform rounded-lg bg-white text-left shadow-xl transition-all',
-            'w-full',
-            sizes[size]
+        <DialogPrimitive.Content
+          className={cn(
+            'fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2',
+            'bg-card rounded-feature border border-border shadow-clay-md',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+            'duration-200',
+            sizeMap[size]
           )}
         >
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="p-1 hover:bg-gray-100"
-              >
-                <X className="h-5 w-5 text-gray-500" />
-              </Button>
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <DialogPrimitive.Title className="text-lg font-semibold text-foreground">
+                {title}
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Close asChild>
+                <button
+                  className="rounded-standard p-1 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </DialogPrimitive.Close>
             </div>
           )}
-          <div className="px-6 py-4">{children}</div>
+          <div className="p-6">{children}</div>
           {footer && (
-            <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex justify-end gap-3 p-6 pt-0">
               {footer}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 };

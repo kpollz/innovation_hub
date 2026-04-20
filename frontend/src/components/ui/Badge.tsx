@@ -1,5 +1,30 @@
 import React from 'react';
-import { classNames } from '@/utils/helpers';
+import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+const badgeVariants = cva(
+  'inline-flex items-center rounded-full font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'bg-muted text-foreground',
+        primary: 'bg-primary/15 text-primary',
+        success: 'bg-matcha-100 text-matcha-800',
+        warning: 'bg-lemon-100 text-lemon-800',
+        danger: 'bg-destructive/15 text-destructive',
+        info: 'bg-blueberry-100 text-blueberry-800',
+      },
+      size: {
+        sm: 'px-2 py-0.5 text-xs',
+        md: 'px-2.5 py-0.5 text-sm',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+);
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
@@ -7,37 +32,17 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 export const Badge: React.FC<BadgeProps> = ({
-  children,
   variant = 'default',
   size = 'md',
   className,
   ...props
 }) => {
-  const variants = {
-    default: 'bg-gray-100 text-gray-800',
-    primary: 'bg-primary-100 text-primary-800',
-    success: 'bg-success-100 text-success-800',
-    warning: 'bg-warning-100 text-warning-800',
-    danger: 'bg-danger-100 text-danger-800',
-    info: 'bg-blue-100 text-blue-800',
-  };
-
-  const sizes = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2.5 py-0.5 text-sm',
-  };
-
   return (
     <span
-      className={classNames(
-        'inline-flex items-center rounded-full font-medium',
-        variants[variant],
-        sizes[size],
-        className
-      )}
+      className={cn(badgeVariants({ variant, size }), className)}
       {...props}
-    >
-      {children}
-    </span>
+    />
   );
 };
+
+export { badgeVariants };

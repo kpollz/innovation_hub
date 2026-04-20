@@ -23,13 +23,28 @@ export const Popover: React.FC<PopoverProps> = ({
   matchWidth = false,
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState<{ top: number; left?: number; right?: number; width?: number } | null>(null);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left?: number;
+    right?: number;
+    width?: number;
+  } | null>(null);
 
   const recalc = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
+    const popoverEl = popoverRef.current;
+    const popoverHeight = popoverEl?.offsetHeight ?? 200;
+    const viewportHeight = window.innerHeight;
+
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const showAbove = spaceBelow < popoverHeight + gap && spaceAbove > spaceBelow;
+
     setCoords({
-      top: rect.bottom + gap,
+      top: showAbove
+        ? rect.top - popoverHeight - gap
+        : rect.bottom + gap,
       ...(align === 'right'
         ? { right: window.innerWidth - rect.right }
         : { left: rect.left }),
@@ -87,7 +102,12 @@ export const Popover: React.FC<PopoverProps> = ({
   };
 
   return createPortal(
-    <div ref={popoverRef} style={style} className={className}>
+    <div
+      ref={popoverRef}
+      style={{ ...style, pointerEvents: 'auto' }}
+      className={className}
+      onWheel={(e) => e.stopPropagation()}
+    >
       {children}
     </div>,
     document.body,

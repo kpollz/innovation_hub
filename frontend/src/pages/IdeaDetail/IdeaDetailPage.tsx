@@ -301,7 +301,7 @@ export const IdeaDetailPage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-4">
           {idea.summary && (
             <div className="mt-4 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm font-medium text-green-800 mb-1">{t('ideas.summary')}</p>

@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { classNames } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -12,27 +12,27 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
-          className={classNames(
-            'block w-full rounded-lg border shadow-sm transition-colors',
-            'px-4 py-2.5 text-base text-gray-900 placeholder-gray-400',
-            'border-gray-300 focus:border-primary-500 focus:ring-primary-500 focus:outline-none',
-            error && 'border-danger-500 focus:border-danger-500 focus:ring-danger-500',
-            'disabled:bg-gray-100 disabled:cursor-not-allowed',
+          className={cn(
+            'flex min-h-[80px] w-full rounded-standard border border-input bg-background px-3 py-2 text-sm',
+            'ring-offset-background placeholder:text-muted-foreground',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            error && 'border-destructive focus-visible:ring-destructive',
             className
           )}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-danger-600">{error}</p>
+          <p className="mt-1 text-sm text-destructive">{error}</p>
         )}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
         )}
       </div>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { classNames } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -9,9 +9,9 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Card: React.FC<CardProps> = ({ children, hoverable = false, className, ...props }) => {
   return (
     <div
-      className={classNames(
-        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col',
-        hoverable && 'hover:shadow-md transition-shadow cursor-pointer',
+      className={cn(
+        'rounded-feature border border-border bg-card text-card-foreground shadow-clay-sm overflow-hidden flex flex-col',
+        hoverable && 'hover:shadow-clay hover:-translate-y-0.5 transition-all duration-200 cursor-pointer',
         className
       )}
       {...props}
@@ -22,49 +22,29 @@ export const Card: React.FC<CardProps> = ({ children, hoverable = false, classNa
 };
 
 export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
-  children,
   className,
   ...props
-}) => {
-  return (
-    <div className={classNames('px-6 py-4 border-b border-gray-200', className)} {...props}>
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div className={cn('flex flex-col space-y-1.5 p-6 pb-4 border-b border-border', className)} {...props} />
+);
 
 export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
-  children,
   className,
   ...props
-}) => {
-  return (
-    <h3 className={classNames('text-lg font-semibold text-gray-900', className)} {...props}>
-      {children}
-    </h3>
-  );
-};
+}) => (
+  <h3 className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+);
 
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
-  children,
   className,
   ...props
-}) => {
-  return (
-    <div className={classNames('px-6 py-4', className)} {...props}>
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div className={cn('p-6 pt-4', className)} {...props} />
+);
 
 export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
-  children,
   className,
   ...props
-}) => {
-  return (
-    <div className={classNames('px-6 py-4 bg-gray-50 border-t border-gray-200', className)} {...props}>
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div className={cn('flex items-center p-6 pt-0 border-t border-border bg-muted/30', className)} {...props} />
+);

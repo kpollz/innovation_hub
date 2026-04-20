@@ -1,5 +1,29 @@
 import React from 'react';
-import { classNames } from '@/utils/helpers';
+import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-standard font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-clay-xs',
+        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80',
+        danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-clay-xs',
+        ghost: 'hover:bg-secondary text-foreground',
+      },
+      size: {
+        sm: 'h-8 px-3 text-xs',
+        md: 'h-10 px-4 text-sm',
+        lg: 'h-12 px-6 text-base',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -20,29 +44,9 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const variants = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500',
-    danger: 'bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-  };
-
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
-  };
-
   return (
     <button
-      className={classNames(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        variants[variant],
-        sizes[size],
-        className
-      )}
+      className={cn(buttonVariants({ variant, size }), className)}
       disabled={disabled || isLoading}
       {...props}
     >
@@ -73,3 +77,5 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
+export { buttonVariants };

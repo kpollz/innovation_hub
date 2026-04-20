@@ -368,7 +368,7 @@ export const ProblemDetailPage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-4">
           <div className="text-gray-700 rich-content">
             <TipTapRenderer content={selectedProblem.content} />
           </div>

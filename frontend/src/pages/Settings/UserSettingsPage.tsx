@@ -175,7 +175,7 @@ export const UserSettingsPage: React.FC = () => {
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-border mb-4">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -202,7 +202,7 @@ export const UserSettingsPage: React.FC = () => {
           <CardHeader>
             <h3 className="text-lg font-semibold text-gray-900">{t('settings.profile_info')}</h3>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent className="p-6 pt-4">
             <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
               <Input
                 label={t('auth.username')}
@@ -245,7 +245,7 @@ export const UserSettingsPage: React.FC = () => {
           <CardHeader>
             <h3 className="text-lg font-semibold text-gray-900">{t('settings.change_password')}</h3>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent className="p-6 pt-4">
             <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
               <Input
                 label={t('settings.current_password')}
