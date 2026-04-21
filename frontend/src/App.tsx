@@ -13,10 +13,12 @@ import { LandingPage } from '@/pages/Landing/LandingPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { ProblemFeedPage } from '@/pages/ProblemFeed/ProblemFeedPage';
 import { CreateProblemPage } from '@/pages/ProblemFeed/CreateProblemPage';
+import { EditProblemPage } from '@/pages/ProblemFeed/EditProblemPage';
 import { ProblemDetailPage } from '@/pages/ProblemDetail/ProblemDetailPage';
 import { IdeaLabPage } from '@/pages/IdeaLab/IdeaLabPage';
 import { RoomDetailPage } from '@/pages/RoomDetail/RoomDetailPage';
 import { IdeaDetailPage } from '@/pages/IdeaDetail/IdeaDetailPage';
+import { EditIdeaPage } from '@/pages/IdeaDetail/EditIdeaPage';
 import { CreateIdeaPage } from '@/pages/RoomDetail/CreateIdeaPage';
 import { UserSettingsPage } from '@/pages/Settings/UserSettingsPage';
 import { AdminUsersPage } from '@/pages/Admin/AdminUsersPage';
@@ -46,10 +48,12 @@ function AnimatedRoutes() {
                   <Route path="/admin" element={<PageTransition><DashboardPage /></PageTransition>} />
                   <Route path="/problems" element={<PageTransition><ProblemFeedPage /></PageTransition>} />
                   <Route path="/problems/new" element={<PageTransition><CreateProblemPage /></PageTransition>} />
+                  <Route path="/problems/:id/edit" element={<PageTransition><EditProblemPage /></PageTransition>} />
                   <Route path="/problems/:id" element={<PageTransition><ProblemDetailPage /></PageTransition>} />
                   <Route path="/rooms" element={<PageTransition><IdeaLabPage /></PageTransition>} />
                   <Route path="/rooms/:id" element={<PageTransition><RoomDetailPage /></PageTransition>} />
                   <Route path="/rooms/:roomId/ideas/new" element={<PageTransition><CreateIdeaPage /></PageTransition>} />
+                  <Route path="/ideas/:id/edit" element={<PageTransition><EditIdeaPage /></PageTransition>} />
                   <Route path="/ideas/:id" element={<PageTransition><IdeaDetailPage /></PageTransition>} />
                   <Route path="/settings" element={<PageTransition><UserSettingsPage /></PageTransition>} />
                   <Route path="/admin/users" element={<PageTransition><AdminUsersPage /></PageTransition>} />

@@ -20,61 +20,36 @@ import { useProblemStore } from '@/stores/problemStore';
 import { useUIStore } from '@/stores/uiStore';
 import { problemsApi } from '@/api/problems';
 import { commentsApi } from '@/api/comments';
-import { usersApi } from '@/api/users';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
-import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
-import { Select } from '@/components/ui/Select';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
-import { contentToJsonString, jsonStringToContent, extractTextFromTipTap } from '@/utils/tiptap';
 import { Avatar } from '@/components/ui/Avatar';
-import type { Comment, ReactionType, ProblemStatus, ProblemCategory, ProblemVisibility, User } from '@/types';
+import { RoomFormModal } from '@/pages/IdeaLab/RoomFormModal';
+import type { Comment, ReactionType, ProblemStatus } from '@/types';
 
 export const ProblemDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { selectedProblem, fetchProblem, isLoading } = useProblemStore();
+  const { selectedProblem, isLoading } = useProblemStore();
   const { showToast } = useUIStore();
   const [accessError, setAccessError] = useState<'forbidden' | 'not_found' | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
 
-  // Edit/Delete states
+  // Delete states
   const [showActions, setShowActions] = useState(false);
   const actionsRef = useRef<HTMLButtonElement>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBrainstormModalOpen, setIsBrainstormModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editSummary, setEditSummary] = useState('');
-  const [editContent, setEditContent] = useState('');
-  const [editCategory, setEditCategory] = useState<ProblemCategory>('process');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [brainstormName, setBrainstormName] = useState('');
-  const [brainstormDesc, setBrainstormDesc] = useState('');
-  const [brainstormVisibility, setBrainstormVisibility] = useState<ProblemVisibility>('public');
-  const [brainstormSharedUserIds, setBrainstormSharedUserIds] = useState<string[]>([]);
-  const [brainstormUserSearch, setBrainstormUserSearch] = useState('');
-  const [brainstormUsers, setBrainstormUsers] = useState<User[]>([]);
-
-  // Privacy states for edit
-  const [editVisibility, setEditVisibility] = useState<ProblemVisibility>('public');
-  const [editSharedUserIds, setEditSharedUserIds] = useState<string[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [userSearch, setUserSearch] = useState('');
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const userSearchRef = useRef<HTMLDivElement>(null);
-  const [showBrainstormUserDropdown, setShowBrainstormUserDropdown] = useState(false);
-  const brainstormUserSearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -154,49 +129,9 @@ export const ProblemDetailPage: React.FC = () => {
     setShowActions(false);
   };
 
-  const openEditModal = () => {
-    if (selectedProblem) {
-      setEditTitle(selectedProblem.title);
-      setEditSummary(selectedProblem.summary || '');
-      setEditContent(contentToJsonString(selectedProblem.content));
-      setEditCategory(selectedProblem.category);
-      setEditVisibility((selectedProblem as any).visibility || 'public');
-      setEditSharedUserIds((selectedProblem as any).shared_user_ids || []);
-      setUserSearch('');
-      setIsEditModalOpen(true);
-      setShowActions(false);
-      usersApi.list({ limit: 100 }).then((res) => setAllUsers(res.items)).catch(() => {});
-    }
-  };
-
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !editTitle.trim() || !extractTextFromTipTap(editContent)) return;
-
-    setIsSubmitting(true);
-    try {
-      await problemsApi.update(id, {
-        title: editTitle,
-        summary: editSummary.trim() || undefined,
-        content: jsonStringToContent(editContent),
-        category: editCategory,
-        visibility: editVisibility,
-        shared_user_ids: editVisibility === 'private' ? editSharedUserIds : undefined,
-      });
-      showToast({ type: 'success', message: t('problems.updated_success') });
-      setIsEditModalOpen(false);
-      fetchProblem(id);
-    } catch (err: unknown) {
-      const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const message = typeof raw === 'string'
-        ? raw
-        : Array.isArray(raw)
-          ? raw.map((e: { msg?: string }) => e.msg).join('; ')
-          : t('problems.update_error');
-      showToast({ type: 'error', message });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const openEditPage = () => {
+    navigate(`/problems/${id}/edit`);
+    setShowActions(false);
   };
 
   const handleDelete = async () => {
@@ -210,40 +145,6 @@ export const ProblemDetailPage: React.FC = () => {
       navigate('/problems');
     } catch {
       showToast({ type: 'error', message: t('problems.delete_error') });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCreateBrainstormRoom = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !brainstormName.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      await problemsApi.createRoom(id, {
-        name: brainstormName,
-        description: brainstormDesc || undefined,
-        visibility: brainstormVisibility,
-        shared_user_ids: brainstormVisibility === 'private' ? brainstormSharedUserIds : undefined,
-      });
-      showToast({ type: 'success', message: t('problems.room_created') });
-      setIsBrainstormModalOpen(false);
-      setBrainstormName('');
-      setBrainstormDesc('');
-      setBrainstormVisibility('public');
-      setBrainstormSharedUserIds([]);
-      setBrainstormUserSearch('');
-      const updated = await problemsApi.getById(id);
-      useProblemStore.setState({ selectedProblem: updated });
-    } catch (err: unknown) {
-      const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const message = typeof raw === 'string'
-        ? raw
-        : Array.isArray(raw)
-          ? raw.map((e: { msg?: string }) => e.msg).join('; ')
-          : t('problems.room_create_error');
-      showToast({ type: 'error', message });
     } finally {
       setIsSubmitting(false);
     }
@@ -315,7 +216,7 @@ export const ProblemDetailPage: React.FC = () => {
                   className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                 >
                   <button
-                    onClick={openEditModal}
+                    onClick={openEditPage}
                     className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                   >
                     <Edit className="h-4 w-4" />
@@ -419,12 +320,7 @@ export const ProblemDetailPage: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={() => {
-                setBrainstormName(`Brainstorm: ${selectedProblem.title}`);
-                setBrainstormVisibility('public');
-                setBrainstormSharedUserIds([]);
-                setBrainstormUserSearch('');
                 setIsBrainstormModalOpen(true);
-                usersApi.list({ limit: 100, is_active: true }).then((res) => setBrainstormUsers(res.items)).catch(() => {});
               }}
             >
               {selectedProblem.rooms?.length > 0 ? t('problems.add_room') : t('problems.brainstorm_solutions')}
@@ -563,149 +459,6 @@ export const ProblemDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title={t('problems.edit_problem')}
-      >
-        <form onSubmit={handleEdit} className="space-y-4">
-          <Input
-            label={t('problems.title_min_label')}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            required
-            minLength={5}
-            maxLength={255}
-          />
-          <Input
-            label={t('problems.summary_label')}
-            value={editSummary}
-            onChange={(e) => setEditSummary(e.target.value)}
-            placeholder={t('problems.summary_placeholder')}
-            maxLength={500}
-          />
-          <RichTextEditor
-            label={t('problems.description_label')}
-            value={editContent}
-            onChange={setEditContent}
-            minHeight="200px"
-            jsonMode
-          />
-          <Select
-            label={t('problems.category_label')}
-            value={editCategory}
-            onChange={(e) => setEditCategory(e.target.value as ProblemCategory)}
-            options={PROBLEM_CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
-          />
-
-          {/* Privacy / Visibility */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground/70">
-              {t('problems.visibility_label')}
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="edit-visibility"
-                  value="public"
-                  checked={editVisibility === 'public'}
-                  onChange={() => { setEditVisibility('public'); setEditSharedUserIds([]); }}
-                  className="text-blue-600"
-                />
-                <span className="text-sm">{t('problems.visibility_public')}</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="edit-visibility"
-                  value="private"
-                  checked={editVisibility === 'private'}
-                  onChange={() => setEditVisibility('private')}
-                  className="text-blue-600"
-                />
-                <span className="text-sm">{t('problems.visibility_private')}</span>
-              </label>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {editVisibility === 'public'
-                ? t('problems.visibility_public_desc')
-                : t('problems.visibility_private_desc')}
-            </p>
-          </div>
-
-          {/* Shared Users (only when private) */}
-          {editVisibility === 'private' && (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground/70">
-                {t('problems.share_with_label')}
-              </label>
-              {editSharedUserIds.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {editSharedUserIds.map((uid) => {
-                    const u = allUsers.find((x) => x.id === uid);
-                    return (
-                      <span key={uid} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                        {u?.full_name || u?.username || uid.slice(0, 8)}
-                        <button type="button" onClick={() => setEditSharedUserIds(editSharedUserIds.filter((id) => id !== uid))} className="ml-1 text-blue-600 hover:text-red-500">×</button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-              <div ref={userSearchRef}>
-                <Input
-                  placeholder={t('problems.search_users_placeholder')}
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  onFocus={() => setShowUserDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
-                />
-                <Popover
-                  triggerRef={userSearchRef}
-                  open={showUserDropdown && allUsers.filter((u) =>
-                    !editSharedUserIds.includes(u.id) &&
-                    (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-                      (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
-                  ).length > 0}
-                  onClose={() => setShowUserDropdown(false)}
-                  matchWidth
-                  className="bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto"
-                >
-                  {allUsers
-                    .filter((u) =>
-                      !editSharedUserIds.includes(u.id) &&
-                      (u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-                        (u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false))
-                    )
-                    .map((u) => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => { setEditSharedUserIds([...editSharedUserIds, u.id]); setUserSearch(''); setShowUserDropdown(false); }}
-                        className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
-                      >
-                        <span className="font-medium">{u.username}</span>
-                        {u.full_name && <span className="text-muted-foreground">({u.full_name})</span>}
-                      </button>
-                    ))}
-                </Popover>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
@@ -728,137 +481,18 @@ export const ProblemDetailPage: React.FC = () => {
       </Modal>
 
       {/* Create Brainstorm Room Modal */}
-      <Modal
+      <RoomFormModal
         isOpen={isBrainstormModalOpen}
         onClose={() => setIsBrainstormModalOpen(false)}
-        title={t('problems.create_room_title')}
-      >
-        <form onSubmit={handleCreateBrainstormRoom} className="space-y-4">
-          <Input
-            label={t('problems.room_name_label')}
-            value={brainstormName}
-            onChange={(e) => setBrainstormName(e.target.value)}
-            required
-            minLength={3}
-            maxLength={255}
-          />
-          <Textarea
-            label={t('problems.room_desc_label')}
-            value={brainstormDesc}
-            onChange={(e) => setBrainstormDesc(e.target.value)}
-            rows={3}
-          />
-
-          {/* Visibility Toggle */}
-          <div>
-            <label className="block text-sm font-medium text-foreground/70 mb-2">
-              {t('rooms.visibility_label')}
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => { setBrainstormVisibility('public'); setBrainstormSharedUserIds([]); }}
-                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                  brainstormVisibility === 'public'
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-border text-muted-foreground hover:border-border/70'
-                }`}
-              >
-                {t('rooms.visibility_public')}
-                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_public_desc')}</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setBrainstormVisibility('private')}
-                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                  brainstormVisibility === 'private'
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-border text-muted-foreground hover:border-border/70'
-                }`}
-              >
-                {t('rooms.visibility_private')}
-                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_private_desc')}</p>
-              </button>
-            </div>
-
-            {/* Share with users when private */}
-            {brainstormVisibility === 'private' && (
-              <div className="mt-3">
-                <label className="block text-sm font-medium text-foreground/70 mb-2">
-                  {t('rooms.share_with_label')}
-                </label>
-                {brainstormSharedUserIds.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {brainstormSharedUserIds.map((uid) => {
-                      const u = brainstormUsers.find((x) => x.id === uid);
-                      if (!u) return null;
-                      return (
-                        <span key={uid} className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-sm">
-                          {u.full_name || u.username}
-                          <button type="button" onClick={() => setBrainstormSharedUserIds(brainstormSharedUserIds.filter((id) => id !== uid))} className="hover:text-primary-900">
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-                <div ref={brainstormUserSearchRef}>
-                  <input
-                    type="text"
-                    value={brainstormUserSearch}
-                    onChange={(e) => setBrainstormUserSearch(e.target.value)}
-                    onFocus={() => setShowBrainstormUserDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowBrainstormUserDropdown(false), 200)}
-                    placeholder={t('rooms.search_users_placeholder')}
-                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                  />
-                  <Popover
-                    triggerRef={brainstormUserSearchRef}
-                    open={showBrainstormUserDropdown && brainstormUsers.filter((u) =>
-                      u.id !== user?.id &&
-                      !brainstormSharedUserIds.includes(u.id) &&
-                      (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
-                        (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
-                    ).length > 0}
-                    onClose={() => setShowBrainstormUserDropdown(false)}
-                    matchWidth
-                    className="bg-white border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto"
-                  >
-                    {brainstormUsers
-                      .filter((u) =>
-                        u.id !== user?.id &&
-                        !brainstormSharedUserIds.includes(u.id) &&
-                        (u.username.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ||
-                          (u.full_name?.toLowerCase().includes(brainstormUserSearch.toLowerCase()) ?? false))
-                      )
-                      .map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => { setBrainstormSharedUserIds([...brainstormSharedUserIds, u.id]); setBrainstormUserSearch(''); setShowBrainstormUserDropdown(false); }}
-                          className="w-full text-left px-3 py-2 hover:bg-secondary text-sm flex items-center gap-2"
-                        >
-                          <span className="font-medium">{u.full_name || u.username}</span>
-                          {u.full_name && <span className="text-muted-foreground text-xs">@{u.username}</span>}
-                        </button>
-                      ))}
-                  </Popover>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsBrainstormModalOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.creating') : t('problems.create_room')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        mode="create-from-problem"
+        problemId={selectedProblem.id}
+        problemTitle={selectedProblem.title}
+        onSuccess={async () => {
+          setIsBrainstormModalOpen(false);
+          const updated = await problemsApi.getById(id!);
+          useProblemStore.setState({ selectedProblem: updated });
+        }}
+      />
     </div>
   );
 };

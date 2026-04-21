@@ -21,14 +21,11 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
-import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
-import { contentToJsonString, jsonStringToContent, extractTextFromTipTap } from '@/utils/tiptap';
 import { Avatar } from '@/components/ui/Avatar';
 import type { Idea, Comment, ReactionType, IdeaStatus } from '@/types';
 
@@ -45,14 +42,8 @@ export const IdeaDetailPage: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [showActions, setShowActions] = useState(false);
   const actionsRef = useRef<HTMLButtonElement>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Edit states
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editSummary, setEditSummary] = useState('');
 
   // Vote state
   const [hoverStars, setHoverStars] = useState(0);
@@ -149,36 +140,9 @@ export const IdeaDetailPage: React.FC = () => {
     setShowActions(false);
   };
 
-  const openEditModal = () => {
-    if (idea) {
-      setEditTitle(idea.title);
-      setEditDescription(contentToJsonString(idea.description));
-      setEditSummary(idea.summary || '');
-      setIsEditModalOpen(true);
-      setShowActions(false);
-    }
-  };
-
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !editTitle.trim() || !extractTextFromTipTap(editDescription)) return;
-    setIsSubmitting(true);
-    try {
-      const updated = await ideasApi.update(id, {
-        title: editTitle,
-        description: jsonStringToContent(editDescription),
-        summary: editSummary.trim() || undefined,
-      });
-      setIdea(updated);
-      showToast({ type: 'success', message: t('ideas.updated') });
-      setIsEditModalOpen(false);
-    } catch (err: unknown) {
-      const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : t('ideas.update_error');
-      showToast({ type: 'error', message: detail });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const openEditPage = () => {
+    navigate(`/ideas/${id}/edit`);
+    setShowActions(false);
   };
 
   const handleDelete = async () => {
@@ -254,7 +218,7 @@ export const IdeaDetailPage: React.FC = () => {
                   className="w-48 bg-white rounded-lg shadow-lg border border-border py-1"
                 >
                   <button
-                    onClick={openEditModal}
+                    onClick={openEditPage}
                     className="w-full px-4 py-2 text-left text-sm text-foreground/70 hover:bg-secondary flex items-center gap-2"
                   >
                     <Edit className="h-4 w-4" />
@@ -452,39 +416,6 @@ export const IdeaDetailPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Edit Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t('ideas.edit_idea')}>
-        <form onSubmit={handleEdit} className="space-y-4">
-          <Input
-            label={t('ideas.title_min_label')}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            required
-            minLength={3}
-            maxLength={255}
-          />
-          <RichTextEditor
-            label={t('ideas.desc_label')}
-            value={editDescription}
-            onChange={setEditDescription}
-            minHeight="200px"
-            jsonMode
-          />
-          <Textarea
-            label={t('ideas.summary_label')}
-            value={editSummary}
-            onChange={(e) => setEditSummary(e.target.value)}
-            rows={3}
-          />
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>{t('common.cancel')}</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
 
       {/* Delete Modal */}
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('ideas.delete_idea')}>

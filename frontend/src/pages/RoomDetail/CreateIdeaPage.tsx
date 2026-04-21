@@ -1,46 +1,21 @@
 import React from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ArrowLeft } from 'lucide-react';
 import { ideasApi } from '@/api/ideas';
 import { useUIStore } from '@/stores/uiStore';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import { extractTextFromTipTap, EMPTY_TIPTAP_JSON, jsonStringToContent } from '@/utils/tiptap';
-
-const createIdeaSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters').max(255),
-  description: z.string().refine((val) => extractTextFromTipTap(val).length >= 10, 'Description must be at least 10 characters'),
-  summary: z.string().optional(),
-});
-
-type CreateIdeaForm = z.infer<typeof createIdeaSchema>;
+import { jsonStringToContent, EMPTY_TIPTAP_JSON } from '@/utils/tiptap';
+import { IdeaForm } from './IdeaForm';
 
 export const CreateIdeaPage: React.FC = () => {
   const { t } = useTranslation();
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { showToast } = useUIStore();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<CreateIdeaForm>({
-    resolver: zodResolver(createIdeaSchema),
-    defaultValues: { description: EMPTY_TIPTAP_JSON },
-  });
-
-  const onSubmit = async (data: CreateIdeaForm) => {
+  const handleSubmit = async (data: { title: string; description: string; summary: string }) => {
     if (!roomId) return;
+    setIsSubmitting(true);
     try {
       const idea = await ideasApi.create({
         room_id: roomId,
@@ -54,62 +29,19 @@ export const CreateIdeaPage: React.FC = () => {
       const raw = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
       const detail = Array.isArray(raw) ? raw.map((e: { msg?: string }) => e.msg).join(', ') : typeof raw === 'string' ? raw : t('ideas.create_error');
       showToast({ type: 'error', message: detail });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Link
-        to={`/rooms/${roomId}`}
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('ideas.back_to_room')}
-      </Link>
-
-      <Card>
-        <CardHeader>
-          <h1 className="text-section-heading font-bold text-gray-900">{t('ideas.create_title')}</h1>
-          <p className="text-gray-500 mt-1">{t('ideas.create_desc')}</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Input
-              label={t('ideas.title_label')}
-              placeholder={t('ideas.title_placeholder')}
-              {...register('title')}
-              error={errors.title?.message}
-            />
-
-            <RichTextEditor
-              label={t('ideas.desc_label')}
-              value={watch('description')}
-              onChange={(html) => setValue('description', html, { shouldValidate: true })}
-              placeholder={t('ideas.desc_placeholder')}
-              error={errors.description?.message}
-              minHeight="200px"
-              jsonMode
-            />
-
-            <Textarea
-              label={t('ideas.summary_label')}
-              placeholder={t('ideas.summary_placeholder')}
-              rows={4}
-              {...register('summary')}
-              error={errors.summary?.message}
-            />
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <Button type="button" variant="ghost" onClick={() => navigate(`/rooms/${roomId}`)}>
-                {t('common.cancel')}
-              </Button>
-              <Button type="submit" isLoading={isSubmitting}>
-                {t('ideas.create_idea')}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <IdeaForm
+      mode="create"
+      onSubmit={handleSubmit}
+      onCancel={() => navigate(`/rooms/${roomId}`)}
+      backTo={`/rooms/${roomId}`}
+      backLabel={t('ideas.back_to_room')}
+      isSubmitting={isSubmitting}
+    />
   );
 };

@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, X, ShieldAlert, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, ShieldAlert, Lock } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
-import { usersApi } from '@/api/users';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
@@ -13,7 +12,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
 import { Avatar } from '@/components/ui/Avatar';
 import { IdeaCard } from './IdeaCard';
-import type { Room, Idea, IdeaStatus, ProblemVisibility, User } from '@/types';
+import { RoomFormModal } from '../IdeaLab/RoomFormModal';
+import type { Room, Idea, IdeaStatus } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { classNames, timeAgo } from '@/utils/helpers';
 
@@ -48,17 +48,7 @@ export const RoomDetailPage: React.FC = () => {
   const actionsRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editVisibility, setEditVisibility] = useState<ProblemVisibility>('public');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Share users state for edit modal
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [editSharedUserIds, setEditSharedUserIds] = useState<string[]>([]);
-  const [editUserSearch, setEditUserSearch] = useState('');
-  const [showEditUserDropdown, setShowEditUserDropdown] = useState(false);
-  const editUserSearchRef = useRef<HTMLDivElement>(null);
 
   const canModify = user && room && (
     user.id === room.created_by || user.role === 'admin'
@@ -96,48 +86,8 @@ export const RoomDetailPage: React.FC = () => {
   };
 
   const openEditModal = () => {
-    if (!room) return;
-    setEditName(room.name);
-    setEditDescription(room.description || '');
-    setEditVisibility(room.visibility || 'public');
-    setEditSharedUserIds(room.shared_user_ids || []);
-    setEditUserSearch('');
-    setShowEditUserDropdown(false);
     setIsEditModalOpen(true);
     setShowActions(false);
-    usersApi.list({ limit: 100, is_active: true }).then((res) => setAllUsers(res.items)).catch(() => {});
-  };
-
-  const toggleEditUser = (userId: string) => {
-    setEditSharedUserIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-    );
-  };
-
-  const filteredEditUsers = allUsers.filter(
-    (u) => u.id !== user?.id && (u.username.toLowerCase().includes(editUserSearch.toLowerCase()) || (u.full_name || '').toLowerCase().includes(editUserSearch.toLowerCase()))
-  );
-
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !editName.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const updated = await roomsApi.update(id, {
-        name: editName.trim(),
-        description: editDescription.trim() || undefined,
-        visibility: editVisibility,
-        shared_user_ids: editVisibility === 'private' ? editSharedUserIds : undefined,
-      });
-      setRoom(updated);
-      showToast({ type: 'success', message: t('rooms.updated') });
-      setIsEditModalOpen(false);
-    } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      showToast({ type: 'error', message: detail || t('rooms.update_error') });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleDelete = async () => {
@@ -466,132 +416,22 @@ export const RoomDetailPage: React.FC = () => {
       )}
 
       {/* Edit Room Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t('rooms.edit_room')}>
-        <form onSubmit={handleEdit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground/70 mb-1">{t('rooms.name_label')}</label>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              required
-              minLength={3}
-              maxLength={255}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground/70 mb-1">{t('rooms.desc_label')}</label>
-            <textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              rows={3}
-            />
-          </div>
-
-          {/* Visibility Toggle */}
-          <div>
-            <label className="block text-sm font-medium text-foreground/70 mb-2">
-              {t('rooms.visibility_label')}
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setEditVisibility('public')}
-                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                  editVisibility === 'public'
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-border text-muted-foreground hover:border-border/70'
-                }`}
-              >
-                {t('rooms.visibility_public')}
-                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_public_desc')}</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditVisibility('private')}
-                className={`flex-1 p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                  editVisibility === 'private'
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-border text-muted-foreground hover:border-border/70'
-                }`}
-              >
-                {t('rooms.visibility_private')}
-                <p className="text-xs font-normal mt-1 opacity-75">{t('rooms.visibility_private_desc')}</p>
-              </button>
-            </div>
-
-            {/* Share with users - shown when private */}
-            {editVisibility === 'private' && (
-              <div className="mt-3">
-                <label className="block text-sm font-medium text-foreground/70 mb-2">
-                  {t('rooms.share_with_label')}
-                </label>
-                {editSharedUserIds.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {editSharedUserIds.map((uid) => {
-                      const u = allUsers.find((x) => x.id === uid);
-                      if (!u) return null;
-                      return (
-                        <span key={uid} className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-sm">
-                          <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
-                          {u.full_name || u.username}
-                          <button type="button" onClick={() => toggleEditUser(uid)} className="hover:text-primary-900">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-                <div ref={editUserSearchRef}>
-                  <input
-                    type="text"
-                    value={editUserSearch}
-                    onChange={(e) => { setEditUserSearch(e.target.value); setShowEditUserDropdown(true); }}
-                    onFocus={() => setShowEditUserDropdown(true)}
-                    placeholder={t('rooms.search_users_placeholder')}
-                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                  />
-                  <Popover
-                    triggerRef={editUserSearchRef}
-                    open={showEditUserDropdown && filteredEditUsers.length > 0}
-                    onClose={() => setShowEditUserDropdown(false)}
-                    matchWidth
-                    className="bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                  >
-                    {filteredEditUsers.map((u) => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => { toggleEditUser(u.id); setEditUserSearch(''); }}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2 ${
-                          editSharedUserIds.includes(u.id) ? 'bg-primary-50' : ''
-                        }`}
-                      >
-                        <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
-                        <span className="font-medium">{u.full_name || u.username}</span>
-                        {u.full_name && <span className="text-muted-foreground text-xs">@{u.username}</span>}
-                        {editSharedUserIds.includes(u.id) && <span className="ml-auto text-primary-600">✓</span>}
-                      </button>
-                    ))}
-                  </Popover>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {room && (
+        <RoomFormModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          mode="edit"
+          roomId={room.id}
+          initialData={{
+            name: room.name,
+            description: room.description || '',
+            visibility: room.visibility || 'public',
+            sharedUserIds: room.shared_user_ids || [],
+            problemId: room.problem_id || undefined,
+          }}
+          onSuccess={fetchRoomData}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title={t('rooms.delete_room')}>
