@@ -3,13 +3,15 @@ import type { Toast, ModalState } from '@/types';
 
 interface UIState {
   sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
   theme: 'light' | 'dark';
   toasts: Toast[];
   modal: ModalState | null;
-  
+
   // Actions
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  toggleSidebarCollapse: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
   showToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
@@ -19,14 +21,17 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set, get) => ({
   sidebarOpen: true,
+  sidebarCollapsed: false,
   theme: 'light',
   toasts: [],
   modal: null,
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-  
+
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  
+
+  toggleSidebarCollapse: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
   setTheme: (theme) => set({ theme }),
   
   showToast: (toast) => {

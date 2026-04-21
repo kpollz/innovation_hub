@@ -74,6 +74,10 @@
     "admin": "Admin",
     "help": "Help & Guide"
   },
+  "sidebar": {
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
+  },
   "landing": {
     "welcome": "Welcome to Innovation Hub",
     "hero_title": "Where Problems Become Opportunities",

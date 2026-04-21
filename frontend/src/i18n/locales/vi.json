@@ -68,6 +68,10 @@
     "admin": "Quản trị",
     "help": "Trợ giúp & Hướng dẫn"
   },
+  "sidebar": {
+    "collapse": "Thu gọn sidebar",
+    "expand": "Mở rộng sidebar"
+  },
   "landing": {
     "welcome": "Chào mừng đến Innovation Hub",
     "hero_title": "Nơi Vấn Đề Trở Thành Cơ Hội",

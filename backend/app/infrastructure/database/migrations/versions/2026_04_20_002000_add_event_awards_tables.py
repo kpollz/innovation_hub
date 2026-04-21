@@ -6,6 +6,7 @@ Revises: add_notif_reference_id
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import inspect
 
 
 revision = "add_event_awards_tables"
@@ -14,41 +15,48 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade() -> None:
-    op.create_table(
-        "event_awards",
-        sa.Column("id", PGUUID(as_uuid=False), primary_key=True),
-        sa.Column(
-            "event_id", PGUUID(as_uuid=False),
-            sa.ForeignKey("events.id", ondelete="CASCADE"), nullable=False,
-        ),
-        sa.Column("name", sa.String(200), nullable=False),
-        sa.Column("rank_order", sa.Integer, nullable=False),
-        sa.Column(
-            "created_at", sa.DateTime(timezone=True),
-            server_default=sa.func.now(), nullable=False,
-        ),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-    )
+def _table_exists(table_name: str) -> bool:
+    conn = op.get_bind()
+    return inspect(conn).has_table(table_name)
 
-    op.create_table(
-        "event_award_teams",
-        sa.Column("id", PGUUID(as_uuid=False), primary_key=True),
-        sa.Column(
-            "award_id", PGUUID(as_uuid=False),
-            sa.ForeignKey("event_awards.id", ondelete="CASCADE"), nullable=False,
-        ),
-        sa.Column(
-            "team_id", PGUUID(as_uuid=False),
-            sa.ForeignKey("event_teams.id", ondelete="CASCADE"), nullable=False,
-        ),
-        sa.Column(
-            "created_at", sa.DateTime(timezone=True),
-            server_default=sa.func.now(), nullable=False,
-        ),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.UniqueConstraint("award_id", "team_id", name="uq_award_team"),
-    )
+
+def upgrade() -> None:
+    if not _table_exists("event_awards"):
+        op.create_table(
+            "event_awards",
+            sa.Column("id", PGUUID(as_uuid=False), primary_key=True),
+            sa.Column(
+                "event_id", PGUUID(as_uuid=False),
+                sa.ForeignKey("events.id", ondelete="CASCADE"), nullable=False,
+            ),
+            sa.Column("name", sa.String(200), nullable=False),
+            sa.Column("rank_order", sa.Integer, nullable=False),
+            sa.Column(
+                "created_at", sa.DateTime(timezone=True),
+                server_default=sa.func.now(), nullable=False,
+            ),
+            sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+        )
+
+    if not _table_exists("event_award_teams"):
+        op.create_table(
+            "event_award_teams",
+            sa.Column("id", PGUUID(as_uuid=False), primary_key=True),
+            sa.Column(
+                "award_id", PGUUID(as_uuid=False),
+                sa.ForeignKey("event_awards.id", ondelete="CASCADE"), nullable=False,
+            ),
+            sa.Column(
+                "team_id", PGUUID(as_uuid=False),
+                sa.ForeignKey("event_teams.id", ondelete="CASCADE"), nullable=False,
+            ),
+            sa.Column(
+                "created_at", sa.DateTime(timezone=True),
+                server_default=sa.func.now(), nullable=False,
+            ),
+            sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+            sa.UniqueConstraint("award_id", "team_id", name="uq_award_team"),
+        )
 
 
 def downgrade() -> None:

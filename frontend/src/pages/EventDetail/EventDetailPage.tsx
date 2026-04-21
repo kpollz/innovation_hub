@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Users, AlertTriangle, Info, Edit2 } from 'lucide-react';
+import { Calendar, Users, AlertTriangle, Info, Edit2, FileText, HelpCircle, Lightbulb, LayoutDashboard } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
+import { cn } from '@/lib/utils';
 
 import { IntroductionTab } from './tabs/IntroductionTab';
 import { TeamsTab } from './tabs/TeamsTab';
@@ -20,6 +21,14 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
   active: { bg: 'bg-green-100', text: 'text-green-700' },
   closed: { bg: 'bg-red-100', text: 'text-red-700' },
 };
+
+const eventTabs = [
+  { key: 'introduction', label: 'events.tabs.introduction', icon: FileText },
+  { key: 'teams', label: 'events.tabs.teams', icon: Users },
+  { key: 'ideas', label: 'events.tabs.ideas', icon: Lightbulb },
+  { key: 'dashboard', label: 'events.tabs.dashboard', icon: LayoutDashboard },
+  { key: 'faq', label: 'events.tabs.faq', icon: HelpCircle },
+];
 
 export const EventDetailPage: React.FC = () => {
   const { id, ideaId } = useParams<{ id: string; ideaId?: string }>();
@@ -170,6 +179,29 @@ export const EventDetailPage: React.FC = () => {
           {t('events.closed_notice')}
         </div>
       )}
+
+      {/* Event Tabs */}
+      <div className="flex items-center gap-1.5 border-b border-border pb-3 flex-wrap">
+        {eventTabs.map((tab) => {
+          const TabIcon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => navigate(`/events/${event.id}?tab=${tab.key}`, { replace: true })}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                isActive
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+              )}
+            >
+              <TabIcon className="h-3.5 w-3.5" />
+              {t(tab.label)}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Tab Content */}
       <div>
