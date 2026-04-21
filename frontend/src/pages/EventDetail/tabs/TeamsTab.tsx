@@ -13,9 +13,10 @@ import type { EventObject, EventTeamObject, EventTeamMemberObject } from '@/type
 
 interface TeamsTabProps {
   event: EventObject;
+  onTeamChange?: () => void | Promise<void>;
 }
 
-export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
+export const TeamsTab: React.FC<TeamsTabProps> = ({ event, onTeamChange }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
@@ -135,6 +136,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       setCreateName('');
       setCreateSlogan('');
       await fetchTeams();
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.create_error'));
     } finally {
@@ -154,6 +156,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       if (expandedTeamId === teamId) {
         await fetchMembers(teamId);
       }
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.join_error'));
     } finally {
@@ -174,6 +177,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       await fetchTeams();
       setExpandedTeamId(null);
       setTeamMembers({});
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.leave_error'));
     } finally {
@@ -194,6 +198,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       await fetchTeams();
       setExpandedTeamId(null);
       setTeamMembers({});
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.disband_error'));
     } finally {
@@ -214,6 +219,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       setShowTransfer(false);
       setTransferToId('');
       await fetchTeams();
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.transfer_error'));
     } finally {
@@ -236,6 +242,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       });
       setShowAssignReview(false);
       await fetchTeams();
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || 'Failed to assign review');
     } finally {
@@ -252,6 +259,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event }) => {
       await eventsApi.updateMemberStatus(event.id, teamId, userId, { status: newStatus });
       await fetchTeams();
       await fetchMembers(teamId);
+      await onTeamChange?.();
     } catch (err: any) {
       alert(err?.response?.data?.detail || t('events.teams.action_error'));
     } finally {

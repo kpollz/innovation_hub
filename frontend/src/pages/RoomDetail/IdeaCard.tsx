@@ -46,6 +46,11 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const actionsRef = useRef<HTMLButtonElement>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // Optimistic state for immediate UI feedback
+  const [optimisticStatus, setOptimisticStatus] = useState<IdeaStatus | null>(null);
+  const currentStatus = optimisticStatus ?? idea.status;
+  const statusConfig = IDEA_STATUSES.find((s) => s.value === currentStatus);
+
   // Submit to Event state
   const [showEventModal, setShowEventModal] = useState(false);
   const [activeEvents, setActiveEvents] = useState<EventObject[]>([]);
@@ -54,26 +59,30 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const isAuthor = user?.id === idea.author_id;
   const isAdmin = user?.role === 'admin';
   const canModify = isAuthor || isAdmin;
-  const statusConfig = IDEA_STATUSES.find((s) => s.value === idea.status);
 
   const handleVote = async () => {
     try {
       await ideasApi.vote(idea.id, { stars: voteStars });
       showToast({ type: 'success', message: t('ideas.vote_recorded') });
       setShowVoteModal(false);
-      onUpdate();
+      await onUpdate();
     } catch {
       showToast({ type: 'error', message: t('ideas.vote_error') });
     }
   };
 
   const handleStatusChange = async (newStatus: string) => {
+    const previousStatus = idea.status;
+    setOptimisticStatus(newStatus as IdeaStatus);
     try {
       await ideasApi.update(idea.id, { status: newStatus as IdeaStatus });
       showToast({ type: 'success', message: t('ideas.status_updated') });
-      onUpdate();
+      await onUpdate();
     } catch {
+      setOptimisticStatus(previousStatus);
       showToast({ type: 'error', message: t('ideas.status_error') });
+    } finally {
+      setOptimisticStatus(null);
     }
   };
 
@@ -84,7 +93,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         type: 'success',
         message: idea.is_pinned ? t('ideas.unpin_success') : t('ideas.pin_success')
       });
-      onUpdate();
+      await onUpdate();
     } catch {
       showToast({ type: 'error', message: t('ideas.pin_error') });
     }
@@ -95,7 +104,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       await ideasApi.delete(idea.id);
       showToast({ type: 'success', message: t('ideas.deleted_success') });
       setIsDeleteModalOpen(false);
-      onUpdate();
+      await onUpdate();
     } catch {
       showToast({ type: 'error', message: t('ideas.delete_error') });
     }

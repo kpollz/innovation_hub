@@ -301,6 +301,7 @@
     "vote_error": "Không thể bỏ phiếu",
     "reaction_error": "Không thể cập nhật phản hồi",
     "status_changed": "Trạng thái đã chuyển sang {{status}}",
+    "status_updated": "Đã cập nhật trạng thái!",
     "status_error": "Không thể cập nhật trạng thái",
     "pin_success": "Đã ghim ý tưởng!",
     "unpin_success": "Đã bỏ ghim ý tưởng",

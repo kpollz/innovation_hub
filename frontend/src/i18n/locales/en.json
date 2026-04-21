@@ -307,6 +307,7 @@
     "vote_error": "Failed to vote",
     "reaction_error": "Failed to update reaction",
     "status_changed": "Status changed to {{status}}",
+    "status_updated": "Status updated!",
     "status_error": "Failed to update status",
     "pin_success": "Idea pinned!",
     "unpin_success": "Idea unpinned",

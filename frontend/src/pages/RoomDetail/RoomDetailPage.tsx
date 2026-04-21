@@ -162,7 +162,6 @@ export const RoomDetailPage: React.FC = () => {
     try {
       await ideasApi.update(draggedIdeaId, { status: newStatus });
       showToast({ type: 'success', message: t('rooms.status_updated') });
-      await fetchRoomData();
     } catch {
       // Rollback on failure
       setIdeas((prev) =>

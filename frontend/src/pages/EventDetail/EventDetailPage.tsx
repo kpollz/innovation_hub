@@ -85,10 +85,16 @@ export const EventDetailPage: React.FC = () => {
           }
         } catch { /* continue */ }
       }
+      // No team found — user is not in any team
+      setMyTeam(null);
     } catch { /* silent */ }
   }, [id]);
 
   useEffect(() => { if (event) fetchMyTeam(); }, [event, fetchMyTeam]);
+
+  const handleTeamChange = useCallback(async () => {
+    await Promise.all([fetchEvent(true), fetchMyTeam()]);
+  }, [fetchEvent, fetchMyTeam]);
 
   if (loading) {
     return (
@@ -206,13 +212,13 @@ export const EventDetailPage: React.FC = () => {
       {/* Tab Content */}
       <div>
         {activeTab === 'introduction' && <IntroductionTab event={event} />}
-        {activeTab === 'teams' && <TeamsTab event={event} />}
+        {activeTab === 'teams' && <TeamsTab event={event} onTeamChange={handleTeamChange} />}
         {activeTab === 'ideas' && <IdeasTab event={event} />}
         {activeTab === 'dashboard' && <DashboardTab event={event} isAdmin={isAdmin} />}
         {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
       </div>
 
-      {isAdmin && <EditEventModal event={event} onSaved={() => window.location.reload()} />}
+      {isAdmin && <EditEventModal event={event} onSaved={async () => { await fetchEvent(true); }} />}
     </div>
   );
 };
