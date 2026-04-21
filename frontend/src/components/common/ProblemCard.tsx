@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MessageCircle, ThumbsUp, Lightbulb, BrainCircuit, Lock } from 'lucide-react';
 import type { Problem } from '@/types';
 import { Card } from '@/components/ui/Card';
@@ -14,6 +15,7 @@ interface ProblemCardProps {
 }
 
 export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
+  const { i18n } = useTranslation();
   const category = PROBLEM_CATEGORIES.find((c) => c.value === problem.category);
   const status = PROBLEM_STATUSES.find((s) => s.value === problem.status);
 
@@ -40,49 +42,45 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem }) => {
                 </span>
               )}
             </div>
-            <span className="text-xs text-muted-foreground">{timeAgo(problem.created_at)}</span>
+            <span className="text-xs text-muted-foreground">{timeAgo(problem.created_at, i18n.language)}</span>
           </div>
         </div>
 
         {/* Middle: Content (flex-1 fills remaining space) */}
-        <div className="px-5 flex-1">
+        <div className="px-5 pb-4 flex-1">
           <h3 className="text-feature-title font-semibold text-foreground mb-2 line-clamp-2">
             {problem.title}
           </h3>
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+          <p className="text-sm text-muted-foreground line-clamp-3">
             {problem.summary || extractTextFromTipTap(problem.content)}
           </p>
+        </div>
 
+        {/* Bottom: Author + Reactions (pinned to bottom) */}
+        <div className="px-5 pb-5 pt-4 mt-auto border-t border-border/50">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Avatar src={problem.author?.avatar_url} name={problem.author?.full_name || problem.author?.username} size="sm" />
+              <span className="text-sm text-foreground/70">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <ThumbsUp className="h-4 w-4" />
+                <ThumbsUp className="h-3.5 w-3.5" />
                 {problem.likes_count || 0}
               </span>
               <span className="flex items-center gap-1">
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className="h-3.5 w-3.5" />
                 {problem.insights_count || 0}
               </span>
               <span className="flex items-center gap-1">
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-3.5 w-3.5" />
                 {problem.comments_count || 0}
               </span>
-            </div>
-
-            {problem.rooms?.length > 0 && (
-              <span className="flex items-center gap-1 text-xs text-primary-600">
+              <span className="flex items-center gap-1">
                 <BrainCircuit className="h-3.5 w-3.5" />
-                {problem.rooms.length} room{problem.rooms.length > 1 ? 's' : ''}
+                {problem.rooms?.length || 0}
               </span>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom: Author (pinned to bottom) */}
-        <div className="px-5 pb-5 pt-4 mt-auto border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <Avatar src={problem.author?.avatar_url} name={problem.author?.full_name || problem.author?.username} size="sm" />
-            <span className="text-sm text-foreground/70">{problem.author?.full_name || problem.author?.username || 'Unknown'}</span>
+            </div>
           </div>
         </div>
       </Link>

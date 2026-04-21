@@ -227,6 +227,7 @@
     "not_found": "Room not found",
     "created_time": "Created {{time}}",
     "linked_problem": "Linked Problem",
+    "linked_badge": "Linked",
     "view_linked": "View linked problem",
     "add_idea": "Add Idea",
     "no_ideas": "No ideas",

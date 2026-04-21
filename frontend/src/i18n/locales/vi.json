@@ -221,6 +221,7 @@
     "not_found": "Không tìm thấy phòng",
     "created_time": "Tạo {{time}}",
     "linked_problem": "Vấn đề liên kết",
+    "linked_badge": "Liên kết",
     "view_linked": "Xem vấn đề liên kết",
     "add_idea": "Thêm ý tưởng",
     "no_ideas": "Không có ý tưởng",

@@ -16,7 +16,7 @@ import { timeAgo } from '@/utils/helpers';
 type ViewMode = 'list' | 'board';
 
 const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const creatorName = room.creator?.full_name || room.creator?.username || 'Unknown';
 
   return (
@@ -25,49 +25,48 @@ const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
         <div className="flex flex-col h-full">
           {/* Top: Badges */}
           <div className="px-5 pt-5 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant={room.status === 'active' ? 'success' : 'default'}>
-                  {room.status}
+                <Badge variant={room.status === 'active' ? 'success' : 'default'} size="sm">
+                  {room.status === 'active' ? 'Active' : room.status}
                 </Badge>
+                {room.problem_id && (
+                  <Badge variant="info" size="sm">
+                    Linked
+                  </Badge>
+                )}
                 {room.visibility === 'private' && (
                   <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground" title="Private">
                     <Lock className="h-3 w-3" />
                   </span>
                 )}
               </div>
-              {room.problem_id && (
-                <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
-                  Linked
-                </span>
-              )}
+              <span className="text-xs text-muted-foreground">{timeAgo(room.created_at, i18n.language)}</span>
             </div>
           </div>
 
           {/* Middle: Content (flex-1 fills remaining space) */}
-          <div className="px-5 flex-1">
+          <div className="px-5 pb-4 flex-1">
             <h3 className="text-feature-title font-semibold text-foreground mb-2 line-clamp-1">
               {room.name}
             </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-              {room.description}
-            </p>
-
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Lightbulb className="h-4 w-4" />
-                {t('rooms.ideas_count', { count: room.idea_count })}
-              </span>
-            </div>
+            {room.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {room.description}
+              </p>
+            )}
           </div>
 
-          {/* Bottom: Creator (pinned to bottom) */}
+          {/* Bottom: Creator + Ideas count (pinned to bottom) */}
           <div className="px-5 pb-5 pt-4 mt-auto border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <Avatar src={room.creator?.avatar_url} name={creatorName} size="sm" />
-              <span className="text-sm text-foreground/70">{creatorName}</span>
-              <span className="text-xs text-muted-foreground ml-auto">
-                {timeAgo(room.created_at)}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Avatar src={room.creator?.avatar_url} name={creatorName} size="sm" />
+                <span className="text-sm text-foreground/70">{creatorName}</span>
+              </div>
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Lightbulb className="h-3.5 w-3.5" />
+                {t('rooms.ideas_count', { count: room.idea_count })}
               </span>
             </div>
           </div>
