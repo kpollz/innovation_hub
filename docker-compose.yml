@@ -48,6 +48,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: innovation_hub_api
+    restart: always
     working_dir: /app
     env_file:
       - ./backend/.env
@@ -74,6 +75,7 @@ services:
       args:
         - VITE_API_URL=/api/v1
     container_name: innovation_hub_frontend
+    restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     depends_on:
