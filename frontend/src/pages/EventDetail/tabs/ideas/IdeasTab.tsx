@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -48,10 +48,15 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
 
   const limit = 12;
 
+  const fetchTeamsCounter = useRef(0);
+  const fetchIdeasCounter = useRef(0);
+
   // Fetch teams for context
   const fetchTeams = useCallback(async () => {
+    const thisRequest = ++fetchTeamsCounter.current;
     try {
       const result = await eventsApi.listTeams(event.id, 1, 100);
+      if (thisRequest !== fetchTeamsCounter.current) return;
       setTeams(result.items);
 
       if (user) {
@@ -94,6 +99,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
 
   // Fetch ideas
   const fetchIdeas = useCallback(async () => {
+    const thisRequest = ++fetchIdeasCounter.current;
     setLoading(true);
     try {
       const filters: EventIdeaFilters = { sort, page, limit };
@@ -105,12 +111,16 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
       }
 
       const result = await eventsApi.listIdeas(event.id, filters);
-      setIdeas(result.items);
-      setTotal(result.total);
+      if (thisRequest === fetchIdeasCounter.current) {
+        setIdeas(result.items);
+        setTotal(result.total);
+      }
     } catch {
       // handled by empty state
     } finally {
-      setLoading(false);
+      if (thisRequest === fetchIdeasCounter.current) {
+        setLoading(false);
+      }
     }
   }, [event.id, sort, page, filterTab, myTeam, reviewTeam]);
 

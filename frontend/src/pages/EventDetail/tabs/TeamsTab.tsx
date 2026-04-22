@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Users, Plus, UserPlus, LogOut, Shield, Crown,
@@ -28,15 +28,22 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ event, onTeamChange }) => {
   const [teamMembers, setTeamMembers] = useState<Record<string, EventTeamMemberObject[]>>({});
   const [membersLoading, setMembersLoading] = useState<Record<string, boolean>>({});
 
+  const fetchTeamsCounter = useRef(0);
+
   const fetchTeams = useCallback(async () => {
+    const thisRequest = ++fetchTeamsCounter.current;
     setLoading(true);
     try {
       const result = await eventsApi.listTeams(event.id, 1, 100);
-      setTeams(result.items);
+      if (thisRequest === fetchTeamsCounter.current) {
+        setTeams(result.items);
+      }
     } catch {
       // handled by empty state
     } finally {
-      setLoading(false);
+      if (thisRequest === fetchTeamsCounter.current) {
+        setLoading(false);
+      }
     }
   }, [event.id]);
 

@@ -50,6 +50,9 @@ export const RoomDetailPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Request counter to prevent stale responses from overwriting fresh data
+  const fetchRoomCounter = useRef(0);
+
   const canModify = user && room && (
     user.id === room.created_by || user.role === 'admin'
   );
@@ -63,21 +66,28 @@ export const RoomDetailPage: React.FC = () => {
 
   const fetchRoomData = async () => {
     if (!id) return;
+    const thisRequest = ++fetchRoomCounter.current;
     try {
       const [roomData, ideasResponse] = await Promise.all([
         roomsApi.getById(id),
         ideasApi.list({ room_id: id }),
       ]);
-      setRoom(roomData);
-      setIdeas(ideasResponse.items);
+      if (thisRequest === fetchRoomCounter.current) {
+        setRoom(roomData);
+        setIdeas(ideasResponse.items);
+      }
     } catch (error: any) {
-      if (error?.response?.status === 403) {
-        setAccessError('forbidden');
-      } else {
-        setAccessError('not_found');
+      if (thisRequest === fetchRoomCounter.current) {
+        if (error?.response?.status === 403) {
+          setAccessError('forbidden');
+        } else {
+          setAccessError('not_found');
+        }
       }
     } finally {
-      setIsLoading(false);
+      if (thisRequest === fetchRoomCounter.current) {
+        setIsLoading(false);
+      }
     }
   };
 

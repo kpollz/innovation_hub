@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Users, AlertTriangle, Info, Edit2, FileText, HelpCircle, Lightbulb, LayoutDashboard } from 'lucide-react';
@@ -46,17 +46,27 @@ export const EventDetailPage: React.FC = () => {
 
   const activeTab = searchParams.get('tab') || 'introduction';
 
+  const fetchEventCounter = useRef(0);
+  const fetchMyTeamCounter = useRef(0);
+
   const fetchEvent = useCallback(async (silent = false) => {
     if (!id) return;
+    const thisRequest = ++fetchEventCounter.current;
     if (!silent) setLoading(true);
     setError(false);
     try {
       const data = await eventsApi.getById(id);
-      setEvent(data);
+      if (thisRequest === fetchEventCounter.current) {
+        setEvent(data);
+      }
     } catch {
-      setError(true);
+      if (thisRequest === fetchEventCounter.current) {
+        setError(true);
+      }
     } finally {
-      if (!silent) setLoading(false);
+      if (thisRequest === fetchEventCounter.current && !silent) {
+        setLoading(false);
+      }
     }
   }, [id]);
 
@@ -65,8 +75,10 @@ export const EventDetailPage: React.FC = () => {
   // Fetch user's team for the event
   const fetchMyTeam = useCallback(async () => {
     if (!id) return;
+    const thisRequest = ++fetchMyTeamCounter.current;
     try {
       const result = await eventsApi.listTeams(id, 1, 100);
+      if (thisRequest !== fetchMyTeamCounter.current) return;
       for (const team of result.items) {
         // Check leader first
         const userStr = localStorage.getItem('auth-storage');
@@ -78,6 +90,7 @@ export const EventDetailPage: React.FC = () => {
         // Check membership
         try {
           const members = await eventsApi.listTeamMembers(id, team.id);
+          if (thisRequest !== fetchMyTeamCounter.current) return;
           const isMember = members.items.some(m => m.user_id === userId && m.status === 'active');
           if (isMember) {
             setMyTeam(team);

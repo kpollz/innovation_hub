@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -51,6 +51,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const currentStatus = optimisticStatus ?? idea.status;
   const statusConfig = IDEA_STATUSES.find((s) => s.value === currentStatus);
 
+  // Clear optimistic when parent prop catches up (after any refetch)
+  useEffect(() => {
+    if (optimisticStatus && optimisticStatus === idea.status) {
+      setOptimisticStatus(null);
+    }
+  }, [idea.status, optimisticStatus]);
+
   // Submit to Event state
   const [showEventModal, setShowEventModal] = useState(false);
   const [activeEvents, setActiveEvents] = useState<EventObject[]>([]);
@@ -77,12 +84,10 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
     try {
       await ideasApi.update(idea.id, { status: newStatus as IdeaStatus });
       showToast({ type: 'success', message: t('ideas.status_updated') });
-      await onUpdate();
+      // No refetch — optimistic update is sufficient, avoids concurrent fetchRoomData() race
     } catch {
       setOptimisticStatus(previousStatus);
       showToast({ type: 'error', message: t('ideas.status_error') });
-    } finally {
-      setOptimisticStatus(null);
     }
   };
 
