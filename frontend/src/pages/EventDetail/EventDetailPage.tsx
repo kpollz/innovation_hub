@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, Users, AlertTriangle, Info, Edit2, FileText, HelpCircle, Lightbulb, LayoutDashboard } from 'lucide-react';
 import { eventsApi } from '@/api/events';
 import { useAuthStore } from '@/stores/authStore';
@@ -223,13 +224,21 @@ export const EventDetailPage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div>
-        {activeTab === 'introduction' && <IntroductionTab event={event} />}
-        {activeTab === 'teams' && <TeamsTab event={event} onTeamChange={handleTeamChange} />}
-        {activeTab === 'ideas' && <IdeasTab event={event} />}
-        {activeTab === 'dashboard' && <DashboardTab event={event} isAdmin={isAdmin} />}
-        {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
+        >
+          {activeTab === 'introduction' && <IntroductionTab event={event} />}
+          {activeTab === 'teams' && <TeamsTab event={event} onTeamChange={handleTeamChange} />}
+          {activeTab === 'ideas' && <IdeasTab event={event} />}
+          {activeTab === 'dashboard' && <DashboardTab event={event} isAdmin={isAdmin} />}
+          {activeTab === 'faq' && <FAQTab event={event} myTeam={myTeam} />}
+        </motion.div>
+      </AnimatePresence>
 
       {isAdmin && <EditEventModal event={event} onSaved={async () => { await fetchEvent(true); }} />}
     </div>
