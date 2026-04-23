@@ -125,6 +125,7 @@ class SQLReactionRepository(ReactionRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
     
     async def update(self, reaction: Reaction) -> Reaction:
@@ -136,8 +137,9 @@ class SQLReactionRepository(ReactionRepository):
         
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def delete(self, reaction_id: UUID) -> bool:
         model = await self.session.get(ReactionModel, str(reaction_id))
         if not model:
@@ -145,8 +147,9 @@ class SQLReactionRepository(ReactionRepository):
         
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
-    
+
     async def delete_by_target(self, target_id: UUID, target_type: str) -> bool:
         result = await self.session.execute(
             select(ReactionModel).where(
@@ -160,6 +163,7 @@ class SQLReactionRepository(ReactionRepository):
             await self.session.delete(model)
 
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def list_distinct_users_by_target(

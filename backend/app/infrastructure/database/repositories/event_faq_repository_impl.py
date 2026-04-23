@@ -59,6 +59,7 @@ class SQLEventFAQRepository(EventFAQRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, faq: EventFAQ) -> EventFAQ:
@@ -73,6 +74,7 @@ class SQLEventFAQRepository(EventFAQRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def delete(self, faq_id: UUID) -> None:
@@ -80,6 +82,7 @@ class SQLEventFAQRepository(EventFAQRepository):
         if model:
             await self.session.delete(model)
             await self.session.flush()
+            await self.session.commit()
 
     async def get_max_sort_order(self, event_id: UUID) -> int:
         result = await self.session.scalar(

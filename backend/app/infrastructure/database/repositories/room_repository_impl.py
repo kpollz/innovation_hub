@@ -149,6 +149,7 @@ class SQLRoomRepository(RoomRepository):
             )
             await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, room: Room) -> Room:
@@ -178,6 +179,7 @@ class SQLRoomRepository(RoomRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def delete(self, room_id: UUID) -> bool:
@@ -187,4 +189,5 @@ class SQLRoomRepository(RoomRepository):
 
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True

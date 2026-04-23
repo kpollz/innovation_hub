@@ -103,6 +103,7 @@ class SQLCommentRepository(CommentRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
     
     async def update(self, comment: Comment) -> Comment:
@@ -115,8 +116,9 @@ class SQLCommentRepository(CommentRepository):
         
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def delete(self, comment_id: UUID) -> bool:
         model = await self.session.get(CommentModel, str(comment_id))
         if not model:
@@ -124,8 +126,9 @@ class SQLCommentRepository(CommentRepository):
         
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
-    
+
     async def delete_by_target(self, target_id: UUID, target_type: str) -> bool:
         result = await self.session.execute(
             select(CommentModel).where(
@@ -139,6 +142,7 @@ class SQLCommentRepository(CommentRepository):
             await self.session.delete(model)
 
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def list_distinct_authors_by_target(

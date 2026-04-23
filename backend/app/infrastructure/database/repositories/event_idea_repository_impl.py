@@ -103,6 +103,7 @@ class SQLEventIdeaRepository(EventIdeaRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, idea: EventIdea) -> EventIdea:
@@ -120,6 +121,7 @@ class SQLEventIdeaRepository(EventIdeaRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def count_by_event(self, event_id: UUID) -> int:
@@ -144,4 +146,5 @@ class SQLEventIdeaRepository(EventIdeaRepository):
             return False
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True

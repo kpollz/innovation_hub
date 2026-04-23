@@ -102,6 +102,7 @@ class SQLEventTeamRepository(EventTeamRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_team_entity(model)
 
     async def update_team(self, team: EventTeam) -> EventTeam:
@@ -117,6 +118,7 @@ class SQLEventTeamRepository(EventTeamRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_team_entity(model)
 
     async def delete_team(self, team_id: UUID) -> bool:
@@ -125,6 +127,7 @@ class SQLEventTeamRepository(EventTeamRepository):
             return False
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def get_member_count(self, team_id: UUID) -> int:
@@ -172,6 +175,7 @@ class SQLEventTeamRepository(EventTeamRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_member_entity(model)
 
     async def update_member(self, member: EventTeamMember) -> EventTeamMember:
@@ -185,6 +189,7 @@ class SQLEventTeamRepository(EventTeamRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_member_entity(model)
 
     async def remove_member(self, member_id: UUID) -> bool:
@@ -193,6 +198,7 @@ class SQLEventTeamRepository(EventTeamRepository):
             return False
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def get_member_by_user_and_event(
@@ -256,5 +262,6 @@ class SQLEventTeamRepository(EventTeamRepository):
 
         if affected_ids:
             await self.session.flush()
+            await self.session.commit()
 
         return affected_ids

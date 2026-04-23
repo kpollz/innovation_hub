@@ -100,6 +100,7 @@ class SQLVoteRepository(VoteRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
     
     async def update(self, vote: Vote) -> Vote:
@@ -112,8 +113,9 @@ class SQLVoteRepository(VoteRepository):
         
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def delete(self, vote_id: UUID) -> bool:
         model = await self.session.get(VoteModel, str(vote_id))
         if not model:
@@ -121,8 +123,9 @@ class SQLVoteRepository(VoteRepository):
         
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
-    
+
     async def delete_by_idea(self, idea_id: UUID) -> bool:
         result = await self.session.execute(
             select(VoteModel).where(VoteModel.idea_id == str(idea_id))
@@ -133,6 +136,7 @@ class SQLVoteRepository(VoteRepository):
             await self.session.delete(model)
 
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def list_distinct_users_by_idea(self, idea_id: UUID) -> List[UUID]:

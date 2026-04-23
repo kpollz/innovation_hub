@@ -114,8 +114,9 @@ class SQLUserRepository(UserRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def update(self, user: User) -> User:
         model = await self.session.get(UserModel, str(user.id))
         if not model:
@@ -133,8 +134,9 @@ class SQLUserRepository(UserRepository):
         
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def delete(self, user_id: UUID) -> bool:
         model = await self.session.get(UserModel, str(user_id))
         if not model:
@@ -142,4 +144,5 @@ class SQLUserRepository(UserRepository):
         
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True

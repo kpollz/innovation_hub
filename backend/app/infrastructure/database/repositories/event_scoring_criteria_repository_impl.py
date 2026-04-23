@@ -63,6 +63,7 @@ class SQLEventScoringCriteriaRepository(EventScoringCriteriaRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def create_batch(self, criteria_list: List[EventScoringCriteria]) -> List[EventScoringCriteria]:
@@ -71,6 +72,7 @@ class SQLEventScoringCriteriaRepository(EventScoringCriteriaRepository):
         await self.session.flush()
         for model in models:
             await self.session.refresh(model)
+        await self.session.commit()
         return [self._to_entity(m) for m in models]
 
     async def exists_for_event(self, event_id: UUID) -> bool:

@@ -155,6 +155,7 @@ class SQLIdeaRepository(IdeaRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, idea: Idea) -> Idea:
@@ -171,6 +172,7 @@ class SQLIdeaRepository(IdeaRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def delete(self, idea_id: UUID) -> bool:
@@ -180,4 +182,5 @@ class SQLIdeaRepository(IdeaRepository):
 
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True

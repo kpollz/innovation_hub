@@ -69,6 +69,7 @@ class SQLEventScoreRepository(EventScoreRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, score: EventScore) -> EventScore:
@@ -82,6 +83,7 @@ class SQLEventScoreRepository(EventScoreRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def get_stats_by_event(self, event_id: UUID) -> Dict[str, Tuple[float, int]]:

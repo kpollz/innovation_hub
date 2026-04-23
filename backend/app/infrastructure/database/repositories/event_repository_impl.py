@@ -92,6 +92,7 @@ class SQLEventRepository(EventRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, event: Event) -> Event:
@@ -111,6 +112,7 @@ class SQLEventRepository(EventRepository):
 
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def delete(self, event_id: UUID) -> bool:
@@ -120,6 +122,7 @@ class SQLEventRepository(EventRepository):
 
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True
 
     async def get_team_count(self, event_id: UUID) -> int:

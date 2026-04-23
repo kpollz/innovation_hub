@@ -88,6 +88,7 @@ class SQLNotificationRepository(NotificationRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def create_bulk(self, notifications: List[Notification]) -> List[Notification]:
@@ -98,6 +99,7 @@ class SQLNotificationRepository(NotificationRepository):
         await self.session.flush()
         for model in models:
             await self.session.refresh(model)
+        await self.session.commit()
         return [self._to_entity(m) for m in models]
 
     async def mark_read(self, notification_id: UUID) -> bool:
@@ -105,6 +107,7 @@ class SQLNotificationRepository(NotificationRepository):
         if model:
             model.is_read = True
             await self.session.flush()
+            await self.session.commit()
             return True
         return False
 
@@ -117,6 +120,7 @@ class SQLNotificationRepository(NotificationRepository):
             .returning(NotificationModel.id)
         )
         await self.session.flush()
+        await self.session.commit()
         return len(result.all())
 
     async def count_unread(self, user_id: UUID) -> int:

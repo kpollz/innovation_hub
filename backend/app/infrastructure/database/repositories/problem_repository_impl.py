@@ -176,6 +176,7 @@ class SQLProblemRepository(ProblemRepository):
             )
             await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
     
     async def update(self, problem: Problem) -> Problem:
@@ -210,8 +211,9 @@ class SQLProblemRepository(ProblemRepository):
         
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
-    
+
     async def delete(self, problem_id: UUID) -> bool:
         model = await self.session.get(ProblemModel, str(problem_id))
         if not model:
@@ -219,4 +221,5 @@ class SQLProblemRepository(ProblemRepository):
         
         await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
         return True

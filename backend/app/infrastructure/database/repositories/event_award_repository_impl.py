@@ -61,6 +61,7 @@ class SQLEventAwardRepository(EventAwardRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def update(self, award: EventAward) -> EventAward:
@@ -72,6 +73,7 @@ class SQLEventAwardRepository(EventAwardRepository):
         model.updated_at = award.updated_at
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def delete(self, award_id: UUID) -> None:
@@ -79,6 +81,7 @@ class SQLEventAwardRepository(EventAwardRepository):
         if model:
             await self.session.delete(model)
             await self.session.flush()
+            await self.session.commit()
 
 
 class SQLEventAwardTeamRepository(EventAwardTeamRepository):
@@ -122,6 +125,7 @@ class SQLEventAwardTeamRepository(EventAwardTeamRepository):
         self.session.add(model)
         await self.session.flush()
         await self.session.refresh(model)
+        await self.session.commit()
         return self._to_entity(model)
 
     async def remove_team(self, award_id: UUID, team_id: UUID) -> None:
@@ -135,6 +139,7 @@ class SQLEventAwardTeamRepository(EventAwardTeamRepository):
         if model:
             await self.session.delete(model)
             await self.session.flush()
+            await self.session.commit()
 
     async def remove_all_by_award(self, award_id: UUID) -> None:
         result = await self.session.execute(
@@ -145,3 +150,4 @@ class SQLEventAwardTeamRepository(EventAwardTeamRepository):
         for model in result.scalars().all():
             await self.session.delete(model)
         await self.session.flush()
+        await self.session.commit()
