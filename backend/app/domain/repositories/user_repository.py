@@ -25,6 +25,11 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
+    async def get_by_ids(self, user_ids: List[UUID]) -> List[User]:
+        """Get multiple users by their IDs."""
+        pass
+
+    @abstractmethod
     async def list(
         self,
         filters: Optional[dict] = None,

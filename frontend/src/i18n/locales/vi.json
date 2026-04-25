@@ -197,6 +197,8 @@
     "share_with_label": "Chia sẻ với người dùng cụ thể",
     "search_users_placeholder": "Tìm người dùng để chia sẻ...",
     "private_badge": "Riêng tư",
+    "shared_with": "Chia sẻ với",
+    "shared_with_count": "Chia sẻ với {{count}} người dùng",
     "visibility_public_desc": "Mọi người đều có thể xem vấn đề này",
     "visibility_private_desc": "Chỉ bạn, người được chia sẻ và quản trị viên mới xem được"
   },
@@ -256,7 +258,9 @@
     "visibility_private_desc": "Chỉ bạn, người được chia sẻ và quản trị viên mới xem được",
     "share_with_label": "Chia sẻ với người dùng cụ thể",
     "search_users_placeholder": "Tìm người dùng để chia sẻ...",
-    "private_badge": "Riêng tư"
+    "private_badge": "Riêng tư",
+    "shared_with": "Chia sẻ với",
+    "shared_with_count": "Chia sẻ với {{count}} người dùng"
   },
   "ideas": {
     "create_title": "Tạo Ý Tưởng Mới",

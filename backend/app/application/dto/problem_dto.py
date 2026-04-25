@@ -52,6 +52,16 @@ class ProblemAuthorDTO(BaseModel):
     avatar_url: Optional[str] = None
 
 
+class SharedUserDTO(BaseModel):
+    """Lightweight shared user info embedded in problem response."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
 class ProblemRoomSummaryDTO(BaseModel):
     """Lightweight room info embedded in problem response."""
     id: UUID
@@ -72,6 +82,7 @@ class ProblemResponseDTO(BaseModel):
     status: ProblemStatus
     visibility: Visibility = Visibility.PUBLIC
     shared_user_ids: List[UUID] = []
+    shared_users: List[SharedUserDTO] = []
     author_id: UUID
     author: Optional[ProblemAuthorDTO] = None
     room_id: Optional[UUID] = None  # deprecated: first room id for backwards compat

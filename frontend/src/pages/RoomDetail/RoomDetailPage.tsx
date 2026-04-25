@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
 import { Avatar } from '@/components/ui/Avatar';
+import { SharedUsersDisplay } from '@/components/ui/SharedUsersDisplay';
 import { IdeaCard } from './IdeaCard';
 import { RoomFormModal } from '../IdeaLab/RoomFormModal';
 import type { Room, Idea, IdeaStatus } from '@/types';
@@ -347,6 +348,16 @@ export const RoomDetailPage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Shared users */}
+        {room.visibility === 'private' && room.shared_users?.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-border">
+            <SharedUsersDisplay
+              users={room.shared_users}
+              label={t('rooms.shared_with')}
+            />
+          </div>
+        )}
       </div>
 
       {/* Ideas View */}

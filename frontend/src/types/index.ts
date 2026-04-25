@@ -38,6 +38,14 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+// Shared User Types
+export interface SharedUser {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 // Problem Types
 export type ProblemStatus = 'open' | 'discussing' | 'brainstorming' | 'solved' | 'closed';
 export type ProblemCategory = 'process' | 'technical' | 'people' | 'tools' | 'patent';
@@ -65,6 +73,7 @@ export interface Problem {
   category: ProblemCategory;
   visibility: ProblemVisibility;
   shared_user_ids: string[];
+  shared_users: SharedUser[];
   author_id: string;
   author: ProblemAuthor | null;
   room_id: string | null;
@@ -141,6 +150,7 @@ export interface Room {
   status: RoomStatus;
   visibility: ProblemVisibility;
   shared_user_ids: string[];
+  shared_users: SharedUser[];
   problem_id: string | null;
   created_by: string;
   creator: RoomCreator | null;

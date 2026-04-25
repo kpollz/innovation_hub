@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { Popover } from '@/components/ui/Popover';
 import { TipTapRenderer } from '@/components/ui/TipTapRenderer';
+import { SharedUsersDisplay } from '@/components/ui/SharedUsersDisplay';
 import { PROBLEM_CATEGORIES, PROBLEM_STATUSES } from '@/utils/constants';
 import { timeAgo, classNames } from '@/utils/helpers';
 import { Avatar } from '@/components/ui/Avatar';
@@ -287,7 +288,7 @@ export const ProblemDetailPage: React.FC = () => {
               {category && (
                 <Badge variant="info" size="sm">{category.label}</Badge>
               )}
-              {(selectedProblem as any).visibility === 'private' && (
+              {selectedProblem.visibility === 'private' && (
                 <Badge variant="warning" size="sm">
                   <Lock className="h-3 w-3 mr-1" />
                   {t('problems.private_badge')}
@@ -300,6 +301,16 @@ export const ProblemDetailPage: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Shared users */}
+          {selectedProblem.visibility === 'private' && selectedProblem.shared_users?.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <SharedUsersDisplay
+                users={selectedProblem.shared_users}
+                label={t('problems.shared_with')}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

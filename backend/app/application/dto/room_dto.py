@@ -45,6 +45,16 @@ class RoomCreatorDTO(BaseModel):
     avatar_url: Optional[str] = None
 
 
+class SharedUserDTO(BaseModel):
+    """Lightweight shared user info embedded in room response."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
 # Output DTOs
 class RoomResponseDTO(BaseModel):
     """Output for room data."""
@@ -59,6 +69,7 @@ class RoomResponseDTO(BaseModel):
     status: RoomStatus
     visibility: str = "public"
     shared_user_ids: Optional[List[UUID]] = None
+    shared_users: List[SharedUserDTO] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
     idea_count: int = 0

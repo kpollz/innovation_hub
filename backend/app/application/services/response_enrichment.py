@@ -11,9 +11,9 @@ from app.domain.entities.idea import Idea
 from app.domain.entities.room import Room
 from app.domain.entities.comment import Comment
 from app.domain.entities.reaction import ReactionType
-from app.application.dto.problem_dto import ProblemResponseDTO, ProblemAuthorDTO, ProblemRoomSummaryDTO
+from app.application.dto.problem_dto import ProblemResponseDTO, ProblemAuthorDTO, ProblemRoomSummaryDTO, SharedUserDTO as ProblemSharedUserDTO
 from app.application.dto.idea_dto import IdeaResponseDTO, IdeaAuthorDTO, UserVoteDTO
-from app.application.dto.room_dto import RoomResponseDTO, RoomCreatorDTO
+from app.application.dto.room_dto import RoomResponseDTO, RoomCreatorDTO, SharedUserDTO as RoomSharedUserDTO
 from app.application.dto.comment_dto import CommentResponseDTO, CommentAuthorDTO
 from app.application.dto.event_dto import EventResponseDTO, EventCreatorDTO
 from app.domain.entities.event import Event
@@ -55,6 +55,11 @@ async def enrich_problem(
     if author:
         dto.author = ProblemAuthorDTO(**_make_author_dto(author))
 
+    # Shared users
+    if problem.shared_user_ids:
+        shared_users = await user_repo.get_by_ids(problem.shared_user_ids)
+        dto.shared_users = [ProblemSharedUserDTO(**_make_author_dto(u)) for u in shared_users]
+
     # Reaction counts
     counts = await reaction_repo.get_counts_by_target(problem.id, "problem")
     dto.likes_count = counts.get(ReactionType.LIKE, 0)
@@ -95,6 +100,17 @@ async def enrich_problems(
         if user:
             authors[aid] = user
 
+    # Collect unique shared user IDs
+    all_shared_ids = set()
+    for p in problems:
+        if p.shared_user_ids:
+            all_shared_ids.update(p.shared_user_ids)
+    shared_users_map: Dict[UUID, object] = {}
+    if all_shared_ids:
+        shared_user_list = await user_repo.get_by_ids(list(all_shared_ids))
+        for u in shared_user_list:
+            shared_users_map[u.id] = u
+
     results = []
     for problem in problems:
         dto = ProblemResponseDTO.model_validate(problem)
@@ -113,6 +129,13 @@ async def enrich_problems(
         author = authors.get(problem.author_id)
         if author:
             dto.author = ProblemAuthorDTO(**_make_author_dto(author))
+
+        # Shared users
+        if problem.shared_user_ids:
+            dto.shared_users = [
+                ProblemSharedUserDTO(**_make_author_dto(shared_users_map[uid]))
+                for uid in problem.shared_user_ids if uid in shared_users_map
+            ]
 
         # Reaction counts
         counts = await reaction_repo.get_counts_by_target(problem.id, "problem")
@@ -251,6 +274,11 @@ async def enrich_room(
     if creator:
         dto.creator = RoomCreatorDTO(**_make_author_dto(creator))
 
+    # Shared users
+    if room.shared_user_ids:
+        shared_users = await user_repo.get_by_ids(room.shared_user_ids)
+        dto.shared_users = [RoomSharedUserDTO(**_make_author_dto(u)) for u in shared_users]
+
     # Idea count
     _, idea_total = await idea_repo.list({"room_id": room.id}, page=1, limit=1)
     dto.idea_count = idea_total
@@ -275,6 +303,17 @@ async def enrich_rooms(
         if user:
             creators[cid] = user
 
+    # Collect unique shared user IDs
+    all_shared_ids = set()
+    for r in rooms:
+        if r.shared_user_ids:
+            all_shared_ids.update(r.shared_user_ids)
+    shared_users_map: Dict[UUID, object] = {}
+    if all_shared_ids:
+        shared_user_list = await user_repo.get_by_ids(list(all_shared_ids))
+        for u in shared_user_list:
+            shared_users_map[u.id] = u
+
     results = []
     for room in rooms:
         dto = RoomResponseDTO.model_validate(room)
@@ -282,6 +321,13 @@ async def enrich_rooms(
         creator = creators.get(room.created_by)
         if creator:
             dto.creator = RoomCreatorDTO(**_make_author_dto(creator))
+
+        # Shared users
+        if room.shared_user_ids:
+            dto.shared_users = [
+                RoomSharedUserDTO(**_make_author_dto(shared_users_map[uid]))
+                for uid in room.shared_user_ids if uid in shared_users_map
+            ]
 
         _, idea_total = await idea_repo.list({"room_id": room.id}, page=1, limit=1)
         dto.idea_count = idea_total

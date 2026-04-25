@@ -203,6 +203,8 @@
     "share_with_label": "Share with specific users",
     "search_users_placeholder": "Search users to share with...",
     "private_badge": "Private",
+    "shared_with": "Shared with",
+    "shared_with_count": "Shared with {{count}} users",
     "visibility_public_desc": "Everyone can see this problem",
     "visibility_private_desc": "Only you, shared users, and admins can see this problem"
   },
@@ -262,7 +264,9 @@
     "visibility_private_desc": "Only you, shared users, and admins can see this room",
     "share_with_label": "Share with specific users",
     "search_users_placeholder": "Search users to share with...",
-    "private_badge": "Private"
+    "private_badge": "Private",
+    "shared_with": "Shared with",
+    "shared_with_count": "Shared with {{count}} users"
   },
   "ideas": {
     "create_title": "Create New Idea",
