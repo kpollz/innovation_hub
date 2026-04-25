@@ -43,7 +43,9 @@ export const Header: React.FC = () => {
               <p className="text-caption text-muted-foreground">{user?.team}</p>
             </div>
 
-            <Avatar src={user?.avatar_url} name={user?.full_name} size="sm" />
+            <Link to="/settings" title="Settings">
+              <Avatar src={user?.avatar_url} name={user?.full_name} size="sm" className="cursor-pointer hover:opacity-80 transition-opacity" />
+            </Link>
 
             <Button
               variant="ghost"
