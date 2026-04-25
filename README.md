@@ -42,10 +42,10 @@ cp backend/.env.example backend/.env
 
 ```bash
 # Build and start all services
-docker-compose up --build
+docker compose up --build
 
 # Or run in background
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 This starts 4 services: PostgreSQL, MinIO, Backend API, and Frontend (Nginx).
@@ -65,16 +65,16 @@ This starts 4 services: PostgreSQL, MinIO, Backend API, and Frontend (Nginx).
 
 ```bash
 # Run inside the API container
-docker-compose exec api poetry run python scripts/create_admin.py
+docker compose exec api poetry run python scripts/create_admin.py
 
 # Or with custom credentials
-docker-compose exec api poetry run python scripts/create_admin.py \
+docker compose exec api poetry run python scripts/create_admin.py \
   --username myadmin \
   --password mypassword123 \
   --email admin@company.com
 
 # List existing admins
-docker-compose exec api poetry run python scripts/create_admin.py --list
+docker compose exec api poetry run python scripts/create_admin.py --list
 ```
 
 Default credentials: `admin` / `abc13579`
@@ -130,7 +130,7 @@ innovation_hub/
 │   │   └── types/          # TypeScript types
 │   ├── nginx.conf          # Nginx config with API proxy
 │   └── Dockerfile
-├── docker-compose.yml
+├── docker compose.yml
 ├── API_CONTRACT.md         # API specification (source of truth)
 ├── APPLICATION_OVERVIEW.md # Product requirements
 └── README.md
