@@ -93,7 +93,7 @@ async def submit_score(
     """Submit scores for an idea. Team Lead only (can_score = true)."""
     use_case = SubmitScoreUseCase(event_repo, idea_repo, team_repo, criteria_repo, score_repo)
     try:
-        score = await use_case.execute(event_id, idea_id, data.criteria_scores, current_user.id)
+        score = await use_case.execute(event_id, idea_id, data.criteria_scores, data.criteria_notes, current_user.id)
     except (NotFoundException, ForbiddenException, ValidationException) as e:
         _handle_exceptions(e)
 
@@ -141,6 +141,7 @@ async def submit_score(
         scorer_team_id=score.scorer_team_id,
         scorer_team={"id": team.id, "name": team.name} if team else None,
         criteria_scores=score.criteria_scores,
+        criteria_notes=score.criteria_notes,
         total_score=score.total_score,
         created_at=score.created_at,
         updated_at=score.updated_at,
@@ -163,7 +164,7 @@ async def update_score(
     """Update scores for an idea. Same permission as submit."""
     use_case = UpdateScoreUseCase(event_repo, idea_repo, team_repo, criteria_repo, score_repo)
     try:
-        score = await use_case.execute(event_id, idea_id, data.criteria_scores, current_user.id)
+        score = await use_case.execute(event_id, idea_id, data.criteria_scores, data.criteria_notes, current_user.id)
     except (NotFoundException, ForbiddenException, ValidationException) as e:
         _handle_exceptions(e)
 
@@ -210,6 +211,7 @@ async def update_score(
         scorer_team_id=score.scorer_team_id,
         scorer_team={"id": team.id, "name": team.name} if team else None,
         criteria_scores=score.criteria_scores,
+        criteria_notes=score.criteria_notes,
         total_score=score.total_score,
         created_at=score.created_at,
         updated_at=score.updated_at,

@@ -625,6 +625,7 @@
         "strongly_disagree_short": "HT.Không ĐY",
         "ready_submit": "Sẵn sàng nộp",
         "fill_all": "Còn {{remaining}} tiêu chí chưa chấm",
+        "note_placeholder": "Thêm ghi chú giải thích điểm của bạn (tùy chọn)...",
         "submit": "Nộp điểm",
         "update": "Cập nhật điểm",
         "criteria": {

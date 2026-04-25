@@ -12,6 +12,7 @@ class EventScore:
     scorer_team_id: UUID
     criteria_scores: dict  # {criteria_id: score}
     total_score: float
+    criteria_notes: Optional[dict] = None  # {criteria_id: note}
     id: UUID = field(default_factory=uuid4)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None

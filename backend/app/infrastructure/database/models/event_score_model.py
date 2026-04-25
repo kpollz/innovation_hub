@@ -30,6 +30,7 @@ class EventScoreModel(BaseModel):
         nullable=False,
     )
     criteria_scores: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    criteria_notes: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     total_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     idea: Mapped["EventIdeaModel"] = relationship("EventIdeaModel")

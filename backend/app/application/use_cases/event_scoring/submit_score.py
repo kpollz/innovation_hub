@@ -1,4 +1,5 @@
 """Submit score use case."""
+from typing import Optional
 from uuid import UUID
 
 from app.core.exceptions import ForbiddenException, NotFoundException, ValidationException
@@ -33,6 +34,7 @@ class SubmitScoreUseCase:
         event_id: UUID,
         idea_id: UUID,
         criteria_scores: dict[str, float],
+        criteria_notes: Optional[dict[str, Optional[str]]],
         user_id: UUID,
     ) -> EventScore:
         # Validate event
@@ -103,6 +105,17 @@ class SubmitScoreUseCase:
                     f"Score {score} exceeds max_score {criteria.max_score} for criteria {cid}"
                 )
 
+        # Validate notes if provided
+        validated_notes: Optional[dict[str, Optional[str]]] = None
+        if criteria_notes is not None:
+            validated_notes = {}
+            for cid, note in criteria_notes.items():
+                if cid not in criteria_map:
+                    raise ValidationException(f"Note references unknown criteria: {cid}")
+                if note is not None and len(note) > 500:
+                    raise ValidationException(f"Note for criteria {cid} exceeds 500 characters")
+                validated_notes[cid] = note.strip() if note else None
+
         # Calculate total score
         total = sum(
             criteria_scores[str(c.id)] * c.weight
@@ -113,6 +126,7 @@ class SubmitScoreUseCase:
             event_idea_id=idea_id,
             scorer_team_id=membership.team_id,
             criteria_scores=criteria_scores,
+            criteria_notes=validated_notes,
             total_score=total,
         )
 

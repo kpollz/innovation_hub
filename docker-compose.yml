@@ -52,8 +52,10 @@ services:
     working_dir: /app
     env_file:
       - ./backend/.env
-    ports:
-      - "${API_PORT:-8000}:8000"
+    # Port 8000 intentionally NOT exposed to host.
+    # Frontend Nginx proxies /api/ to backend via internal Docker network.
+    # ports:
+    #   - "${API_PORT:-8000}:8000"
     volumes:
       - ./backend/alembic.ini:/app/alembic.ini:ro
       - ./backend/app:/app/app:ro

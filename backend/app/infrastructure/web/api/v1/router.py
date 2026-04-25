@@ -40,11 +40,12 @@ api_router.include_router(events.router, prefix="/events", tags=["events"])
 # Event team sub-routes (nested under events)
 api_router.include_router(event_teams.router, prefix="/events/{event_id}/teams", tags=["event-teams"])
 
+# Event scoring sub-routes (nested under events)
+# MUST register before event_ideas to avoid route shadowing for /ideas/{idea_id}/scores
+api_router.include_router(event_scoring.router, prefix="/events/{event_id}", tags=["event-scoring"])
+
 # Event idea sub-routes (nested under events)
 api_router.include_router(event_ideas.router, prefix="/events/{event_id}/ideas", tags=["event-ideas"])
-
-# Event scoring sub-routes (nested under events)
-api_router.include_router(event_scoring.router, prefix="/events/{event_id}", tags=["event-scoring"])
 
 # Event dashboard sub-routes (nested under events)
 api_router.include_router(event_dashboard.router, prefix="/events/{event_id}", tags=["event-dashboard"])

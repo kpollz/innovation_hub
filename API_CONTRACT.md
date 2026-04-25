@@ -1364,6 +1364,7 @@ Mỗi tiêu chí được đánh giá trên thang điểm **5 mức độ đồn
   "scorer_team_id": "uuid",
   "scorer_team": { "id": "uuid", "name": "string" },
   "criteria_scores": { "criteria_id_1": 12.5, "criteria_id_2": 10 },
+  "criteria_notes": { "criteria_id_1": "Giải thích lý do cho điểm...", "criteria_id_2": null },
   "total_score": 0.0,
   "created_at": "datetime",
   "updated_at": "datetime | null"
@@ -1377,7 +1378,9 @@ Mỗi tiêu chí được đánh giá trên thang điểm **5 mức độ đồn
 event_scoring_criteria: id, event_id, group (varchar: problem|solution), name, description,
   weight (float, default 1.0), max_score (float, default 12.5), sort_order (int), created_at
 event_scores: id, event_idea_id, scorer_team_id,
-  criteria_scores (JSONB: {criteria_id: score}), total_score (float, calculated),
+  criteria_scores (JSONB: {criteria_id: score}),
+  criteria_notes (JSONB: {criteria_id: note} | null),
+  total_score (float, calculated),
   created_at, updated_at
 -- Constraint: UNIQUE(event_idea_id, scorer_team_id) — 1 đội chỉ chấm 1 lần/idea
 ```
@@ -1413,9 +1416,15 @@ event_scores: id, event_idea_id, scorer_team_id,
     "criteria_id_2": 10,
     "criteria_id_3": 7.5,
     "criteria_id_4": 5
+  },
+  "criteria_notes": {
+    "criteria_id_1": "Giải thích tại sao cho điểm cao/thấp...",
+    "criteria_id_2": null
   }
 }
 ```
+
+> **Note**: `criteria_notes` là tùy chọn. Mỗi note tối đa 500 ký tự. Chỉ các tiêu chí có `criteria_scores` mới cần note.
 
 > **Validation**:
 > - Mỗi score phải ∈ {2.5, 5, 7.5, 10, 12.5} (5-point Likert scale)

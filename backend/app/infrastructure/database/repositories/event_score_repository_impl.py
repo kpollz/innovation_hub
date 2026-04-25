@@ -23,6 +23,7 @@ class SQLEventScoreRepository(EventScoreRepository):
             event_idea_id=UUID(model.event_idea_id),
             scorer_team_id=UUID(model.scorer_team_id),
             criteria_scores=model.criteria_scores,
+            criteria_notes=model.criteria_notes,
             total_score=model.total_score,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -34,6 +35,7 @@ class SQLEventScoreRepository(EventScoreRepository):
             "event_idea_id": str(entity.event_idea_id),
             "scorer_team_id": str(entity.scorer_team_id),
             "criteria_scores": entity.criteria_scores,
+            "criteria_notes": entity.criteria_notes,
             "total_score": entity.total_score,
             "created_at": entity.created_at,
             "updated_at": entity.updated_at,
@@ -78,6 +80,7 @@ class SQLEventScoreRepository(EventScoreRepository):
             raise ValueError(f"Score {score.id} not found")
 
         model.criteria_scores = score.criteria_scores
+        model.criteria_notes = score.criteria_notes
         model.total_score = score.total_score
         model.updated_at = datetime.utcnow()
 

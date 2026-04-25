@@ -5,7 +5,7 @@ import { eventsApi } from '@/api/events';
 import { Button } from '@/components/ui/Button';
 import type {
   EventObject, EventIdeaObject, EventScoringCriteriaObject,
-  ScoreListResponse,
+  EventScoreObject, ScoreListResponse,
 } from '@/types';
 
 const LIKERT_OPTIONS = [
@@ -43,6 +43,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
   const { t } = useTranslation();
   const [criteria, setCriteria] = useState<EventScoringCriteriaObject[]>([]);
   const [scores, setScores] = useState<Record<string, number>>({});
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [existingScoreId, setExistingScoreId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -50,6 +51,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const [scoreSummary, setScoreSummary] = useState<ScoreListResponse['summary'] | null>(null);
+  const [allScores, setAllScores] = useState<EventScoreObject[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -61,6 +63,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
       setCriteria(criteriaData);
 
       const initScores: Record<string, number> = {};
+      const initNotes: Record<string, string> = {};
       criteriaData.forEach(c => { initScores[c.id] = 0; });
 
       if (scoresData.scores.length > 0) {
@@ -75,12 +78,19 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
             Object.entries(userTeamScore.criteria_scores).forEach(([k, v]) => {
               initScores[k] = v;
             });
+            if (userTeamScore.criteria_notes) {
+              Object.entries(userTeamScore.criteria_notes).forEach(([k, v]) => {
+                if (v) initNotes[k] = v;
+              });
+            }
           }
         }
       }
 
       setScores(initScores);
+      setNotes(initNotes);
       setScoreSummary(scoresData.summary);
+      setAllScores(scoresData.scores);
     } catch { /* silent */ }
     finally { setLoading(false); }
   }, [event.id, idea.id, idea.team_id, readOnly]);
@@ -101,19 +111,29 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
     setScores(prev => ({ ...prev, [criteriaId]: value }));
   };
 
+  const handleNoteChange = (criteriaId: string, value: string) => {
+    setNotes(prev => ({ ...prev, [criteriaId]: value }));
+  };
+
   const handleSubmit = async () => {
     const filledScores: Record<string, number> = {};
+    const filledNotes: Record<string, string | null> = {};
     Object.entries(scores).forEach(([k, v]) => {
       if (v > 0) filledScores[k] = v;
     });
     if (Object.keys(filledScores).length < criteria.length) return;
 
+    Object.entries(notes).forEach(([k, v]) => {
+      if (v.trim()) filledNotes[k] = v.trim();
+    });
+
     setSubmitting(true);
     try {
+      const payload = { criteria_scores: filledScores, criteria_notes: filledNotes };
       if (existingScoreId) {
-        await eventsApi.updateScore(event.id, idea.id, { criteria_scores: filledScores });
+        await eventsApi.updateScore(event.id, idea.id, payload);
       } else {
-        await eventsApi.submitScore(event.id, idea.id, { criteria_scores: filledScores });
+        await eventsApi.submitScore(event.id, idea.id, payload);
       }
       onScoreUpdated?.();
       fetchData();
@@ -198,25 +218,51 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({ event, idea, readOnl
                   </div>
 
                   {!readOnly && (
-                    <div className="flex gap-1 mt-2">
-                      {LIKERT_OPTIONS.map(opt => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => handleScoreChange(criterion.id, opt.value)}
-                          className={`flex-1 py-1.5 px-1 text-xs rounded-md border transition-colors font-medium ${
-                            scores[criterion.id] === opt.value
-                              ? 'bg-primary-600 text-white border-primary-600'
-                              : 'bg-white text-muted-foreground border-border hover:border-primary-300 hover:bg-primary-50'
-                          }`}
-                          title={t(`events.ideas.scoring.${opt.label}`)}
-                        >
-                          <span className="block font-bold">{opt.value}</span>
-                          <span className="block text-[10px] opacity-80 mt-0.5">
-                            {t(`events.ideas.scoring.${opt.label}_short`)}
-                          </span>
-                        </button>
-                      ))}
+                    <>
+                      <div className="flex gap-1 mt-2">
+                        {LIKERT_OPTIONS.map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => handleScoreChange(criterion.id, opt.value)}
+                            className={`flex-1 py-1.5 px-1 text-xs rounded-md border transition-colors font-medium ${
+                              scores[criterion.id] === opt.value
+                                ? 'bg-primary-600 text-white border-primary-600'
+                                : 'bg-white text-muted-foreground border-border hover:border-primary-300 hover:bg-primary-50'
+                            }`}
+                            title={t(`events.ideas.scoring.${opt.label}`)}
+                          >
+                            <span className="block font-bold">{opt.value}</span>
+                            <span className="block text-[10px] opacity-80 mt-0.5">
+                              {t(`events.ideas.scoring.${opt.label}_short`)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-2">
+                        <textarea
+                          value={notes[criterion.id] || ''}
+                          onChange={(e) => handleNoteChange(criterion.id, e.target.value)}
+                          placeholder={t('events.ideas.scoring.note_placeholder')}
+                          rows={2}
+                          maxLength={500}
+                          className="w-full text-xs px-2.5 py-2 rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300 resize-none"
+                        />
+                      </div>
+                    </>
+                  )}
+                  {readOnly && allScores.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {allScores.map((s) => {
+                        const note = s.criteria_notes?.[criterion.id];
+                        if (!note) return null;
+                        return (
+                          <div key={s.id} className="text-xs bg-secondary/60 rounded-md px-2.5 py-1.5">
+                            <span className="font-medium text-muted-foreground">{s.scorer_team?.name}:</span>{' '}
+                            <span className="text-foreground">{note}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

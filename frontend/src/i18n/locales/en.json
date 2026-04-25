@@ -631,6 +631,7 @@
         "strongly_disagree_short": "S. Disagree",
         "ready_submit": "Ready to submit",
         "fill_all": "{{remaining}} criteria remaining",
+        "note_placeholder": "Add a note explaining your score (optional)...",
         "submit": "Submit Scores",
         "update": "Update Scores",
         "criteria": {

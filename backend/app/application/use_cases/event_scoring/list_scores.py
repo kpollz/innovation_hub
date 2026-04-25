@@ -45,6 +45,7 @@ class ListScoresUseCase:
                 "scorer_team_id": score.scorer_team_id,
                 "scorer_team": {"id": team.id, "name": team.name} if team else None,
                 "criteria_scores": score.criteria_scores,
+                "criteria_notes": score.criteria_notes,
                 "total_score": score.total_score,
                 "created_at": score.created_at,
                 "updated_at": score.updated_at,

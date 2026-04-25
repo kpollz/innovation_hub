@@ -483,6 +483,7 @@ export interface EventScoreObject {
   scorer_team_id: string;
   scorer_team: { id: string; name: string } | null;
   criteria_scores: Record<string, number>;
+  criteria_notes: Record<string, string | null> | null;
   total_score: number;
   created_at: string;
   updated_at: string | null;
@@ -490,6 +491,7 @@ export interface EventScoreObject {
 
 export interface ScoreInputDTO {
   criteria_scores: Record<string, number>;
+  criteria_notes?: Record<string, string | null>;
 }
 
 export interface ScoreListResponse {

@@ -1,4 +1,5 @@
 """Update score use case."""
+from typing import Optional
 from uuid import UUID
 
 from app.core.exceptions import ForbiddenException, NotFoundException, ValidationException
@@ -32,6 +33,7 @@ class UpdateScoreUseCase:
         event_id: UUID,
         idea_id: UUID,
         criteria_scores: dict[str, float],
+        criteria_notes: Optional[dict[str, Optional[str]]],
         user_id: UUID,
     ) -> "EventScore":
         from app.domain.entities.event_score import EventScore
@@ -76,9 +78,21 @@ class UpdateScoreUseCase:
             if score > criteria_map[cid].max_score:
                 raise ValidationException(f"Score exceeds max for criteria {cid}")
 
+        # Validate notes if provided
+        validated_notes: Optional[dict[str, Optional[str]]] = None
+        if criteria_notes is not None:
+            validated_notes = {}
+            for cid, note in criteria_notes.items():
+                if cid not in criteria_map:
+                    raise ValidationException(f"Note references unknown criteria: {cid}")
+                if note is not None and len(note) > 500:
+                    raise ValidationException(f"Note for criteria {cid} exceeds 500 characters")
+                validated_notes[cid] = note.strip() if note else None
+
         total = sum(criteria_scores[str(c.id)] * c.weight for c in all_criteria)
 
         existing.criteria_scores = criteria_scores
+        existing.criteria_notes = validated_notes
         existing.total_score = total
 
         return await self.score_repo.update(existing)

@@ -42,6 +42,9 @@ VALID_LIKERT_SCORES = {2.5, 5.0, 7.5, 10.0, 12.5}
 
 class ScoreInputDTO(BaseModel):
     criteria_scores: dict[str, float] = Field(..., description="Map of criteria_id to score")
+    criteria_notes: Optional[dict[str, Optional[str]]] = Field(
+        default=None, description="Map of criteria_id to note (optional, max 500 chars per note)"
+    )
 
 
 class ScoreResponseDTO(BaseModel):
@@ -52,6 +55,7 @@ class ScoreResponseDTO(BaseModel):
     scorer_team_id: UUID
     scorer_team: Optional[dict] = None
     criteria_scores: dict
+    criteria_notes: Optional[dict] = None
     total_score: float
     created_at: datetime
     updated_at: Optional[datetime] = None
