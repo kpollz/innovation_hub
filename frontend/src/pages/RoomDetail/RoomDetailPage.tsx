@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, LayoutGrid, List, BrainCircuit, MoreVertical, Edit, Trash2, ShieldAlert, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, BrainCircuit, MoreVertical, Edit, Trash2, ShieldAlert, Lock } from 'lucide-react';
 import { roomsApi } from '@/api/rooms';
 import { ideasApi } from '@/api/ideas';
 import { useAuthStore } from '@/stores/authStore';
@@ -17,8 +17,6 @@ import { RoomFormModal } from '../IdeaLab/RoomFormModal';
 import type { Room, Idea, IdeaStatus } from '@/types';
 import { IDEA_STATUSES } from '@/utils/constants';
 import { classNames, timeAgo } from '@/utils/helpers';
-
-type ViewMode = 'board' | 'list';
 
 const KANBAN_COLUMNS: { status: IdeaStatus; title: string }[] = [
   { status: 'draft', title: 'Draft' },
@@ -37,7 +35,6 @@ export const RoomDetailPage: React.FC = () => {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [accessError, setAccessError] = useState<'forbidden' | 'not_found' | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('board');
   const { showToast } = useUIStore();
 
   // Drag-and-drop state
@@ -226,9 +223,9 @@ export const RoomDetailPage: React.FC = () => {
       {/* Room Header */}
       <div className="bg-white rounded-xl border border-border p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-section-heading font-bold text-foreground">{room.name}</h1>
+              <h1 className="text-section-heading font-bold text-foreground break-words">{room.name}</h1>
             </div>
             {room.description && (
               <p className="text-muted-foreground">{room.description}</p>
@@ -250,35 +247,10 @@ export const RoomDetailPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-muted rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('board')}
-                className={classNames(
-                  'p-2 rounded-md transition-colors',
-                  viewMode === 'board'
-                    ? 'bg-white text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={classNames(
-                  'p-2 rounded-md transition-colors',
-                  viewMode === 'list'
-                    ? 'bg-white text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-            <Button onClick={openCreateIdeaPage} leftIcon={<Plus className="h-4 w-4" />}>
-              {t('rooms.add_idea')}
+          <div className="flex items-center gap-3 shrink-0">
+            <Button onClick={openCreateIdeaPage} title={t('rooms.add_idea')} leftIcon={<Plus className="h-4 w-4" />}>
+              <span className="hidden sm:inline">{t('rooms.add_idea')}</span>
             </Button>
-
             {canModify && (
               <>
                 <button
@@ -360,80 +332,58 @@ export const RoomDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* Ideas View */}
-      {viewMode === 'board' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {KANBAN_COLUMNS.map((column) => {
-            const columnIdeas = getIdeasByStatus(column.status);
-            const statusConfig = IDEA_STATUSES.find((s) => s.value === column.status);
-            const isOver = dragOverColumn === column.status;
+      {/* Ideas Board View */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4">
+        {KANBAN_COLUMNS.map((column) => {
+          const columnIdeas = getIdeasByStatus(column.status);
+          const statusConfig = IDEA_STATUSES.find((s) => s.value === column.status);
+          const isOver = dragOverColumn === column.status;
 
-            return (
-              <div
-                key={column.status}
-                className={classNames(
-                  'bg-muted rounded-xl p-3 transition-colors',
-                  isOver && 'bg-primary-50 ring-2 ring-primary-300'
-                )}
-                onDragOver={(e) => handleDragOver(e, column.status)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, column.status)}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-foreground/70">{column.title}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
-                    {columnIdeas.length}
-                  </span>
-                </div>
-                <div className="space-y-3 min-h-[60px]">
-                  {columnIdeas.map((idea) => (
-                    <div
-                      key={idea.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, idea.id)}
-                      onDragEnd={handleDragEnd}
-                      className={classNames(
-                        'cursor-grab active:cursor-grabbing',
-                        draggedIdeaId === idea.id && 'opacity-50'
-                      )}
-                    >
-                      <IdeaCard
-                        idea={idea}
-                        onUpdate={fetchRoomData}
-                      />
-                    </div>
-                  ))}
-                  {columnIdeas.length === 0 && (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      {t('rooms.no_ideas')}
-                    </p>
-                  )}
-                </div>
+          return (
+            <div
+              key={column.status}
+              className={classNames(
+                'bg-muted rounded-xl p-3 transition-colors',
+                isOver && 'bg-primary-50 ring-2 ring-primary-300'
+              )}
+              onDragOver={(e) => handleDragOver(e, column.status)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, column.status)}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-foreground/70">{column.title}</h3>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig?.color}`}>
+                  {columnIdeas.length}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {ideas.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-border">
-              <p className="text-muted-foreground">{t('rooms.no_ideas_yet')}</p>
-              <Button variant="secondary" className="mt-4" onClick={openCreateIdeaPage}>
-                {t('rooms.add_first_idea')}
-              </Button>
+              <div className="space-y-3 min-h-[60px]">
+                {columnIdeas.map((idea) => (
+                  <div
+                    key={idea.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idea.id)}
+                    onDragEnd={handleDragEnd}
+                    className={classNames(
+                      'cursor-grab active:cursor-grabbing',
+                      draggedIdeaId === idea.id && 'opacity-50'
+                    )}
+                  >
+                    <IdeaCard
+                      idea={idea}
+                      onUpdate={fetchRoomData}
+                    />
+                  </div>
+                ))}
+                {columnIdeas.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground py-4">
+                    {t('rooms.no_ideas')}
+                  </p>
+                )}
+              </div>
             </div>
-          ) : (
-            ideas.map((idea) => (
-              <IdeaCard
-                key={idea.id}
-                idea={idea}
-                onUpdate={fetchRoomData}
-                detailed
-              />
-            ))
-          )}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* Edit Room Modal */}
       {room && (

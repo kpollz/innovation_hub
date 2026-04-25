@@ -195,8 +195,8 @@ export const EventIdeaDetailPage: React.FC<EventIdeaDetailPageProps> = ({ event,
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-section-heading font-bold text-foreground">{idea.title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-section-heading font-bold text-foreground break-words">{idea.title}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Avatar

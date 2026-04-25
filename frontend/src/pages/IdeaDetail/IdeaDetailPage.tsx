@@ -199,8 +199,8 @@ export const IdeaDetailPage: React.FC = () => {
       {/* Header Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <h1 className="text-section-heading font-bold text-foreground">{idea.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-section-heading font-bold text-foreground min-w-0 break-words">{idea.title}</h1>
             {canModify && (
               <>
                 <button

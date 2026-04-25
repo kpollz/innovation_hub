@@ -232,33 +232,34 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
 
           {/* Footer: Vote + Comments + Avatar */}
-          <div className="flex items-center justify-between pt-3 border-t border-border/50 text-sm text-muted-foreground">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setShowVoteModal(true)}
                 className={classNames(
-                  'flex items-center gap-1 hover:text-primary-600',
+                  'flex items-center gap-1 hover:text-primary-600 shrink-0',
                   idea.user_vote ? 'text-primary-600' : ''
                 )}
               >
-                <Star className={classNames('h-4 w-4', idea.user_vote ? 'fill-primary-600' : '')} />
+                <Star className={classNames('h-3.5 w-3.5', idea.user_vote ? 'fill-primary-600' : '')} />
                 <span>{idea.vote_avg?.toFixed(1) || '0.0'}</span>
-                <span className="text-xs">({idea.vote_count || 0})</span>
               </button>
-              <span className="flex items-center gap-1">
-                <ThumbsUp className="h-4 w-4" />
+              <span className="flex items-center gap-0.5 shrink-0">
+                <ThumbsUp className="h-3.5 w-3.5" />
                 {idea.likes_count || 0}
               </span>
-              <span className="flex items-center gap-1">
-                <Lightbulb className="h-4 w-4" />
+              <span className="flex items-center gap-0.5 shrink-0">
+                <Lightbulb className="h-3.5 w-3.5" />
                 {idea.insights_count || 0}
               </span>
-              <span className="flex items-center gap-1">
-                <MessageCircle className="h-4 w-4" />
+              <span className="flex items-center gap-0.5 shrink-0">
+                <MessageCircle className="h-3.5 w-3.5" />
                 {idea.comments_count || 0}
               </span>
             </div>
-            <Avatar src={idea.author?.avatar_url} name={authorName} size="sm" />
+            <div className="shrink-0 ml-2">
+              <Avatar src={idea.author?.avatar_url} name={authorName} size="sm" />
+            </div>
           </div>
 
           {/* Status Change (for author or admin) */}

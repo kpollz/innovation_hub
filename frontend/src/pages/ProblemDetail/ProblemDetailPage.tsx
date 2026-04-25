@@ -195,13 +195,13 @@ export const ProblemDetailPage: React.FC = () => {
       {/* Problem Header */}
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between flex-wrap gap-3">
-            <h1 className="text-section-heading font-bold text-foreground">
+          <div className="flex items-start gap-3">
+            <h1 className="text-section-heading font-bold text-foreground min-w-0 flex-1 break-words">
               {selectedProblem.title}
             </h1>
             {/* Actions Dropdown for Owner/Admin */}
             {canModify && (
-              <>
+              <div className="shrink-0">
                 <button
                   ref={actionsRef}
                   onClick={() => setShowActions(!showActions)}
@@ -265,7 +265,7 @@ export const ProblemDetailPage: React.FC = () => {
                     {t('problems.delete_problem')}
                   </button>
                 </Popover>
-              </>
+              </div>
             )}
           </div>
         </CardHeader>
