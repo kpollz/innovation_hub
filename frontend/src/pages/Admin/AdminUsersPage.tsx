@@ -23,6 +23,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Avatar } from '@/components/ui/Avatar';
 import { Card, CardContent } from '@/components/ui/Card';
 import { classNames } from '@/utils/helpers';
 import type { User } from '@/types';
@@ -214,11 +215,7 @@ export const AdminUsersPage: React.FC = () => {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-medium text-primary-700">
-                              {u.full_name?.charAt(0).toUpperCase() || u.username.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          <Avatar src={u.avatar_url} name={u.full_name || u.username} size="md" />
                           <div>
                             <p className="font-medium text-foreground">
                               {u.full_name || u.username}
