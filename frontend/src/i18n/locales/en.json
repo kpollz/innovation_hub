@@ -807,7 +807,7 @@
       },
       "q4": {
         "q": "What can I do on Innovation Hub?",
-        "a": "You can: 1) Share and browse problems in the Problem Feed, 2) Create or join brainstorming rooms in the Idea Lab, 3) Submit and vote on ideas, 4) Join innovation Events with teams, compete and get scored, 5) Comment, react, and collaborate with colleagues across all content."
+        "a": "You can: 1) Share and browse problems in the Problem Feed, 2) Create or join brainstorming rooms in the Idea Lab, 3) Submit and vote on ideas, 4) Join innovation Events with teams, compete and get scored, 5) Comment, react, and collaborate with colleagues across all content, 6) View your personal Dashboard for stats, trending ideas, and recent activity."
       }
     },
     "problems": {
@@ -854,13 +854,17 @@
       "q5": {
         "q": "How does voting work?",
         "a": "Click the star rating on any idea to vote from 1-5 stars. You can change your vote at any time. The idea displays the average rating and total vote count. Voting helps surface the best ideas."
+      },
+      "q6": {
+        "q": "What are Trending Ideas?",
+        "a": "Trending Ideas are shown on your Dashboard and ranked by engagement: average vote rating, then likes, then total engagement (likes + comments), then recency. Only ideas in rooms you can access are included."
       }
     },
     "events": {
       "title": "Events & Competitions",
       "q1": {
         "q": "What are Events?",
-        "a": "Events are structured innovation competitions created by administrators. Each event has an Introduction, Teams, Ideas, Dashboard, and FAQ tab. Events go through three stages: Draft (being prepared), Active (teams can participate), and Closed (read-only)."
+        "a": "Events are structured innovation competitions created by administrators. Each event has an Introduction, Teams, Ideas, Dashboard, FAQ, and Awards tab. Events go through three stages: Draft (being prepared), Active (teams can participate), and Closed (read-only)."
       },
       "q2": {
         "q": "How do I join an event team?",

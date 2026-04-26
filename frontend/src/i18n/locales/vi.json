@@ -801,7 +801,7 @@
       },
       "q4": {
         "q": "Tôi có thể làm gì trên Innovation Hub?",
-        "a": "Bạn có thể: 1) Chia sẻ và duyệt vấn đề trên Bảng Vấn Đề, 2) Tạo hoặc tham gia phòng brainstorm trong Phòng Ý Tưởng, 3) Gửi ý tưởng và bỏ phiếu, 4) Tham gia Sự kiện đổi mới với đội, thi đấu và được chấm điểm, 5) Bình luận, thả cảm xúc và cộng tác với đồng nghiệp trên mọi nội dung."
+        "a": "Bạn có thể: 1) Chia sẻ và duyệt vấn đề trên Bảng Vấn Đề, 2) Tạo hoặc tham gia phòng brainstorm trong Phòng Ý Tưởng, 3) Gửi ý tưởng và bỏ phiếu, 4) Tham gia Sự kiện đổi mới với đội, thi đấu và được chấm điểm, 5) Bình luận, thả cảm xúc và cộng tác với đồng nghiệp trên mọi nội dung, 6) Xem Dashboard cá nhân với thống kê, ý tưởng nổi bật và hoạt động gần đây."
       }
     },
     "problems": {
@@ -848,13 +848,17 @@
       "q5": {
         "q": "Bỏ phiếu hoạt động như thế nào?",
         "a": "Nhấn vào đánh giá sao trên bất kỳ ý tưởng nào để bỏ phiếu từ 1-5 sao. Bạn có thể thay đổi phiếu bất cứ lúc nào. Ý tưởng hiển thị điểm trung bình và tổng số phiếu. Bỏ phiếu giúp nổi bật các ý tưởng tốt nhất."
+      },
+      "q6": {
+        "q": "Ý tưởng nổi bật là gì?",
+        "a": "Ý tưởng nổi bật được hiển thị trên Dashboard và xếp hạng theo mức độ tương tác: điểm bình chọn trung bình, sau đó là số lượt thích, sau đó là tổng tương tác (thích + bình luận), và cuối cùng là thời gian. Chỉ hiển thị ý tưởng trong phòng bạn có quyền truy cập."
       }
     },
     "events": {
       "title": "Sự kiện & Cuộc thi",
       "q1": {
         "q": "Sự kiện là gì?",
-        "a": "Sự kiện là các cuộc thi đổi mới sáng tạo có cấu trúc do quản trị viên tạo. Mỗi sự kiện có các tab: Giới thiệu, Đội, Ý tưởng, Bảng xếp hạng, và FAQ. Sự kiện trải qua 3 giai đoạn: Nháp (đang chuẩn bị), Đang diễn ra (đội có thể tham gia), và Đã kết thúc (chỉ xem)."
+        "a": "Sự kiện là các cuộc thi đổi mới sáng tạo có cấu trúc do quản trị viên tạo. Mỗi sự kiện có các tab: Giới thiệu, Đội, Ý tưởng, Bảng xếp hạng, FAQ, và Bục Vinh Quang. Sự kiện trải qua 3 giai đoạn: Nháp (đang chuẩn bị), Đang diễn ra (đội có thể tham gia), và Đã kết thúc (chỉ xem)."
       },
       "q2": {
         "q": "Làm thế nào để tham gia đội sự kiện?",

@@ -128,7 +128,7 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 | **Dashboard** | Bảng xếp hạng ý tưởng theo điểm, đội theo số lượng ý tưởng. Real-time update. |
 | **FAQ** | Q&A đơn giản cho mỗi sự kiện. |
 
-#### Chi tiết 5 Tab trong Event Page:
+#### Chi tiết 6 Tab trong Event Page:
 
 **Tab 1 — Introduction:**
 - Hiển thị nội dung giới thiệu về sự kiện
@@ -156,6 +156,11 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 **Tab 5 — FAQ:**
 - Accordion Q&A
 - User tạo câu hỏi, Admin trả lời
+
+**Tab 6 — Awards (Bục Vinh Quang):**
+- Admin tạo các giải thưởng (Gold, Silver, Bronze...)
+- Gán đội vào giải thưởng tương ứng
+- Hiển thị đội chiến thắng cho tất cả users
 
 #### Form Submit Idea (Structured):
 
@@ -237,12 +242,27 @@ Problem (public/private) ← Độc lập
 
 ### 📊 Module 4: Dashboard & Thống kê (Phục vụ OKR)
 
+Hệ thống có 2 giao diện Dashboard:
+
+**User Dashboard** (cho tất cả users):
 | Chỉ số hiển thị | Ý nghĩa |
 |:----------------|:--------|
-| **Tổng ý tưởng** | Đếm số lượng ý tưởng trong Brainstorming (Theo dõi mục tiêu 50 ý tưởng/năm) |
-| **Tỷ lệ Tương tác** | % Vấn đề/Ý tưởng có ít nhất 1 comment (Theo dõi mục tiêu 70%) |
-| **Top Contributors** | Bảng vàng thành viên đóng góp nhiều nhất (Gamification nhẹ) |
-| **Pipeline** | Biểu đồ ý tưởng đang ở trạng thái nào (Bao nhiêu % đã chuyển sang Pilot - mục tiêu 20%) |
+| **Stat Cards** | Tổng Problems, Active Brainstorms, Tổng Ideas, Active Events — với % thay đổi so kỳ trước |
+| **Trending Ideas** | Ý tưởng nổi bật, sort theo engagement (vote avg → likes → comments → thời gian) |
+| **Recent Activity** | Feed hoạt động gần đây (tạo problem, idea, comment, reaction, vote, room) — privacy-filtered |
+| **Top Contributors** | Bảng vàng thành viên đóng góp nhiều nhất |
+| **Quick Actions** | Nút tắt: Share Problem, Create Brainstorm, Join Event |
+
+**Admin Analytics** (cho Admin, xem full data bất kể privacy):
+| Chỉ số hiển thị | Ý nghĩa |
+|:----------------|:--------|
+| **Stats Grid** | Tổng Problems, Active Brainstorms, Ideas, Events — với % thay đổi + hints |
+| **Interaction Rate** | % Problems/Ideas có ít nhất 1 comment |
+| **Resolved Problems** | Problems đã giải quyết hoặc đóng |
+| **Activity Over Time** | Biểu đồ đường: Problems, Ideas, Comments theo ngày |
+| **Category Distribution** | Biểu đồ donut: Phân loại Problems theo danh mục |
+| **Status Breakdowns** | Phân bố Problems/Ideas theo status, thanh progress |
+| **Date Range Filter** | Lọc theo khoảng thời gian tùy ý |
 
 ---
 
@@ -286,9 +306,9 @@ Problem (public/private) ← Độc lập
 | **Frontend** | React.js + TipTap Editor | Tương tác nhanh, rich text editor cho Event form |
 | **Backend** | Python (FastAPI) | Xử lý bất đồng bộ tốt cho comment/vote, JSONB support |
 | **Database** | PostgreSQL (JSONB) | Lưu trữ quan hệ + TipTap JSON content (JSONB fields cho event_ideas) |
-| **Real-time** | Socket.io | Comment xuất hiện ngay không cần refresh |
+| **Storage** | MinIO | Lưu trữ file (avatar, attachments) |
 | **Authentication** | JWT (JSON Web Token) | Đơn giản, stateless cho web app |
-| **Deploy** | Docker + VPS/Internal Server | Dễ maintain cho team nhỏ |
+| **Deploy** | Docker Compose | Dễ maintain cho team nhỏ, Nginx reverse proxy |
 
 ---
 

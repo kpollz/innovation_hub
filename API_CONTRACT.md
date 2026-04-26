@@ -1,7 +1,7 @@
 # API CONTRACT - Innovation Hub
 
 **Version**: 1.0
-**Cập nhật**: 2026-03-16
+**Cập nhật**: 2026-04-26
 **Mục đích**: Nguồn sự thật duy nhất (Single Source of Truth) cho cả Backend và Frontend.
 
 > **Quy tắc**: Khi cần thay đổi API, sửa file này TRƯỚC, rồi cập nhật BE và FE theo.
@@ -708,10 +708,74 @@ Authorization: Bearer <access_token>
 - **Query**: `?limit=5`
 - **Response:** `ProblemObject[]`
 
-### 9.4 GET `/dashboard/recent-ideas` — Ý tưởng gần đây 🔒
+### 9.4 GET `/dashboard/recent-ideas` — Ý tưởng nổi bật 🔒
 - **Status**: 200 OK
-- **Query**: `?limit=5`
+- **Query**: `?limit=5` (1-20)
+- **Sort**: Engagement-based: `vote_avg DESC → likes_count DESC → (likes + comments) DESC → created_at DESC`
+- **Privacy**: Chỉ trả về ideas trong rooms mà user có quyền xem
 - **Response:** `IdeaObject[]`
+
+### 9.5 GET `/dashboard/activity-over-time` — Hoạt động theo thời gian 🔒
+- **Status**: 200 OK
+- **Query**: `?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD` (cả 2 đều tùy chọn)
+- **Default**: 7 ngày gần nhất
+- **Response:**
+```json
+[
+  {
+    "date": "2026-04-20",
+    "day_name": "Sunday",
+    "problems": 2,
+    "ideas": 5,
+    "comments": 12
+  }
+]
+```
+
+### 9.6 GET `/dashboard/problems-by-category` — Phân loại problems 🔒
+- **Status**: 200 OK
+- **Query**: `?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD` (cả 2 đều tùy chọn)
+- **Response:**
+```json
+{
+  "process": 5,
+  "technical": 3,
+  "people": 2,
+  "tools": 1,
+  "patent": 0
+}
+```
+
+### 9.7 GET `/dashboard/recent-activity` — Hoạt động gần đây 🔒
+- **Status**: 200 OK
+- **Query**: `?limit=20` (1-50, mặc định 20)
+- **Auth**: Mở cho tất cả authenticated users (không chỉ admin)
+- **Privacy**: Chỉ trả về activity trên entities mà user có quyền xem (public, owned, shared, hoặc admin)
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "type": "problem_created | idea_created | comment_added | reaction_added | vote_added | room_created",
+    "actor": {
+      "id": "uuid",
+      "username": "string",
+      "full_name": "string | null",
+      "avatar_url": "string | null"
+    },
+    "target_title": "string",
+    "target_id": "uuid",
+    "target_type": "problem | idea | room",
+    "created_at": "datetime",
+    "extra": { "stars": 5 } | null
+  }
+]
+```
+
+> **Activity types**: `problem_created` (tạo problem), `idea_created` (tạo idea), `comment_added` (bình luận), `reaction_added` (thả reaction), `vote_added` (vote sao), `room_created` (tạo room).
+>
+> **Privacy filtering**: Backend tự động filter — chỉ hiện activity liên quan đến Problem/Room/Idea mà current user được xem. Admin thấy tất cả.
 
 ---
 
@@ -760,6 +824,11 @@ Authorization: Bearer <access_token>
 | `reaction_added` | Loại reaction | "like", "dislike", "insight" | - |
 | `vote_added` | Số sao (1-5) | "5" | - |
 | `status_changed` | Status cũ → mới | "open → brainstorming" | - |
+| `event_join_request` | Tên team | "Team Alpha" | - |
+| `event_join_approved` | Tên team | "Team Alpha" | - |
+| `event_join_rejected` | Tên team | "Team Alpha" | - |
+| `event_idea_submitted` | Tiêu đề idea | "Auto-approval cho nghỉ <1 ngày" | - |
+| `event_scored` | Tổng điểm + team chấm | "35.5/40 từ Team Beta" | - |
 
 ### 10.2 GET `/notifications/unread-count` — Số thông báo chưa đọc 🔒
 - **Status**: 200 OK
@@ -786,14 +855,19 @@ Authorization: Bearer <access_token>
 ```
 
 **Notification triggers:**
-| Hành động | Type | Target |
-|-----------|------|--------|
-| Comment mới | comment_added | problem/idea |
-| Reaction mới | reaction_added | problem/idea |
-| Vote mới | vote_added | idea |
-| Đổi trạng thái | status_changed | problem/idea |
+| Hành động | Type | Target | Recipient |
+|-----------|------|--------|-----------|
+| Comment mới | comment_added | problem/idea | Owner + users đã tương tác |
+| Reaction mới | reaction_added | problem/idea | Owner |
+| Vote mới | vote_added | idea | Owner |
+| Đổi trạng thái | status_changed | problem/idea | Owner |
+| Xin tham gia đội | event_join_request | event | Team Lead |
+| Được duyệt | event_join_approved | event | User xin |
+| Bị từ chối | event_join_rejected | event | User xin |
+| Idea mới submit | event_idea_submitted | event_idea | Admin |
+| Được chấm điểm | event_scored | event_idea | Team Lead của idea |
 
-Recipients: Owner của target + tất cả users đã tương tác (comment/reaction/vote), trừ actor.
+Recipients (cho comment/reaction/vote/status_changed): Owner của target + tất cả users đã tương tác (comment/reaction/vote), trừ actor.
 
 ---
 
@@ -872,42 +946,33 @@ active → archived
 
 ---
 
-## 12. BẢNG SO SÁNH: Contract vs Code hiện tại
+## 12. TRẠNG THÁI IMPLEMENTATION
 
-### Backend cần thêm/sửa:
+> Tất cả endpoints trong contract đã được implement đầy đủ. Bảng dưới đây lưu lại lịch sử migration từ早期的 contract gaps.
+
+### Đã hoàn thành (trước 2026-04):
 | Endpoint | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| POST /problems/{id}/reactions | ❌ THIẾU | Cần tạo mới |
-| DELETE /problems/{id}/reactions | ❌ THIẾU | Cần tạo mới |
-| POST /ideas/{id}/reactions | ❌ THIẾU | Cần tạo mới |
-| DELETE /ideas/{id}/reactions | ❌ THIẾU | Cần tạo mới |
-| PATCH /rooms/{id} | ❌ THIẾU | Cần tạo mới |
-| POST /problems/{id}/rooms | ❌ THIẾU | Tạo room từ problem (1-click) |
-| DELETE /ideas/{id} | ❌ THIẾU | Cần tạo mới |
-| DELETE /ideas/{id}/votes | ❌ THIẾU | Cần tạo mới |
-| PUT /auth/password | ❌ THIẾU | Đổi mật khẩu |
-| GET /dashboard/top-contributors | ❌ THIẾU | Cần tạo mới |
-| GET /dashboard/recent-problems | ❌ THIẾU | Cần tạo mới |
-| GET /dashboard/recent-ideas | ❌ THIẾU | Cần tạo mới |
-| GET /dashboard/stats | ⚠️ SỬA | Interaction_rate, new_this_week đang hardcode = 0 |
-| POST /auth/refresh | ⚠️ SỬA | Response trả user placeholder, cần fetch user thật |
-| ProblemObject response | ⚠️ SỬA | Cần thêm author, counts (likes, comments,...) |
-| IdeaObject response | ⚠️ SỬA | Cần thêm author, vote_avg, vote_count, comments_count |
-| RoomObject response | ⚠️ SỬA | Cần thêm creator, idea_count, participant_count |
-
-### Frontend cần sửa:
-| API Call hiện tại | Cần đổi thành | Ghi chú |
-|------------------|--------------|---------|
-| POST /problems/{id}/reactions `{reaction_type}` | POST /problems/{id}/reactions `{type}` | Đổi field name |
-| PUT /problems/{id} | PATCH /problems/{id} | Đổi method |
-| POST /rooms/{id}/ideas | POST /ideas `{room_id}` | Đổi path, thêm room_id vào body |
-| PUT /rooms/{id}/ideas/{ideaId} | PATCH /ideas/{ideaId} | Đổi path + method |
-| POST /rooms/{id}/ideas/{id}/vote `{score}` | POST /ideas/{id}/votes `{stars}` | Đổi path + field name + range (1-5) |
-| GET /rooms/{id}/ideas | GET /ideas?room_id={id} | Đổi path, dùng query param |
-| ProblemStatus type | Thêm `discussing` | Thiếu trong frontend types |
-| Room create `{linked_problem_id}` | `{problem_id}` | Đổi field name |
-| Room response `facilitator` | `creator` | Đổi field name |
-| Vote score 1-10 | stars 1-5 | Đổi range + field name |
+| POST /problems/{id}/reactions | ✅ DONE | Reactions CRUD |
+| DELETE /problems/{id}/reactions | ✅ DONE | Toggle/delete reaction |
+| POST /ideas/{id}/reactions | ✅ DONE | Idea reactions |
+| DELETE /ideas/{id}/reactions | ✅ DONE | Idea reaction delete |
+| PATCH /rooms/{id} | ✅ DONE | Room update + privacy |
+| POST /problems/{id}/rooms | ✅ DONE | 1-click brainstorm room |
+| DELETE /ideas/{id} | ✅ DONE | Soft delete |
+| DELETE /ideas/{id}/votes | ✅ DONE | Remove vote |
+| PUT /auth/password | ✅ DONE | Change password |
+| GET /dashboard/top-contributors | ✅ DONE | Leaderboard |
+| GET /dashboard/recent-problems | ✅ DONE | Recent problems |
+| GET /dashboard/recent-ideas | ✅ DONE | Trending ideas (engagement sort) |
+| GET /dashboard/activity-over-time | ✅ DONE | Daily activity chart |
+| GET /dashboard/problems-by-category | ✅ DONE | Category distribution |
+| GET /dashboard/recent-activity | ✅ DONE | Activity feed + privacy filter |
+| GET /dashboard/stats | ✅ DONE | Full stats with interaction_rate |
+| POST /auth/refresh | ✅ DONE | Returns real user data |
+| ProblemObject enrichment | ✅ DONE | author, counts, user_reaction |
+| IdeaObject enrichment | ✅ DONE | author, vote_avg, comments_count |
+| RoomObject enrichment | ✅ DONE | creator, idea_count, participant_count |
 
 ---
 

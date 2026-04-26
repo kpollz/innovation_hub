@@ -260,7 +260,7 @@ See `API_CONTRACT.md` for the complete API specification (Single Source of Truth
 
 > **CRITICAL**: When changing API behavior, update `API_CONTRACT.md` FIRST, then implement in backend and frontend.
 
-The API Contract includes a comparison table (Section 12) showing what is implemented versus what is missing. Check it before implementing new endpoints. Notable gaps as of the last contract update include some reaction endpoints, room PATCH, idea DELETE, vote DELETE, and several dashboard endpoints.
+The API Contract includes a status table (Section 12) showing implementation history. All endpoints documented in the contract have been fully implemented.
 
 ## Database Schema
 
