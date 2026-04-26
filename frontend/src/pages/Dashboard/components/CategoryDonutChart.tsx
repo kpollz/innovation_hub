@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 const COLORS: Record<string, string> = {
@@ -30,7 +30,7 @@ export const CategoryDonutChart: React.FC<CategoryDonutChartProps> = ({ data }) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('dashboard.problem_categories')}</CardTitle>
+        <CardTitle title={t('dashboard.hint_categories')}>{t('dashboard.problem_categories')}</CardTitle>
       </CardHeader>
       <CardContent>
         {entries.length === 0 ? (
@@ -40,6 +40,15 @@ export const CategoryDonutChart: React.FC<CategoryDonutChartProps> = ({ data }) 
             <div className="relative flex items-center justify-center">
               <ResponsiveContainer width={200} height={200}>
                 <PieChart>
+                  <Tooltip
+                    formatter={(value: number, name: string) => [`${value}`, name]}
+                    contentStyle={{
+                      borderRadius: 8,
+                      fontSize: 13,
+                      border: '1px solid var(--border)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    }}
+                  />
                   <Pie
                     data={chartData}
                     cx="50%"

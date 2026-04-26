@@ -6,6 +6,7 @@ import {
   Rocket,
   Activity,
   Trophy,
+  BarChart3,
   X,
 } from 'lucide-react';
 import { dashboardApi } from '@/api/dashboard';
@@ -25,27 +26,33 @@ const StatCard: React.FC<{
   icon: React.ElementType;
   color: string;
   change?: string;
-}> = ({ title, value, icon: Icon, color, change }) => (
-  <Card>
-    <CardContent className="p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className={`p-2.5 rounded-xl ${color}`}>
-          <Icon className="h-5 w-5 text-white" />
+  hint?: string;
+}> = ({ title, value, icon: Icon, color, change, hint }) => (
+  <div title={hint}>
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className={`p-2.5 rounded-xl ${color}`}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          {change !== undefined && (
+            <span
+              title={hint}
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                change === '—' ? 'bg-secondary text-muted-foreground' :
+                change.startsWith('+') ? 'bg-green-100 text-green-700' :
+                'bg-red-100 text-red-700'
+              }`}
+            >
+              {change}
+            </span>
+          )}
         </div>
-        {change !== undefined && (
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-            change === '—' ? 'bg-secondary text-muted-foreground' :
-            change.startsWith('+') ? 'bg-green-100 text-green-700' :
-            'bg-red-100 text-red-700'
-          }`}>
-            {change}
-          </span>
-        )}
-      </div>
-      <p className="text-2xl font-semibold text-foreground">{value}</p>
-      <p className="text-sm text-muted-foreground mt-1">{title}</p>
-    </CardContent>
-  </Card>
+        <p className="text-2xl font-semibold text-foreground">{value}</p>
+        <p className="text-sm text-muted-foreground mt-1">{title}</p>
+      </CardContent>
+    </Card>
+  </div>
 );
 
 function computeChange(current: number, previous: number): string {
@@ -132,7 +139,10 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-section-heading font-bold text-foreground">{t('dashboard.title')}</h1>
+          <h1 className="text-section-heading font-bold text-foreground flex items-center gap-2">
+            <BarChart3 className="h-7 w-7 text-primary-600" />
+            {t('dashboard.analytics_title')}
+          </h1>
           <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -178,6 +188,7 @@ export const DashboardPage: React.FC = () => {
           icon={AlertCircle}
           color="bg-blue-600"
           change={prevStats ? computeChange(stats?.total_problems || 0, prevStats.total_problems) : '—'}
+          hint={t('dashboard.hint_total_problems')}
         />
         <StatCard
           title={t('dashboard.active_brainstorms')}
@@ -185,6 +196,7 @@ export const DashboardPage: React.FC = () => {
           icon={Lightbulb}
           color="bg-amber-500"
           change={prevStats ? computeChange(stats?.total_rooms || 0, prevStats.total_rooms) : '—'}
+          hint={t('dashboard.hint_active_brainstorms')}
         />
         <StatCard
           title={t('dashboard.total_ideas')}
@@ -192,6 +204,7 @@ export const DashboardPage: React.FC = () => {
           icon={Rocket}
           color="bg-green-600"
           change={prevStats ? computeChange(stats?.total_ideas || 0, prevStats.total_ideas) : '—'}
+          hint={t('dashboard.hint_total_ideas')}
         />
         <StatCard
           title={t('dashboard.active_events')}
@@ -199,36 +212,41 @@ export const DashboardPage: React.FC = () => {
           icon={Trophy}
           color="bg-cyan-600"
           change="—"
+          hint={t('dashboard.hint_active_events')}
         />
       </div>
 
       {/* Interaction Rate + Resolved */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <Activity className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('dashboard.interaction_rate')}</p>
-                <p className="text-feature-title font-bold text-foreground">
-                  {stats.interaction_rate?.toFixed(1) || 0}%
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-xl">
-                <Rocket className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('dashboard.resolved_problems')}</p>
-                <p className="text-feature-title font-bold text-foreground">{stats.resolved_problems || 0}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div title={t('dashboard.hint_interaction_rate')}>
+            <Card>
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.interaction_rate')}</p>
+                  <p className="text-feature-title font-bold text-foreground">
+                    {stats.interaction_rate?.toFixed(1) || 0}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div title={t('dashboard.hint_resolved')}>
+            <Card>
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <Rocket className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.resolved_problems')}</p>
+                  <p className="text-feature-title font-bold text-foreground">{stats.resolved_problems || 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 

@@ -113,6 +113,7 @@
   },
   "dashboard": {
     "title": "Tổng quan",
+    "analytics_title": "Bảng Phân Tích",
     "subtitle": "Thống kê nền tảng",
     "welcome": "Chào mừng đến Innovation Hub",
     "total_ideas": "Tổng ý tưởng",
@@ -132,13 +133,24 @@
     "activity_problem": "{{name}} đã tạo vấn đề \"{{title}}\"",
     "activity_idea": "{{name}} đã tạo ý tưởng \"{{title}}\"",
     "activity_comment": "{{name}} đã bình luận về \"{{title}}\"",
+    "activity_reaction": "{{name}} đã thả {{reaction_type}} vào \"{{title}}\"",
+    "activity_vote": "{{name}} đã đánh giá {{stars}}★ cho \"{{title}}\"",
+    "activity_room": "{{name}} đã tạo phòng brainstorm \"{{title}}\"",
     "ideas": "ý tưởng",
     "problems": "Vấn đề",
     "comments": "Bình luận",
     "votes": "phiếu bầu",
     "date_from": "Từ ngày",
     "date_to": "Đến ngày",
-    "clear_filter": "Xóa bộ lọc ngày"
+    "clear_filter": "Xóa bộ lọc ngày",
+    "hint_total_problems": "Tổng số vấn đề được chia sẻ trên nền tảng",
+    "hint_active_brainstorms": "Số phòng brainstorm đang hoạt động",
+    "hint_total_ideas": "Tổng số ý tưởng được gửi trong tất cả phòng",
+    "hint_active_events": "Số sự kiện đang nhận bài dự thi",
+    "hint_interaction_rate": "Tỷ lệ phần trăm vấn đề và ý tưởng có ít nhất 1 bình luận",
+    "hint_resolved": "Số vấn đề đã được giải quyết hoặc đóng",
+    "hint_categories": "Phân bổ vấn đề theo danh mục",
+    "hint_stat_change": "So với kỳ trước"
   },
   "userDashboard": {
     "greeting_morning": "Chào buổi sáng, {{name}}!",

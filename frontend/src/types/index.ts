@@ -291,7 +291,9 @@ export interface ActivityItem {
   actor: ActivityActor;
   target_title: string;
   target_id: string;
+  target_type: 'problem' | 'idea' | 'room';
   created_at: string;
+  extra?: Record<string, unknown> | null;
 }
 
 // Notification Types

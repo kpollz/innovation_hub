@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Lightbulb, AlertCircle } from 'lucide-react';
+import { MessageCircle, Lightbulb, AlertCircle, ThumbsUp, Star, BrainCircuit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { timeAgo } from '@/utils/helpers';
@@ -15,6 +15,15 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bgCo
   problem_created: { icon: AlertCircle, color: '#2563eb', bgColor: 'bg-blue-100' },
   idea_created: { icon: Lightbulb, color: '#fbbd41', bgColor: 'bg-amber-100' },
   comment_added: { icon: MessageCircle, color: '#9333ea', bgColor: 'bg-purple-100' },
+  reaction_added: { icon: ThumbsUp, color: '#16a34a', bgColor: 'bg-green-100' },
+  vote_added: { icon: Star, color: '#d97706', bgColor: 'bg-amber-100' },
+  room_created: { icon: BrainCircuit, color: '#0891b2', bgColor: 'bg-cyan-100' },
+};
+
+const TARGET_ROUTE: Record<string, string> = {
+  problem: '/problems',
+  idea: '/ideas',
+  room: '/rooms',
 };
 
 export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ items }) => {
@@ -43,15 +52,22 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ items })
                 text = t('dashboard.activity_idea', { name: actorName, title: item.target_title });
               } else if (item.type === 'comment_added') {
                 text = t('dashboard.activity_comment', { name: actorName, title: item.target_title });
+              } else if (item.type === 'reaction_added') {
+                const reactionType = (item.extra?.reaction_type as string) || 'like';
+                text = t('dashboard.activity_reaction', { name: actorName, title: item.target_title, reaction_type: reactionType });
+              } else if (item.type === 'vote_added') {
+                const stars = item.extra?.stars as number | undefined;
+                text = t('dashboard.activity_vote', { name: actorName, title: item.target_title, stars: stars || 0 });
+              } else if (item.type === 'room_created') {
+                text = t('dashboard.activity_room', { name: actorName, title: item.target_title });
               }
+
+              const basePath = TARGET_ROUTE[item.target_type] || '/problems';
 
               return (
                 <div
                   key={item.id}
-                  onClick={() => {
-                    if (item.type === 'problem_created') navigate(`/problems/${item.target_id}`);
-                    else if (item.type === 'idea_created') navigate(`/ideas/${item.target_id}`);
-                  }}
+                  onClick={() => navigate(`${basePath}/${item.target_id}`)}
                   className="flex items-start gap-3 p-3 rounded-xl hover:bg-secondary transition-colors cursor-pointer"
                 >
                   <div className={`w-8 h-8 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0`}>

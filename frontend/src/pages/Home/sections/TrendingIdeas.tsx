@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Star, ThumbsUp } from 'lucide-react';
+import { ArrowRight, Star, ThumbsUp, MessageCircle, Lightbulb } from 'lucide-react';
 import type { Idea } from '@/types';
 
 interface TrendingIdeasProps {
@@ -39,7 +39,7 @@ export const TrendingIdeas: React.FC<TrendingIdeasProps> = ({ ideas }) => {
                 {idea.summary && (
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{idea.summary}</p>
                 )}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 flex-wrap">
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="w-3.5 h-3.5 text-amber-500" />
                     {idea.vote_avg?.toFixed(1) || '0.0'}
@@ -47,6 +47,14 @@ export const TrendingIdeas: React.FC<TrendingIdeasProps> = ({ ideas }) => {
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <ThumbsUp className="w-3.5 h-3.5" />
                     {idea.likes_count || 0}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    {idea.comments_count || 0}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                    {idea.insights_count || 0}
                   </span>
                 </div>
               </div>

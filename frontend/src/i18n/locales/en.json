@@ -119,6 +119,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "analytics_title": "Analytics Dashboard",
     "subtitle": "Platform analytics overview",
     "welcome": "Welcome to Innovation Hub",
     "total_ideas": "Total Ideas",
@@ -138,13 +139,24 @@
     "activity_problem": "{{name}} created problem \"{{title}}\"",
     "activity_idea": "{{name}} created idea \"{{title}}\"",
     "activity_comment": "{{name}} commented on \"{{title}}\"",
+    "activity_reaction": "{{name}} reacted {{reaction_type}} on \"{{title}}\"",
+    "activity_vote": "{{name}} voted {{stars}}★ on \"{{title}}\"",
+    "activity_room": "{{name}} created brainstorm room \"{{title}}\"",
     "ideas": "ideas",
     "problems": "Problems",
     "comments": "Comments",
     "votes": "votes",
     "date_from": "From",
     "date_to": "To",
-    "clear_filter": "Clear date filter"
+    "clear_filter": "Clear date filter",
+    "hint_total_problems": "Total number of problems shared on the platform",
+    "hint_active_brainstorms": "Active brainstorm rooms currently open",
+    "hint_total_ideas": "Total ideas submitted across all rooms",
+    "hint_active_events": "Events currently accepting submissions",
+    "hint_interaction_rate": "Percentage of problems and ideas that have at least 1 comment",
+    "hint_resolved": "Problems that have been solved or closed",
+    "hint_categories": "Distribution of problems by category",
+    "hint_stat_change": "Compared to the previous period"
   },
   "userDashboard": {
     "greeting_morning": "Good morning, {{name}}!",
