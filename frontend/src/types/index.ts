@@ -268,7 +268,30 @@ export interface TopContributor {
   user: User;
   problems_count: number;
   ideas_count: number;
-  votes_received: number;
+}
+
+export interface DailyActivity {
+  date: string;
+  day_name: string;
+  problems: number;
+  ideas: number;
+  comments: number;
+}
+
+export interface ActivityActor {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface ActivityItem {
+  id: string;
+  type: string;
+  actor: ActivityActor;
+  target_title: string;
+  target_id: string;
+  created_at: string;
 }
 
 // Notification Types

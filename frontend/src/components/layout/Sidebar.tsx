@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Lightbulb,
   LayoutDashboard,
+  BarChart3,
   Users,
   Trophy,
   ChevronDown,
@@ -24,13 +25,14 @@ import type { EventObject } from '@/types';
 
 const navItems = [
   { path: '/', label: 'nav.home', icon: Home },
+  { path: '/dashboard', label: 'nav.user_dashboard', icon: LayoutDashboard },
   { path: '/problems', label: 'nav.problem_feed', icon: AlertCircle },
   { path: '/rooms', label: 'nav.idea_lab', icon: Lightbulb },
   { path: '/help', label: 'nav.help', icon: HelpCircle },
 ];
 
 const adminNavItems = [
-  { path: '/admin', label: 'nav.dashboard', icon: LayoutDashboard },
+  { path: '/admin', label: 'nav.analytics', icon: BarChart3 },
   { path: '/admin/users', label: 'nav.user_management', icon: Users },
 ];
 

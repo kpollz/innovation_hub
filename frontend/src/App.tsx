@@ -11,6 +11,7 @@ import { LoginPage } from '@/pages/Login/LoginPage';
 import { RegisterPage } from '@/pages/Register/RegisterPage';
 import { LandingPage } from '@/pages/Landing/LandingPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
+import { UserDashboardPage } from '@/pages/Home/UserDashboardPage';
 import { ProblemFeedPage } from '@/pages/ProblemFeed/ProblemFeedPage';
 import { CreateProblemPage } from '@/pages/ProblemFeed/CreateProblemPage';
 import { EditProblemPage } from '@/pages/ProblemFeed/EditProblemPage';
@@ -45,6 +46,7 @@ function AnimatedRoutes() {
               <MainLayout>
                 <Routes>
                   <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+                  <Route path="/dashboard" element={<PageTransition><UserDashboardPage /></PageTransition>} />
                   <Route path="/admin" element={<PageTransition><DashboardPage /></PageTransition>} />
                   <Route path="/problems" element={<PageTransition><ProblemFeedPage /></PageTransition>} />
                   <Route path="/problems/new" element={<PageTransition><CreateProblemPage /></PageTransition>} />

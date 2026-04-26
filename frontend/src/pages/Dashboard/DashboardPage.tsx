@@ -2,46 +2,65 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Lightbulb,
-  MessageCircle,
   AlertCircle,
   Rocket,
   Activity,
-  X
+  Trophy,
+  X,
 } from 'lucide-react';
 import { dashboardApi } from '@/api/dashboard';
+import { eventsApi } from '@/api/events';
 import type { DateRangeParams } from '@/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Avatar } from '@/components/ui/Avatar';
-import { PROBLEM_STATUSES, IDEA_STATUSES } from '@/utils/constants';
 import { DatePicker } from '@/components/ui/DatePicker';
-import type { DashboardStats, TopContributor } from '@/types';
+import { ActivityOverTimeChart } from './components/ActivityOverTimeChart';
+import { CategoryDonutChart } from './components/CategoryDonutChart';
+import { PROBLEM_STATUSES, IDEA_STATUSES } from '@/utils/constants';
+import type { DashboardStats, DailyActivity } from '@/types';
 
 const StatCard: React.FC<{
   title: string;
   value: number | string;
   icon: React.ElementType;
   color: string;
-}> = ({ title, value, icon: Icon, color }) => (
+  change?: string;
+}> = ({ title, value, icon: Icon, color, change }) => (
   <Card>
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-card-heading font-bold text-foreground mt-2">{value}</p>
+    <CardContent className="p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`p-2.5 rounded-xl ${color}`}>
+          <Icon className="h-5 w-5 text-white" />
         </div>
-        <div className={`p-4 rounded-xl ${color}`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
+        {change !== undefined && (
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+            change === '—' ? 'bg-secondary text-muted-foreground' :
+            change.startsWith('+') ? 'bg-green-100 text-green-700' :
+            'bg-red-100 text-red-700'
+          }`}>
+            {change}
+          </span>
+        )}
       </div>
+      <p className="text-2xl font-semibold text-foreground">{value}</p>
+      <p className="text-sm text-muted-foreground mt-1">{title}</p>
     </CardContent>
   </Card>
 );
 
+function computeChange(current: number, previous: number): string {
+  if (previous === 0) return current > 0 ? '+100%' : '—';
+  const pct = ((current - previous) / previous * 100).toFixed(0);
+  return pct.startsWith('-') ? `${pct}%` : `+${pct}%`;
+}
+
 export const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [contributors, setContributors] = useState<TopContributor[]>([]);
+  const [prevStats, setPrevStats] = useState<DashboardStats | null>(null);
+  const [activityOverTime, setActivityOverTime] = useState<DailyActivity[]>([]);
+  const [problemsByCategory, setProblemsByCategory] = useState<Record<string, number>>({});
+  const [activeEvents, setActiveEvents] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -53,12 +72,44 @@ export const DashboardPage: React.FC = () => {
       if (dateFrom) range.date_from = dateFrom;
       if (dateTo) range.date_to = dateTo;
 
-      const [statsData, contributorsData] = await Promise.all([
+      let prevRange: DateRangeParams = {};
+      if (range.date_from && range.date_to) {
+        const start = new Date(range.date_from);
+        const end = new Date(range.date_to);
+        const diff = end.getTime() - start.getTime();
+        prevRange = {
+          date_from: new Date(start.getTime() - diff - 86400000).toISOString().split('T')[0],
+          date_to: new Date(start.getTime() - 86400000).toISOString().split('T')[0],
+        };
+      } else {
+        const today = new Date();
+        const weekAgo = new Date(today.getTime() - 7 * 86400000);
+        const twoWeeksAgo = new Date(today.getTime() - 14 * 86400000);
+        prevRange = {
+          date_from: twoWeeksAgo.toISOString().split('T')[0],
+          date_to: new Date(weekAgo.getTime() - 86400000).toISOString().split('T')[0],
+        };
+      }
+
+      const [
+        statsData,
+        prevStatsData,
+        activityData,
+        categoryData,
+        eventsRes,
+      ] = await Promise.all([
         dashboardApi.getStats(Object.keys(range).length ? range : undefined),
-        dashboardApi.getTopContributors(5, Object.keys(range).length ? range : undefined),
+        dashboardApi.getStats(prevRange),
+        dashboardApi.getActivityOverTime(Object.keys(range).length ? range : undefined),
+        dashboardApi.getProblemsByCategory(Object.keys(range).length ? range : undefined),
+        eventsApi.list({ status: 'active', limit: 1 }),
       ]);
+
       setStats(statsData);
-      setContributors(contributorsData);
+      setPrevStats(prevStatsData);
+      setActivityOverTime(activityData);
+      setProblemsByCategory(categoryData);
+      setActiveEvents(eventsRes.total);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -82,7 +133,7 @@ export const DashboardPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-section-heading font-bold text-foreground">{t('dashboard.title')}</h1>
-          <p className="text-muted-foreground mt-1">{t('dashboard.welcome')}</p>
+          <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <DatePicker
@@ -90,7 +141,7 @@ export const DashboardPage: React.FC = () => {
             onChange={setDateFrom}
             max={dateTo || undefined}
             placeholder={t('dashboard.date_from')}
-            className="w-[180px]"
+            className="w-[160px]"
           />
           <span className="text-muted-foreground">→</span>
           <DatePicker
@@ -98,7 +149,7 @@ export const DashboardPage: React.FC = () => {
             onChange={setDateTo}
             min={dateFrom || undefined}
             placeholder={t('dashboard.date_to')}
-            className="w-[180px]"
+            className="w-[160px]"
             align="right"
           />
           {hasDateFilter && (
@@ -120,24 +171,34 @@ export const DashboardPage: React.FC = () => {
       ) : (
       <>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard
-          title={t('dashboard.total_ideas')}
-          value={stats?.total_ideas || 0}
-          icon={Lightbulb}
-          color="bg-primary-600"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title={t('dashboard.total_problems')}
           value={stats?.total_problems || 0}
           icon={AlertCircle}
-          color="bg-warning-500"
+          color="bg-blue-600"
+          change={prevStats ? computeChange(stats?.total_problems || 0, prevStats.total_problems) : '—'}
         />
         <StatCard
-          title={t('dashboard.active_rooms')}
+          title={t('dashboard.active_brainstorms')}
           value={stats?.total_rooms || 0}
-          icon={MessageCircle}
-          color="bg-success-500"
+          icon={Lightbulb}
+          color="bg-amber-500"
+          change={prevStats ? computeChange(stats?.total_rooms || 0, prevStats.total_rooms) : '—'}
+        />
+        <StatCard
+          title={t('dashboard.total_ideas')}
+          value={stats?.total_ideas || 0}
+          icon={Rocket}
+          color="bg-green-600"
+          change={prevStats ? computeChange(stats?.total_ideas || 0, prevStats.total_ideas) : '—'}
+        />
+        <StatCard
+          title={t('dashboard.active_events')}
+          value={activeEvents}
+          icon={Trophy}
+          color="bg-cyan-600"
+          change="—"
         />
       </div>
 
@@ -172,6 +233,12 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ActivityOverTimeChart data={activityOverTime} />
+        <CategoryDonutChart data={problemsByCategory} />
+      </div>
+
+      {/* Status Breakdowns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -249,49 +316,6 @@ export const DashboardPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Top Contributors */}
-      {contributors.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.top_contributors')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-border">
-              {contributors.map((contributor, index) => (
-                <div key={contributor.user.id} className="flex items-center justify-between py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
-                      {index + 1}
-                    </div>
-                    <Avatar src={contributor.user.avatar_url} name={contributor.user.full_name || contributor.user.username} size="lg" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {contributor.user.full_name || contributor.user.username}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{contributor.user.team || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Lightbulb className="h-4 w-4" />
-                      {contributor.ideas_count} {t('dashboard.ideas')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {contributor.problems_count} {t('dashboard.problems')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Rocket className="h-4 w-4" />
-                      {contributor.votes_received} {t('dashboard.votes')}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
       </>
       )}
     </div>
