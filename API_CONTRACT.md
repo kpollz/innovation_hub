@@ -338,7 +338,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-> **Lưu ý**: Status phải tuân theo workflow (chỉ tiến, không lùi). Xem chi tiết auto/manual transitions ở Section 11.
+> **Lưu ý**: Status phải tuân theo workflow (chỉ tiến, không lùi). Xem chi tiết auto/manual transitions ở Section 12.
 > - `discussing` và `brainstorming` được hệ thống tự chuyển (không cần gửi qua PATCH)
 > - Qua PATCH chỉ nên chuyển: `solved`, `closed`
 > - Admin có thể thay đổi status. Member chỉ có thể thay đổi status bài của mình.
@@ -902,7 +902,7 @@ Recipients (cho comment/reaction/vote/status_changed): Owner của target + tấ
 
 ---
 
-## 11. STATUS WORKFLOWS
+## 12. STATUS WORKFLOWS
 
 ### Problem Status
 ```
@@ -946,9 +946,9 @@ active → archived
 
 ---
 
-## 12. TRẠNG THÁI IMPLEMENTATION
+## 13. TRẠNG THÁI IMPLEMENTATION
 
-> Tất cả endpoints trong contract đã được implement đầy đủ. Bảng dưới đây lưu lại lịch sử migration từ早期的 contract gaps.
+> Tất cả endpoints trong contract đã được implement đầy đủ. Bảng dưới đây lưu lại lịch sử migration từ contract gaps ban đầu.
 
 ### Đã hoàn thành (trước 2026-04):
 | Endpoint | Trạng thái | Ghi chú |
@@ -976,7 +976,7 @@ active → archived
 
 ---
 
-## 13. PRIVACY RULES (Quy tắc quyền riêng tư)
+## 14. PRIVACY RULES (Quy tắc quyền riêng tư)
 
 ### Nguyên tắc: Problem và Room độc lập, Idea kế thừa Room
 
@@ -1032,7 +1032,7 @@ Problem (visibility: public/private, shared_user_ids)  ← Độc lập
 
 ---
 
-## 14. EVENTS (`/events`) — Quản lý Sự kiện Đổi mới Sáng tạo
+## 15. EVENTS (`/events`) — Quản lý Sự kiện Đổi mới Sáng tạo
 
 > **Context**: Module Event cho phép Admin tổ chức các cuộc thi/chương trình đổi mới sáng tạo nội bộ (ví dụ: "Agentic AI in Mobile"). Event hoạt động như một lớp overlay trên nền tảng hiện tại, tận dụng Problems/Rooms/Ideas có sẵn và bổ sung structured workflow cho competition.
 
@@ -1123,7 +1123,7 @@ Problem (visibility: public/private, shared_user_ids)  ← Độc lập
 
 ---
 
-## 15. EVENT TEAMS (`/events/{event_id}/teams`) — Quản lý Đội
+## 16. EVENT TEAMS (`/events/{event_id}/teams`) — Quản lý Đội
 
 ### EventTeamObject
 ```json
@@ -1266,7 +1266,7 @@ event_team_members: id, team_id, user_id, status (pending|active), joined_at
 
 ---
 
-## 16. EVENT IDEAS (`/events/{event_id}/ideas`) — Ý tưởng trong Sự kiện
+## 17. EVENT IDEAS (`/events/{event_id}/ideas`) — Ý tưởng trong Sự kiện
 
 ### EventIdeaObject
 ```json
@@ -1381,11 +1381,11 @@ event_ideas: id, event_id, team_id, title, user_problem (JSONB), user_scenarios 
 
 **Response:** EventIdeaObject
 
-> **Comments**: Event Ideas hỗ trợ comments qua API `/comments` với `target_type='event_idea'`, `target_id=<idea_id>`. Xem section 7 (Comments) để biết chi tiết.
+> **Comments**: Event Ideas hỗ trợ comments qua API `/comments` với `target_type='event_idea'`, `target_id=<idea_id>`. Xem Section 8 (Comments) để biết chi tiết.
 
 ---
 
-## 17. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm
+## 18. EVENT SCORING (`/events/{event_id}`) — Hệ thống Chấm điểm
 
 > **Tiêu chí chấm điểm cố định**: 8 tiêu chí mặc định (4 Problem + 4 Solution), tự động tạo (auto-seed) khi event lần đầu được truy cập. Không thể tạo/sửa/xóa qua API.
 
@@ -1525,7 +1525,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 18. EVENT FAQ (`/events/{event_id}/faqs`) — Hỏi Đáp
+## 19. EVENT FAQ (`/events/{event_id}/faqs`) — Hỏi Đáp
 
 ### FAQObject
 ```json
@@ -1585,7 +1585,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 19. EVENT DASHBOARD (`/events/{event_id}/dashboard`) — Thống kê Sự kiện
+## 20. EVENT DASHBOARD (`/events/{event_id}/dashboard`) — Thống kê Sự kiện
 
 ### 19.1 GET `/events/{event_id}/dashboard/ideas` — Bảng xếp hạng ý tưởng 🔒
 - **Status**: 200 OK
@@ -1633,7 +1633,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 20. EVENT AWARDS (`/events/{event_id}/awards`) — Bục Vinh Quang
+## 21. EVENT AWARDS (`/events/{event_id}/awards`) — Bục Vinh Quang
 
 ### AwardObject
 ```json
@@ -1691,57 +1691,13 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 21. EVENT NOTIFICATIONS — Mở rộng hệ thống thông báo
+## 22. EVENT NOTIFICATIONS — Mở rộng hệ thống thông báo
 
-### Notification Types mới
-
-| Type | Trigger | Recipient |
-|------|---------|-----------|
-| `event_join_request` | User xin tham gia team | Team Lead của team |
-| `event_join_approved` | Team Lead duyệt yêu cầu | User được duyệt |
-| `event_join_rejected` | Team Lead từ chối yêu cầu | User bị từ chối |
-| `event_idea_submitted` | Idea mới được submit trong event | Admin (+ tùy chọn: Team Leads khác) |
-| `event_scored` | Team chấm điểm cho idea | Team Lead của team sở hữu idea |
-
-### Notification detail format
-
-| Type | action_detail | Ví dụ |
-|------|--------------|-------|
-| `event_join_request` | Team name | "Team Alpha" |
-| `event_join_approved` | Team name | "Team Alpha" |
-| `event_join_rejected` | Team name | "Team Alpha" |
-| `event_idea_submitted` | Idea title | "Auto-approval cho nghỉ <1 ngày" |
-| `event_scored` | Score summary | "35.5/40 từ Team Beta" |
-
-> Sử dụng cấu trúc `notifications` table hiện tại với `target_type = "event"`, `target_id = event_id`.
+> Event notification types và action_detail format đã được tài trợ hóa đầy đủ tại **Section 10** (Notification triggers table và action_detail table). Không lặp lại ở đây.
 
 ---
 
-## 22. EVENT PERMISSIONS — Phân quyền Sự kiện
-
-| Type | Trigger | Recipient |
-|------|---------|-----------|
-| `event_join_request` | User xin tham gia team | Team Lead của team |
-| `event_join_approved` | Team Lead duyệt yêu cầu | User được duyệt |
-| `event_join_rejected` | Team Lead từ chối yêu cầu | User bị từ chối |
-| `event_idea_submitted` | Idea mới được submit trong event | Admin (+ tùy chọn: Team Leads khác) |
-| `event_scored` | Team chấm điểm cho idea | Team Lead của team sở hữu idea |
-
-### Notification detail format
-
-| Type | action_detail | Ví dụ |
-|------|--------------|-------|
-| `event_join_request` | Team name | "Team Alpha" |
-| `event_join_approved` | Team name | "Team Alpha" |
-| `event_join_rejected` | Team name | "Team Alpha" |
-| `event_idea_submitted` | Idea title | "Auto-approval cho nghỉ <1 ngày" |
-| `event_scored` | Score summary | "35.5/40 từ Team Beta" |
-
-> Sử dụng cấu trúc `notifications` table hiện tại với `target_type = "event"`, `target_id = event_id`.
-
----
-
-## 21. EVENT PERMISSIONS — Phân quyền Sự kiện
+## 23. EVENT PERMISSIONS — Phân quyền Sự kiện
 
 ### Event-level permissions
 
@@ -1793,7 +1749,7 @@ event_scores: id, event_idea_id, scorer_team_id,
 
 ---
 
-## 23. EVENT IDEA STATUS WORKFLOW
+## 24. EVENT IDEA STATUS WORKFLOW
 
 Event Ideas không có status workflow phức tạp như Room Ideas. Lifecycle đơn giản:
 
@@ -1808,7 +1764,7 @@ Created (submitted) → Scored → Event Closed
 
 ---
 
-## 24. INTEGRATION: Event ↔ Existing System
+## 25. INTEGRATION: Event ↔ Existing System
 
 ### Luồng kết nối chính
 

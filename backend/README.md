@@ -1,129 +1,122 @@
-# Innovation Hub Backend
+<div align="center">
 
-FastAPI-based backend for Innovation Hub - a platform for problem tracking and collaborative brainstorming.
+# ⚙️ Innovation Hub — Backend
 
-## Architecture
+### FastAPI + SQLAlchemy 2.0 + PostgreSQL
 
-This project follows **Clean Architecture** principles:
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?style=flat-square&logo=python&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![MinIO](https://img.shields.io/badge/MinIO-Storage-E05244?style=flat-square&logo=minio&logoColor=white)](https://min.io/)
+
+</div>
+
+---
+
+## Kiến trúc
 
 ```
 app/
-├── domain/              # Business logic (entities, value objects, repository interfaces)
-├── application/         # Use cases, DTOs, application services
-├── infrastructure/      # Database, API routes, external services
-├── core/               # Configuration and shared utilities
-└── main.py             # FastAPI application entry point
+├── domain/              # Entities, Repository interfaces (business logic thuần)
+├── application/         # Use cases, DTOs, Application services
+├── infrastructure/      # Database models, API routes, external services
+│   ├── database/       # SQLAlchemy models + Alembic migrations
+│   └── web/api/        # FastAPI endpoints (v1)
+├── core/               # Config, shared utilities
+└── main.py             # Entry point
 ```
+
+Clean Architecture — business logic không phụ thuộc framework hay database.
+
+---
 
 ## Tech Stack
 
-- **Python 3.11+**
-- **FastAPI** - Web framework
-- **SQLAlchemy 2.0** - ORM with async support
-- **PostgreSQL** - Primary database
-- **Pydantic v2** - Data validation
-- **dependency-injector** - Dependency injection
-- **Alembic** - Database migrations
-- **JWT** - Authentication
+| Công nghệ | Mục đích |
+|:----------|:---------|
+| **FastAPI** | Web framework, async, auto docs |
+| **SQLAlchemy 2.0** | ORM async, JSONB support |
+| **Pydantic v2** | Validation, serialization |
+| **PostgreSQL 16** | Primary database |
+| **Alembic** | Database migrations |
+| **MinIO** | File storage (avatar, images) |
+| **JWT** | Stateless authentication |
+| **dependency-injector** | Dependency injection |
+| **structlog** | Structured logging |
+
+---
+
+## API Endpoints
+
+| Group | Endpoints | Mô tả |
+|:------|:----------|:------|
+| **Auth** | register, login, refresh, change-password | JWT authentication |
+| **Users** | CRUD me/{id}, avatar upload, settings | Profile & preferences |
+| **Problems** | CRUD, reactions, privacy, shared users | Problem Feed |
+| **Rooms** | CRUD, privacy, shared users, link to Problem | Brainstorming Rooms |
+| **Ideas** | CRUD, status workflow, pin, votes (1-5 sao) | Brainstorm Ideas |
+| **Comments** | CRUD, threaded (parent_id) | Cho Problems, Ideas, Event Ideas |
+| **Reactions** | like/dislike/insight toggle | Cho Problems & Ideas |
+| **Dashboard** | stats, trending ideas, recent activity, activity over time, category breakdown | User + Admin analytics |
+| **Events** | CRUD (Draft/Active/Closed), introduction, FAQ | Quản lý sự kiện |
+| **Event Teams** | create, join/leave, approve/reject, manage members | Team management |
+| **Event Ideas** | submit (manual/from Room), structured 7-field form | Ý tưởng thi đấu |
+| **Scoring** | 8 criteria (4P + 4S), Likert 5-point, max 100 | Chấm điểm circular |
+| **Notifications** | polling, 9 types, mark read, click-to-navigate | Real-time updates |
+| **Uploads** | images, avatars → MinIO | File management |
+
+> API Docs: `http://localhost:3000/api/v1/docs` (qua Nginx proxy)
+
+---
 
 ## Quick Start
 
-### Prerequisites
+### Docker Compose (recommended)
 
-- Python 3.11+
-- Poetry
-- Docker & Docker Compose (optional)
+```bash
+# Từ root project
+cp .env.example .env
+cp backend/.env.example backend/.env
+docker compose up --build -d
+```
 
-### Installation
+### Chạy local (development)
 
-1. **Clone and setup environment:**
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env with your configuration
-```
-
-2. **Install dependencies:**
-```bash
 poetry install
-```
-
-3. **Run with Docker Compose:**
-```bash
-docker-compose up -d
-```
-
-Or run locally:
-```bash
-# Start PostgreSQL manually
 poetry run uvicorn app.main:app --reload
 ```
 
-### API Documentation
+### Tạo Admin
 
-Once running, visit:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## Development
-
-### Run Tests
 ```bash
-poetry run pytest
+docker compose exec api poetry run python scripts/create_admin.py
 ```
 
-### Database Migrations
-```bash
-# Create migration
-poetry run alembic revision --autogenerate -m "description"
+Default: `admin` / `abc13579`
 
-# Apply migrations
-poetry run alembic upgrade head
+---
+
+## Database Migrations
+
+```bash
+# Tạo migration mới
+docker compose exec api poetry run alembic revision --autogenerate -m "description"
+
+# Apply
+docker compose exec api poetry run alembic upgrade head
 
 # Rollback
-poetry run alembic downgrade -1
+docker compose exec api poetry run alembic downgrade -1
 ```
 
-### Code Formatting
+---
+
+## Code Formatting
+
 ```bash
 poetry run black .
 poetry run isort .
 ```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/refresh` - Refresh token
-
-### Users
-- `GET /api/v1/users` - List users
-- `GET /api/v1/users/me` - Get current user
-- `GET /api/v1/users/{id}` - Get user by ID
-- `PATCH /api/v1/users/me` - Update current user
-
-### Problems
-- `GET /api/v1/problems` - List problems
-- `POST /api/v1/problems` - Create problem
-- `GET /api/v1/problems/{id}` - Get problem
-- `PATCH /api/v1/problems/{id}` - Update problem
-- `DELETE /api/v1/problems/{id}` - Delete problem
-
-### Rooms
-- `GET /api/v1/rooms` - List rooms
-- `POST /api/v1/rooms` - Create room
-- `GET /api/v1/rooms/{id}` - Get room
-
-### Ideas
-- `GET /api/v1/ideas` - List ideas
-- `POST /api/v1/ideas` - Create idea
-- `GET /api/v1/ideas/{id}` - Get idea
-- `PATCH /api/v1/ideas/{id}` - Update idea
-- `POST /api/v1/ideas/{id}/votes` - Vote on idea
-
-### Comments
-- `GET /api/v1/comments` - List comments
-- `POST /api/v1/comments` - Create comment
-- `PATCH /api/v1/comments/{id}` - Update comment
-- `DELETE /api/v1/comments/{id}` - Delete comment

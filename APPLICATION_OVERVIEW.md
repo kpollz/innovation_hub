@@ -45,7 +45,7 @@
 |:----------|:---------|
 | **Tạo Post Vấn đề** | - Tiêu đề rõ ràng<br>- Mô tả chi tiết (hỗ trợ nhiều loại Typing như Markdown hay Quill,...)<br>- Tag/Category: *Quy trình, Kỹ thuật, Con người, Công cụ, Patent...*<br>|
 | **Trạng thái Vấn đề** | *Mở → Đang thảo luận → Chuyển sang Brainstorming → Đã có giải pháp → Đóng*<br>**Tự động chuyển:** Mở→Đang thảo luận (khi có comment từ người khác), Mở/Đang thảo luận→Brainstorming (khi tạo phòng brainstorm).<br>**Thủ công:** Đã có giải pháp, Đóng (do tác giả hoặc Admin chuyển). |
-| **Tương tác Cơ bản** | - **Comment** threaded (trả lời lồng nhau)<br>- **Reaction** đơn giản: 👍 👎 💡 (Ý hay)<br>- **@mention** để tag đồng nghiệp vào thảo luận |
+| **Tương tác Cơ bản** | - **Comment** threaded (trả lời lồng nhau)<br>- **Reaction** đơn giản: 👍 👎 💡 (Ý hay)<br>- **@mention** để tag đồng nghiệp vào thảo luận *(chưa implement)* |
 | **Tìm kiếm/Lọc** | Tìm theo từ khóa, Lọc theo Category, Sắp xếp theo: Mới nhất / Nhiều bình luận nhất / Reaction |
 | **Quyền riêng tư** | - **Public** (mặc định): Tất cả mọi người đều thấy<br>- **Private**: Chỉ tác giả, người được chia sẻ (`shared_user_ids`), và Admin mới thấy<br>- Khi thêm người được chia sẻ, tự động chuyển sang Private<br>- **Độc lập**: Room có quyền riêng biệt với Problem. Idea kế thừa quyền từ Room. |
 
@@ -83,7 +83,7 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 
 #### Hai chế độ xem (View):
 1. **Board View:** Kanban board kéo thả ý tưởng theo trạng thái (như Trello)
-2. **List View:** Danh sách có filter theo người đề xuất, số vote, trạng thái
+2. **List View:** Danh sách có filter theo người đề xuất, số vote, trạng thái *(chưa implement)*
 
 ---
 
@@ -157,7 +157,7 @@ Problem (public/private + shared_user_ids)  ← Độc lập
 - Accordion Q&A
 - User tạo câu hỏi, Admin trả lời
 
-**Tab 6 — Awards (Bục Vinh Quang):**
+**Tab 6 — Awards (Bục Vinh Quang):** *(hiện tại gộp vào Dashboard tab)*
 - Admin tạo các giải thưởng (Gold, Silver, Bronze...)
 - Gán đội vào giải thưởng tương ứng
 - Hiển thị đội chiến thắng cho tất cả users
@@ -293,7 +293,7 @@ Hệ thống có 2 giao diện Dashboard:
 4. → Chọn Event → Form điền sẵn từ Problem + Idea content
 5. User chỉnh sửa và submit chính thức
 6. Admin gán circular review: Alpha→Beta, Beta→Gamma, Gamma→Delta, Delta→Alpha
-7. Team Leads chấm điểm theo 4 tiêu chí (Pain Depth, Insight, Novelty, Elegance)
+7. Team Leads chấm điểm theo 8 tiêu chí (4 Problem + 4 Solution), Likert 5-point, max 100 điểm
 8. Dashboard xếp hạng real-time: Ideas theo điểm, Teams theo số lượng idea
 ```
 
