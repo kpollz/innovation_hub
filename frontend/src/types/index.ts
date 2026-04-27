@@ -298,7 +298,9 @@ export interface ActivityItem {
 
 // Notification Types
 export type NotificationType = 'comment_added' | 'reaction_added' | 'vote_added' | 'status_changed'
-  | 'event_join_request' | 'event_join_approved' | 'event_join_rejected' | 'event_idea_submitted' | 'event_scored';
+  | 'room_idea_created'
+  | 'event_join_request' | 'event_join_approved' | 'event_join_rejected' | 'event_idea_submitted' | 'event_scored'
+  | 'event_created' | 'event_closed' | 'team_review_assigned' | 'team_disbanded' | 'team_lead_transferred';
 
 export interface NotificationActor {
   id: string;

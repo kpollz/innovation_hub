@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { notificationsApi } from '@/api/notifications';
+import { useUIStore } from '@/stores/uiStore';
 import type { Notification } from '@/types';
 
 interface NotificationState {
@@ -51,6 +52,15 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
   fetchUnreadCount: async () => {
     try {
       const count = await notificationsApi.getUnreadCount();
+      const prevCount = get().unreadCount;
+      if (prevCount > 0 && count > prevCount) {
+        const diff = count - prevCount;
+        const uiStore = useUIStore.getState();
+        uiStore.showToast({
+          type: 'info',
+          message: diff === 1 ? 'You have a new notification' : `You have ${diff} new notifications`,
+        });
+      }
       set({ unreadCount: count });
     } catch {
       // Silently fail

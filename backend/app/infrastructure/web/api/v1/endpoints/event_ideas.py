@@ -42,6 +42,7 @@ router = APIRouter()
 
 async def _notify_admins_idea_submitted(
     event_id: UUID,
+    idea_id: UUID,
     idea_title: str,
     actor_id: UUID,
     event_repo: SQLEventRepository,
@@ -57,10 +58,11 @@ async def _notify_admins_idea_submitted(
                 user_id=admin.id,
                 actor_id=actor_id,
                 type="event_idea_submitted",
-                target_id=event_id,
-                target_type="event",
+                target_id=idea_id,
+                target_type="event_idea",
                 target_title=event.title if event else "",
                 action_detail=idea_title,
+                reference_id=event_id,
             )
             for admin in admins
             if admin.id != actor_id
@@ -130,7 +132,7 @@ async def create_idea(
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
     await _notify_admins_idea_submitted(
-        event_id, idea.title, current_user.id,
+        event_id, idea.id, idea.title, current_user.id,
         event_repo, user_repo, notification_repo,
     )
 
@@ -161,7 +163,7 @@ async def create_idea_from_room(
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
     await _notify_admins_idea_submitted(
-        event_id, idea.title, current_user.id,
+        event_id, idea.id, idea.title, current_user.id,
         event_repo, user_repo, notification_repo,
     )
 

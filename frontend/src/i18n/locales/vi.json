@@ -474,7 +474,13 @@
     "event_join_approved": "Yêu cầu tham gia đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\" đã được duyệt",
     "event_join_rejected": "Yêu cầu tham gia đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\" đã bị từ chối",
     "event_idea_submitted": "{{actor}} đã nộp ý tưởng mới trong {{target_type}} \"{{title}}\"",
-    "event_scored": "{{target_type}} \"{{title}}\" đã được chấm điểm: {{score_detail}}"
+    "event_scored": "{{target_type}} \"{{title}}\" đã được chấm điểm: {{score_detail}}",
+    "room_idea_created": "{{actor}} đã nộp ý tưởng mới trong {{target_type}} \"{{title}}\"",
+    "event_created": "{{actor}} đã tạo {{target_type}} mới: \"{{title}}\"",
+    "event_closed": "{{target_type}} \"{{title}}\" đã được đóng",
+    "team_review_assigned": "Đội của bạn được giao chấm đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\"",
+    "team_disbanded": "Đội \"{{team_name}}\" trong {{target_type}} \"{{title}}\" đã bị giải tán",
+    "team_lead_transferred": "Quyền đội trưởng trong {{target_type}} \"{{title}}\" đã được chuyển cho {{new_leader}}"
   },
   "events": {
     "title": "Sự kiện",
@@ -881,7 +887,7 @@
       "title": "Thông báo",
       "q1": {
         "q": "Tôi sẽ nhận được thông báo gì?",
-        "a": "Bạn sẽ được thông báo khi: Có người bình luận trên nội dung của bạn, Có người thả cảm xúc trên nội dung của bạn, Có người bỏ phiếu cho ý tưởng của bạn, Trạng thái nội dung thay đổi, Có người yêu cầu tham gia đội sự kiện của bạn, Yêu cầu tham gia đội của bạn được duyệt/từ chối, Có ý tưởng mới được nộp trong sự kiện, Ý tưởng của đội bạn được chấm điểm."
+        "a": "Bạn sẽ được thông báo khi: Có người bình luận trên nội dung của bạn, Có người thả cảm xúc trên nội dung của bạn, Có người bỏ phiếu cho ý tưởng của bạn, Trạng thái nội dung thay đổi, Có ý tưởng mới được nộp trong phòng brainstorm, Có người yêu cầu tham gia đội sự kiện của bạn, Yêu cầu tham gia đội của bạn được duyệt/từ chối, Có ý tưởng mới được nộp trong sự kiện, Ý tưởng của đội bạn được chấm điểm, Có sự kiện mới được tạo, Sự kiện được đóng, Đội của bạn được giao chấm điểm đội khác, Đội của bạn bị giải tán, Quyền đội trưởng được chuyển giao."
       },
       "q2": {
         "q": "Làm thế nào để quản lý thông báo?",

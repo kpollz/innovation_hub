@@ -259,8 +259,18 @@ async def disband_team(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Team Lead disbands team. Cascade deletes all members."""
+    # Fetch members before disbanding for notification
+    team = await team_repo.get_team_by_id(team_id)
+    event = await event_repo.get_by_id(event_id)
+    member_ids = set()
+    if team:
+        members = await team_repo.get_team_members(team_id, status="active")
+        member_ids = {m.user_id for m in members if m.user_id != current_user.id}
+        team_name = team.name
+
     use_case = DisbandEventTeamUseCase(event_repo, team_repo)
     try:
         await use_case.execute(
@@ -268,6 +278,26 @@ async def disband_team(
         )
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    # Notify all former members
+    if member_ids:
+        try:
+            notifications = [
+                Notification(
+                    user_id=uid,
+                    actor_id=current_user.id,
+                    type="team_disbanded",
+                    target_id=event_id,
+                    target_type="event",
+                    target_title=event.title if event else "",
+                    action_detail=team_name if team else "",
+                )
+                for uid in member_ids
+            ]
+            await notification_repo.create_bulk(notifications)
+        except Exception:
+            logger.exception("Failed to send team_disbanded notification")
+
     return None
 
 
@@ -297,6 +327,7 @@ async def transfer_lead(
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Transfer team leadership to another active member."""
     use_case = TransferTeamLeadUseCase(event_repo, team_repo)
@@ -307,6 +338,31 @@ async def transfer_lead(
         )
     except (NotFoundException, ForbiddenException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    # Notify all team members about leadership transfer
+    try:
+        event = await event_repo.get_by_id(event_id)
+        new_leader = await user_repo.get_by_id(data.new_leader_id)
+        new_leader_name = new_leader.full_name or new_leader.username if new_leader else ""
+        members = await team_repo.get_team_members(team_id, status="active")
+        member_ids = {m.user_id for m in members if m.user_id != current_user.id}
+        if member_ids:
+            notifications = [
+                Notification(
+                    user_id=uid,
+                    actor_id=current_user.id,
+                    type="team_lead_transferred",
+                    target_id=event_id,
+                    target_type="event",
+                    target_title=event.title if event else "",
+                    action_detail=new_leader_name,
+                )
+                for uid in member_ids
+            ]
+            await notification_repo.create_bulk(notifications)
+    except Exception:
+        logger.exception("Failed to send team_lead_transferred notification")
+
     return await _enrich_team(team, user_repo, team_repo)
 
 
@@ -319,6 +375,7 @@ async def assign_review(
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Admin assigns which team this team reviews."""
     use_case = AssignReviewUseCase(event_repo, team_repo)
@@ -329,4 +386,26 @@ async def assign_review(
         )
     except (NotFoundException, ForbiddenException, ValidationException) as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    # Notify the team lead that they are assigned to review
+    if data.target_team_id:
+        try:
+            event = await event_repo.get_by_id(event_id)
+            target_team = await team_repo.get_team_by_id(data.target_team_id)
+            target_team_name = target_team.name if target_team else ""
+            if team.leader_id != current_user.id:
+                await notification_repo.create_bulk([
+                    Notification(
+                        user_id=team.leader_id,
+                        actor_id=current_user.id,
+                        type="team_review_assigned",
+                        target_id=event_id,
+                        target_type="event",
+                        target_title=event.title if event else "",
+                        action_detail=target_team_name,
+                    )
+                ])
+        except Exception:
+            logger.exception("Failed to send team_review_assigned notification")
+
     return await _enrich_team(team, user_repo, team_repo)

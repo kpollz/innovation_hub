@@ -1,7 +1,7 @@
 # API CONTRACT - Innovation Hub
 
 **Version**: 1.0
-**Cập nhật**: 2026-04-26
+**Cập nhật**: 2026-04-27
 **Mục đích**: Nguồn sự thật duy nhất (Single Source of Truth) cho cả Backend và Frontend.
 
 > **Quy tắc**: Khi cần thay đổi API, sửa file này TRƯỚC, rồi cập nhật BE và FE theo.
@@ -799,7 +799,7 @@ Authorization: Bearer <access_token>
         "full_name": "string | null",
         "avatar_url": "string | null"
       },
-      "type": "comment_added | reaction_added | vote_added | status_changed | event_join_request | event_join_approved | event_join_rejected | event_idea_submitted | event_scored",
+      "type": "comment_added | reaction_added | vote_added | status_changed | room_idea_created | event_join_request | event_join_approved | event_join_rejected | event_idea_submitted | event_scored | event_created | event_closed | team_review_assigned | team_disbanded | team_lead_transferred",
       "target_id": "uuid",
       "target_type": "problem | idea | event | event_idea",
       "target_title": "string",
@@ -824,11 +824,39 @@ Authorization: Bearer <access_token>
 | `reaction_added` | Loại reaction | "like", "dislike", "insight" | - |
 | `vote_added` | Số sao (1-5) | "5" | - |
 | `status_changed` | Status cũ → mới | "open → brainstorming" | - |
+| `room_idea_created` | Tiêu đề idea | "Auto-approval cho nghỉ <1 ngày" | - |
 | `event_join_request` | Tên team | "Team Alpha" | - |
 | `event_join_approved` | Tên team | "Team Alpha" | - |
 | `event_join_rejected` | Tên team | "Team Alpha" | - |
 | `event_idea_submitted` | Tiêu đề idea | "Auto-approval cho nghỉ <1 ngày" | - |
-| `event_scored` | Tổng điểm + team chấm | "35.5/40 từ Team Beta" | - |
+| `event_scored` | Tổng điểm + team chấm | "35.5/100 từ Team Beta" | - |
+| `event_created` | Tiêu đề event | "Agentic AI in Mobile" | - |
+| `event_closed` | Tiêu đề event | "Agentic AI in Mobile" | - |
+| `team_review_assigned` | Tên team được chấm | "Team Beta" | - |
+| `team_disbanded` | Tên team | "Team Alpha" | - |
+| `team_lead_transferred` | Tên leader mới | "Nguyễn Văn A" | - |
+
+### Click-to-navigate routing
+
+| target_type | Navigate URL | Ghi chú |
+|-------------|-------------|---------|
+| `problem` | `/problems/{target_id}` | - |
+| `idea` | `/ideas/{target_id}` | Room idea |
+| `event_idea` | `/events/{reference_id}/ideas/{target_id}` | reference_id = event_id |
+| `event` | `/events/{target_id}?tab={tab}` | tab phụ thuộc notification type (xem bảng dưới) |
+
+**Tab routing cho target_type = "event":**
+
+| Notification type | Tab | Lý do |
+|------------------|-----|-------|
+| `event_created` | `introduction` | Xem giới thiệu event mới |
+| `event_closed` | `introduction` | Xem event đã đóng |
+| `event_join_request` | `teams` | Duyệt thành viên |
+| `event_join_approved` | `teams` | Xem đội đã vào |
+| `event_join_rejected` | `teams` | Xem lại đội |
+| `team_review_assigned` | `ideas` | Bắt đầu chấm điểm |
+| `team_disbanded` | `teams` | Xem teams còn lại |
+| `team_lead_transferred` | `teams` | Xem leader mới |
 
 ### 10.2 GET `/notifications/unread-count` — Số thông báo chưa đọc 🔒
 - **Status**: 200 OK
@@ -855,17 +883,23 @@ Authorization: Bearer <access_token>
 ```
 
 **Notification triggers:**
-| Hành động | Type | Target | Recipient |
-|-----------|------|--------|-----------|
-| Comment mới | comment_added | problem/idea | Owner + users đã tương tác |
-| Reaction mới | reaction_added | problem/idea | Owner |
-| Vote mới | vote_added | idea | Owner |
-| Đổi trạng thái | status_changed | problem/idea | Owner |
-| Xin tham gia đội | event_join_request | event | Team Lead |
-| Được duyệt | event_join_approved | event | User xin |
-| Bị từ chối | event_join_rejected | event | User xin |
-| Idea mới submit | event_idea_submitted | event_idea | Admin |
-| Được chấm điểm | event_scored | event_idea | Team Lead của idea |
+| Hành động | Type | target_type | target_id | reference_id | Recipient |
+|-----------|------|-------------|-----------|--------------|-----------|
+| Comment mới | `comment_added` | problem/idea/event_idea | problem_id/idea_id | event_id (nếu event_idea) | Owner + users đã tương tác |
+| Reaction mới | `reaction_added` | problem/idea | problem_id/idea_id | - | Owner + users đã tương tác |
+| Vote mới | `vote_added` | idea | idea_id | - | Owner + users đã tương tác |
+| Đổi trạng thái | `status_changed` | problem/idea | problem_id/idea_id | - | Owner + users đã tương tác |
+| Idea mới trong Room | `room_idea_created` | idea | idea_id | - | Room creator + Problem owner (nếu liên kết) |
+| Xin tham gia đội | `event_join_request` | event | event_id | - | Team Lead |
+| Được duyệt | `event_join_approved` | event | event_id | - | User xin |
+| Bị từ chối | `event_join_rejected` | event | event_id | - | User xin |
+| Idea submit vào Event | `event_idea_submitted` | event_idea | idea_id | event_id | Admin |
+| Được chấm điểm | `event_scored` | event_idea | idea_id | event_id | Author + Team Lead của idea |
+| Event mới tạo | `event_created` | event | event_id | - | Tất cả users |
+| Event đóng | `event_closed` | event | event_id | - | Tất cả participants (team members) |
+| Gán chấm điểm | `team_review_assigned` | event | event_id | - | Team Lead của team được gán |
+| Đội bị giải tán | `team_disbanded` | event | event_id | - | Tất cả members trong đội |
+| Chuyển quyền Lead | `team_lead_transferred` | event | event_id | - | Tất cả members trong đội |
 
 Recipients (cho comment/reaction/vote/status_changed): Owner của target + tất cả users đã tương tác (comment/reaction/vote), trừ actor.
 

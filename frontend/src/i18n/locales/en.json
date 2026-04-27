@@ -480,7 +480,13 @@
     "event_join_approved": "Your request to join team \"{{team_name}}\" in {{target_type}} \"{{title}}\" has been approved",
     "event_join_rejected": "Your request to join team \"{{team_name}}\" in {{target_type}} \"{{title}}\" has been rejected",
     "event_idea_submitted": "{{actor}} submitted a new idea in {{target_type}} \"{{title}}\"",
-    "event_scored": "{{target_type}} \"{{title}}\" has been scored: {{score_detail}}"
+    "event_scored": "{{target_type}} \"{{title}}\" has been scored: {{score_detail}}",
+    "room_idea_created": "{{actor}} submitted a new idea in {{target_type}} \"{{title}}\"",
+    "event_created": "{{actor}} created a new {{target_type}}: \"{{title}}\"",
+    "event_closed": "{{target_type}} \"{{title}}\" has been closed",
+    "team_review_assigned": "Your team has been assigned to review team \"{{team_name}}\" in {{target_type}} \"{{title}}\"",
+    "team_disbanded": "Team \"{{team_name}}\" in {{target_type}} \"{{title}}\" has been disbanded",
+    "team_lead_transferred": "Team leadership in {{target_type}} \"{{title}}\" has been transferred to {{new_leader}}"
   },
   "events": {
     "title": "Events",
@@ -887,7 +893,7 @@
       "title": "Notifications",
       "q1": {
         "q": "What notifications will I receive?",
-        "a": "You'll be notified when: Someone comments on your content, Someone reacts to your content, Someone votes on your idea, A content status changes, Someone requests to join your event team, Your join request is approved/rejected, A new idea is submitted in your event, Your team's idea is scored."
+        "a": "You'll be notified when: Someone comments on your content, Someone reacts to your content, Someone votes on your idea, A content status changes, A new idea is submitted in your brainstorming room, Someone requests to join your event team, Your join request is approved/rejected, A new idea is submitted in your event, Your team's idea is scored, A new event is created, An event is closed, Your team is assigned to review another team, Your team is disbanded, Team leadership is transferred."
       },
       "q2": {
         "q": "How do I manage notifications?",

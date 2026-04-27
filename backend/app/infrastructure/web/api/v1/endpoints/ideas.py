@@ -17,6 +17,7 @@ from app.application.use_cases.idea.create_idea import CreateIdeaUseCase
 from app.application.use_cases.idea.update_idea import UpdateIdeaUseCase
 from app.application.use_cases.idea.vote_idea import VoteIdeaUseCase
 from app.application.services.notification_service import NotificationService
+from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.room_repository_impl import SQLRoomRepository
 from app.infrastructure.database.repositories.problem_repository_impl import SQLProblemRepository
@@ -101,6 +102,7 @@ async def create_idea(
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Create a new idea in a room."""
     is_admin = current_user.role == "admin"
@@ -108,6 +110,34 @@ async def create_idea(
 
     use_case = CreateIdeaUseCase(idea_repo, room_repo)
     idea = await use_case.execute(data, current_user.id)
+
+    # Notify room creator + problem owner (if linked)
+    try:
+        room = await room_repo.get_by_id(data.room_id)
+        recipients = set()
+        if room and room.created_by != current_user.id:
+            recipients.add(room.created_by)
+        if room and room.problem_id:
+            problem = await problem_repo.get_by_id(room.problem_id)
+            if problem and problem.author_id != current_user.id:
+                recipients.add(problem.author_id)
+        if recipients:
+            await notification_repo.create_bulk([
+                Notification(
+                    user_id=uid,
+                    actor_id=current_user.id,
+                    type="room_idea_created",
+                    target_id=idea.id,
+                    target_type="idea",
+                    target_title=idea.title,
+                    action_detail=idea.title,
+                )
+                for uid in recipients
+            ])
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to send room_idea_created notification")
+
     return await enrich_idea(
         idea, user_repo, reaction_repo, comment_repo, vote_repo, current_user.id
     )

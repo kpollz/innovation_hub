@@ -61,6 +61,8 @@ const NotificationItem: React.FC<{
           new_status: newStatus || '?',
         };
       }
+      case 'room_idea_created':
+        return baseParams;
       case 'event_join_request':
       case 'event_join_approved':
       case 'event_join_rejected':
@@ -69,6 +71,16 @@ const NotificationItem: React.FC<{
         return baseParams;
       case 'event_scored':
         return { ...baseParams, score_detail: notification.action_detail || '' };
+      case 'event_created':
+        return baseParams;
+      case 'event_closed':
+        return baseParams;
+      case 'team_review_assigned':
+        return { ...baseParams, team_name: notification.action_detail || '' };
+      case 'team_disbanded':
+        return { ...baseParams, team_name: notification.action_detail || '' };
+      case 'team_lead_transferred':
+        return { ...baseParams, new_leader: notification.action_detail || '' };
       default:
         return baseParams;
     }
@@ -156,8 +168,19 @@ export const NotificationDropdown: React.FC = () => {
       navigate(`/problems/${n.target_id}`);
     } else if (n.target_type === 'event_idea') {
       navigate(`/events/${n.reference_id}/ideas/${n.target_id}`);
+    } else if (n.target_type === 'idea') {
+      navigate(`/ideas/${n.target_id}`);
     } else if (n.target_type === 'event') {
-      navigate(`/events/${n.target_id}`);
+      // Route to correct tab based on notification type
+      const teamTypes = ['event_join_request', 'event_join_approved', 'event_join_rejected', 'team_disbanded', 'team_lead_transferred'];
+      const ideaTypes = ['team_review_assigned'];
+      let tab = 'introduction';
+      if (teamTypes.includes(n.type)) {
+        tab = 'teams';
+      } else if (ideaTypes.includes(n.type)) {
+        tab = 'ideas';
+      }
+      navigate(`/events/${n.target_id}?tab=${tab}`);
     } else {
       navigate(`/ideas/${n.target_id}`);
     }

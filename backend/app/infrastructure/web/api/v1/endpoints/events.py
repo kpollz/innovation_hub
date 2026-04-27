@@ -1,4 +1,5 @@
 """Event endpoints."""
+import logging
 from typing import Optional
 from uuid import UUID
 
@@ -20,11 +21,15 @@ from app.application.use_cases.event.create_event import CreateEventUseCase
 from app.application.use_cases.event.update_event import UpdateEventUseCase
 from app.application.use_cases.event.delete_event import DeleteEventUseCase
 from app.application.use_cases.event.close_event import CloseEventUseCase
+from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.event_team_repository_impl import SQLEventTeamRepository
+from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -35,10 +40,33 @@ async def create_event(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Create a new event (Admin only)."""
     use_case = CreateEventUseCase(event_repo)
     event = await use_case.execute(data, current_user.id, current_user.role == "admin")
+
+    # Notify all users about new event
+    try:
+        all_users, _ = await user_repo.list(limit=500)
+        notifications = [
+            Notification(
+                user_id=u.id,
+                actor_id=current_user.id,
+                type="event_created",
+                target_id=event.id,
+                target_type="event",
+                target_title=event.title,
+                action_detail=event.title,
+            )
+            for u in all_users
+            if u.id != current_user.id and u.is_active
+        ]
+        if notifications:
+            await notification_repo.create_bulk(notifications)
+    except Exception:
+        logger.exception("Failed to send event_created notification")
+
     return await enrich_event(event, user_repo, event_repo)
 
 
@@ -97,12 +125,41 @@ async def close_event(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Close an event (Admin only). Makes event read-only."""
     use_case = CloseEventUseCase(event_repo)
     event = await use_case.execute(
         event_id, current_user.id, current_user.role == "admin"
     )
+
+    # Notify all participants (team members)
+    try:
+        teams, _ = await team_repo.list_teams_by_event(event_id, page=1, limit=100)
+        recipient_ids: set[UUID] = set()
+        for team in teams:
+            members = await team_repo.get_team_members(team.id, status="active")
+            for m in members:
+                if m.user_id != current_user.id:
+                    recipient_ids.add(m.user_id)
+        if recipient_ids:
+            notifications = [
+                Notification(
+                    user_id=uid,
+                    actor_id=current_user.id,
+                    type="event_closed",
+                    target_id=event_id,
+                    target_type="event",
+                    target_title=event.title,
+                    action_detail=event.title,
+                )
+                for uid in recipient_ids
+            ]
+            await notification_repo.create_bulk(notifications)
+    except Exception:
+        logger.exception("Failed to send event_closed notification")
+
     return await enrich_event(event, user_repo, event_repo)
 
 

@@ -123,10 +123,11 @@ async def submit_score(
                 user_id=uid,
                 actor_id=current_user.id,
                 type="event_scored",
-                target_id=event_id,
-                target_type="event",
+                target_id=idea_id,
+                target_type="event_idea",
                 target_title=event.title if event else "",
                 action_detail=action_detail,
+                reference_id=event_id,
             )
             for uid in recipients
         ]
@@ -193,10 +194,11 @@ async def update_score(
                 user_id=uid,
                 actor_id=current_user.id,
                 type="event_scored",
-                target_id=event_id,
-                target_type="event",
+                target_id=idea_id,
+                target_type="event_idea",
                 target_title=event.title if event else "",
                 action_detail=action_detail,
+                reference_id=event_id,
             )
             for uid in recipients
         ]
