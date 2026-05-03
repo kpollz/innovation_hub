@@ -37,6 +37,10 @@ async def lifespan(app: FastAPI):
     # Setup JWT service for authentication
     from app.application.services.jwt_service import JWTService
     app.state.jwt_service = JWTService()
+
+    # Setup Agent proxy service
+    from app.application.services.agent_proxy_service import AgentProxyService
+    app.state.agent_proxy_service = AgentProxyService()
     
     # Create tables (for development - use Alembic in production)
     if settings.env == "development":
@@ -46,6 +50,7 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
+    await app.state.agent_proxy_service.close()
     await db_config.close()
 
 

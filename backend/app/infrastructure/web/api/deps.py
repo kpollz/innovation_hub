@@ -2,6 +2,7 @@
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.services.agent_proxy_service import AgentProxyService
 from app.application.services.jwt_service import JWTService
 from app.infrastructure.database.config import DatabaseConfig
 from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
@@ -115,6 +116,10 @@ def get_password_hasher() -> PasswordHasher:
 
 def get_jwt_service() -> JWTService:
     return JWTService()
+
+
+def get_agent_proxy_service(request: Request) -> AgentProxyService:
+    return request.app.state.agent_proxy_service
 
 
 async def get_current_user(

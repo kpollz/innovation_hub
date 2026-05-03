@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     minio_bucket: str = "avatars"
     minio_public_url: str = ""  # External URL for accessing files, empty = use proxy
 
+    # Agent BE
+    agent_base_url: str = "http://agent-be:8000"
+    agent_api_key: str = ""
+    agent_timeout: float = 60.0
+
     # CORS
     cors_origins: List[str] = ["*"]
     cors_allow_credentials: bool = True
