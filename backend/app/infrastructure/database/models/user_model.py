@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.infrastructure.database.models.reaction_model import ReactionModel
     from app.infrastructure.database.models.vote_model import VoteModel
     from app.infrastructure.database.models.event_model import EventModel
+    from app.infrastructure.database.models.chat_session_model import ChatSessionModel
 
 
 class UserModel(BaseModel):
@@ -77,5 +78,10 @@ class UserModel(BaseModel):
     events: Mapped[List["EventModel"]] = relationship(
         "EventModel",
         back_populates="creator",
+        cascade="all, delete-orphan",
+    )
+    chat_sessions: Mapped[List["ChatSessionModel"]] = relationship(
+        "ChatSessionModel",
+        back_populates="user",
         cascade="all, delete-orphan",
     )

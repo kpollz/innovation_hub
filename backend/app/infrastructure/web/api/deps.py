@@ -19,6 +19,8 @@ from app.infrastructure.database.repositories.event_scoring_criteria_repository_
 from app.infrastructure.database.repositories.event_score_repository_impl import SQLEventScoreRepository
 from app.infrastructure.database.repositories.event_faq_repository_impl import SQLEventFAQRepository
 from app.infrastructure.database.repositories.event_award_repository_impl import SQLEventAwardRepository, SQLEventAwardTeamRepository
+from app.infrastructure.database.repositories.chat_session_repository_impl import SQLChatSessionRepository
+from app.infrastructure.database.repositories.chat_message_repository_impl import SQLChatMessageRepository
 from app.infrastructure.security.password import PasswordHasher
 
 
@@ -97,6 +99,14 @@ def get_event_award_repo(session: AsyncSession = Depends(get_db_session)) -> SQL
 
 def get_event_award_team_repo(session: AsyncSession = Depends(get_db_session)) -> SQLEventAwardTeamRepository:
     return SQLEventAwardTeamRepository(session)
+
+
+def get_chat_session_repo(session: AsyncSession = Depends(get_db_session)) -> SQLChatSessionRepository:
+    return SQLChatSessionRepository(session)
+
+
+def get_chat_message_repo(session: AsyncSession = Depends(get_db_session)) -> SQLChatMessageRepository:
+    return SQLChatMessageRepository(session)
 
 
 def get_password_hasher() -> PasswordHasher:
