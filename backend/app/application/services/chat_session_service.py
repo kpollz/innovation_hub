@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List
 from uuid import UUID
 
+from fastapi import HTTPException, status
+
 from app.application.dto.chat_dto import (
     MessageResponseDTO,
     SendMessageDTO,
@@ -56,10 +58,8 @@ class ChatSessionService:
     ) -> SessionResponseDTO:
         session = await session_repo.get_by_id(session_id)
         if not session:
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
         if not session.is_owned_by(user_id):
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your session")
 
         session.rename(title)
@@ -79,10 +79,8 @@ class ChatSessionService:
     ) -> None:
         session = await session_repo.get_by_id(session_id)
         if not session:
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
         if not session.is_owned_by(user_id):
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your session")
 
         await session_repo.delete(session_id)
@@ -96,10 +94,8 @@ class ChatSessionService:
     ) -> List[MessageResponseDTO]:
         session = await session_repo.get_by_id(session_id)
         if not session:
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
         if not session.is_owned_by(user_id):
-            from fastapi import HTTPException, status
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your session")
 
         messages = await message_repo.list_by_session(session_id)
