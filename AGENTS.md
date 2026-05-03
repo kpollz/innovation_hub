@@ -21,6 +21,7 @@ This document provides essential information for AI coding agents working on the
 | Dashboard | Statistics, top contributors tracking, and recent activity for OKR goals |
 | Events | Innovation competition overlay with team formation, structured idea scoring, FAQ, and awards |
 | Authentication | JWT-based auth with member/admin role separation |
+| ChatBot | Multi-session chat with AI Agent. Hub BE owns session/message history in PostgreSQL. Agent service (`innovation_hub_agent`) is stateless. |
 
 ## Technology Stack
 
@@ -290,6 +291,13 @@ The API Contract includes a status table (Section 12) showing implementation his
 | `event_faqs` | FAQ entries per event |
 | `event_awards` | Award categories per event |
 | `event_award_teams` | Junction table linking awards to teams |
+
+### Chat Entities
+
+| Entity | Description |
+|--------|-------------|
+| `chat_sessions` | User chat sessions with AI Agent (session ID = thread_id for Agent BE tracing) |
+| `chat_messages` | Messages within sessions, role (user/assistant), sources (JSONB for wiki refs) |
 
 ### Status Workflows
 

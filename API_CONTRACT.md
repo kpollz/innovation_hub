@@ -1,7 +1,7 @@
 # API CONTRACT - Innovation Hub
 
 **Version**: 1.0
-**Cập nhật**: 2026-04-27
+**Cập nhật**: 2026-05-03
 **Mục đích**: Nguồn sự thật duy nhất (Single Source of Truth) cho cả Backend và Frontend.
 
 > **Quy tắc**: Khi cần thay đổi API, sửa file này TRƯỚC, rồi cập nhật BE và FE theo.
@@ -933,6 +933,12 @@ Recipients (cho comment/reaction/vote/status_changed): Owner của target + tấ
 | DELETE /users/{id} | ❌ | ✅ |
 | POST /users/{id}/reset-password | ❌ | ✅ |
 | GET /users/{id}/stats | ✅ | ✅ |
+| POST /chat/sessions | ✅ | ✅ |
+| GET /chat/sessions | ✅ (chỉ mình) | ✅ (chỉ mình) |
+| PATCH /chat/sessions/{id} | ✅ (chỉ mình) | ✅ (chỉ mình) |
+| DELETE /chat/sessions/{id} | ✅ (chỉ mình) | ✅ (chỉ mình) |
+| GET /chat/sessions/{id}/messages | ✅ (chỉ mình) | ✅ (chỉ mình) |
+| POST /chat/sessions/{id}/message | ✅ (chỉ mình) | ✅ (chỉ mình) |
 
 ---
 
@@ -1827,3 +1833,112 @@ Problem ←──────── Room ←───── Idea ─────
 > **Độc lập**: Sau khi copy, Event Idea hoàn toàn tách biệt. Thay đổi Room Idea KHÔNG ảnh hưởng Event Idea.
 
 *Tài liệu này là nguồn sự thật duy nhất. Mọi thay đổi API phải cập nhật ở đây trước.*
+
+---
+
+## 26. CHAT (`/chat`) — ChatBot với AI Agent
+
+> **Context**: Module Chat cho phép users tạo nhiều chat session với AI Agent. History được lưu trong PostgreSQL, owned bởi Hub Backend. Agent service (`innovation_hub_agent`) là stateless — nhận full conversation history mỗi request.
+>
+> **Phase A**: Backend CRUD layer (session + message persistence). SSE streaming proxy sẽ implement ở Phase C.
+
+### SessionObject
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "created_at": "datetime",
+  "updated_at": "datetime | null"
+}
+```
+
+### MessageObject
+```json
+{
+  "id": "uuid",
+  "role": "user | assistant",
+  "content": "string",
+  "sources": "JSONB | null",
+  "created_at": "datetime"
+}
+```
+
+> **Note**:
+> - `sources`: Wiki files được AI Agent tham chiếu (chỉ có trên assistant messages).
+> - `role`: `user` (người dùng gửi) hoặc `assistant` (AI trả lời).
+
+### Database Schema
+```sql
+chat_sessions: id (UUID PK), user_id (FK→users.id), title (VARCHAR 200), created_at, updated_at
+chat_messages: id (UUID PK), session_id (FK→chat_sessions.id CASCADE), role (CHECK IN user|assistant),
+  content (TEXT), sources (JSONB nullable), created_at
+-- Indexes: chat_sessions(user_id), chat_messages(session_id, created_at)
+```
+
+### 26.1 POST `/chat/sessions` — Tạo session 🔒
+- **Status**: 201 Created
+
+**Request Body:**
+```json
+{
+  "title": "string (max 200, bắt buộc)"
+}
+```
+
+**Response:** SessionObject
+
+### 26.2 GET `/chat/sessions` — Danh sách sessions 🔒
+- **Status**: 200 OK
+- **Logic**: Trả về tất cả sessions của current user, sort theo updated_at DESC
+
+**Response:** `SessionObject[]`
+
+### 26.3 PATCH `/chat/sessions/{session_id}` — Đổi tên session 🔒
+- **Status**: 200 OK
+- **Logic**: Chỉ owner mới được đổi tên
+
+**Request Body:**
+```json
+{
+  "title": "string (max 200, bắt buộc)"
+}
+```
+
+**Response:** SessionObject
+
+### 26.4 DELETE `/chat/sessions/{session_id}` — Xóa session 🔒
+- **Status**: 204 No Content
+- **Logic**: Chỉ owner mới được xóa. Cascade xóa tất cả messages.
+
+### 26.5 GET `/chat/sessions/{session_id}/messages` — Lịch sử tin nhắn 🔒
+- **Status**: 200 OK
+- **Logic**: Chỉ owner mới được xem. Sort theo created_at ASC.
+
+**Response:** `MessageObject[]`
+
+### 26.6 POST `/chat/sessions/{session_id}/message` — Gửi tin nhắn 🔒
+- **Status**: 200 OK
+- **Condition**: Session phải thuộc current user
+- **Phase A**: Skeleton — lưu user message vào DB, trả về message object. SSE streaming sẽ implement ở Phase C.
+
+**Request Body:**
+```json
+{
+  "content": "string (bắt buộc)"
+}
+```
+
+**Response:** MessageObject
+
+---
+
+## 27. CHAT PERMISSIONS — Phân quyền Chat
+
+| Endpoint | Member | Admin |
+|----------|--------|-------|
+| POST /chat/sessions | ✅ | ✅ |
+| GET /chat/sessions | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| PATCH /chat/sessions/{id} | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| DELETE /chat/sessions/{id} | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| GET /chat/sessions/{id}/messages | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
+| POST /chat/sessions/{id}/message | ✅ (chỉ của mình) | ✅ (chỉ của mình) |
