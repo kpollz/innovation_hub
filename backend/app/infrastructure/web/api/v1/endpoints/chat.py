@@ -1,8 +1,11 @@
 """Chat endpoints."""
-from typing import List
+import json
+import logging
+from typing import AsyncGenerator, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import StreamingResponse
 
 from app.application.dto.chat_dto import (
     CreateSessionDTO,
@@ -11,12 +14,16 @@ from app.application.dto.chat_dto import (
     SendMessageDTO,
     SessionResponseDTO,
 )
+from app.application.services.agent_proxy_service import AgentProxyService
 from app.application.services.chat_session_service import ChatSessionService
+from app.domain.entities.chat_message import ChatMessage
 from app.domain.value_objects.chat_role import ChatRole
 from app.infrastructure.database.repositories.chat_session_repository_impl import SQLChatSessionRepository
 from app.infrastructure.database.repositories.chat_message_repository_impl import SQLChatMessageRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 service = ChatSessionService()
@@ -74,25 +81,95 @@ async def get_messages(
     return await service.get_messages(session_repo, message_repo, session_id, current_user.id)
 
 
-@router.post("/sessions/{session_id}/message", response_model=MessageResponseDTO)
+@router.post("/sessions/{session_id}/message")
 async def send_message(
     session_id: UUID,
     data: SendMessageDTO,
+    request: Request,
     current_user: UserResponseDTO = Depends(get_current_active_user),
     session_repo: SQLChatSessionRepository = Depends(deps.get_chat_session_repo),
     message_repo: SQLChatMessageRepository = Depends(deps.get_chat_message_repo),
+    agent_proxy: AgentProxyService = Depends(deps.get_agent_proxy_service),
 ):
-    """Send a message to a session. Skeleton for now — SSE streaming in Phase C."""
-    # Verify session exists and belongs to user
+    """Send a message and stream the AI response via SSE."""
+    # 1. Verify session ownership
     session = await session_repo.get_by_id(session_id)
     if not session:
-        from fastapi import HTTPException
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
     if not session.is_owned_by(current_user.id):
-        from fastapi import HTTPException
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your session")
 
-    # Save user message to DB
-    return await service.save_message(
+    # 2. Save user message (always, even if agent fails)
+    await service.save_message(
         message_repo, session_id, ChatRole.USER, data.content
+    )
+
+    # 3. Load full conversation history
+    messages = await message_repo.list_by_session(session_id)
+    agent_messages = [{"role": m.role.value, "content": m.content} for m in messages]
+
+    # 4. SSE generator — proxies Agent BE stream, saves assistant msg after done
+    async def sse_generator() -> AsyncGenerator[str, None]:
+        collected_parts: list[str] = []
+        collected_sources = None
+        db_config = request.app.state.db_config
+
+        try:
+            async for line in agent_proxy.stream_chat(
+                messages=agent_messages,
+                thread_id=str(session_id),
+                user_metadata={"user_id": str(current_user.id)},
+            ):
+                if await request.is_disconnected():
+                    logger.info("Client disconnected during stream for session %s", session_id)
+                    break
+
+                # Forward line immediately
+                yield line
+
+                # Parse for bookkeeping
+                if line.startswith("data: "):
+                    try:
+                        payload = json.loads(line[6:])
+                        event_type = payload.get("type")
+
+                        if event_type == "token":
+                            content = payload.get("content", "")
+                            if content:
+                                collected_parts.append(content)
+                        elif event_type == "sources":
+                            collected_sources = payload.get("files")
+                        elif event_type == "done":
+                            full_content = "".join(collected_parts)
+                            if full_content:
+                                try:
+                                    async with db_config.session_maker() as db_session:
+                                        msg_repo = SQLChatMessageRepository(db_session)
+                                        msg = ChatMessage(
+                                            session_id=session_id,
+                                            role=ChatRole.ASSISTANT,
+                                            content=full_content,
+                                            sources={"files": collected_sources} if collected_sources else None,
+                                        )
+                                        await msg_repo.save(msg)
+                                except Exception as exc:
+                                    logger.error(
+                                        "Failed to save assistant message for session %s: %s",
+                                        session_id, exc,
+                                    )
+                    except (json.JSONDecodeError, TypeError):
+                        pass  # malformed data line — skip
+
+        except Exception as exc:
+            logger.error("Unexpected error in SSE generator: %s", exc)
+            yield f"data: {json.dumps({'type': 'error', 'content': 'Internal streaming error'})}\n\n"
+
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
